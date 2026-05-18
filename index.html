@@ -3,151 +3,282 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ENERBETA — Portal del Empleado</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <title>ENERPRO — Portal del Empleado</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f4f5f7;
-      --white: #ffffff;
-      --dark: #1a1d23;
-      --mid: #4a5568;
-      --muted: #a0aec0;
-      --border: #e2e8f0;
-      --accent: #2563eb;
-      --accent-light: #eff6ff;
-      --green: #16a34a;
-      --green-light: #dcfce7;
+      --bg: #0f1013;
+      --bg2: #16181d;
+      --bg3: #1e2028;
       --red: #dc2626;
-      --red-light: #fee2e2;
-      --yellow: #d97706;
-      --yellow-light: #fef3c7;
+      --red-dark: #b91c1c;
+      --red-light: rgba(220,38,38,0.1);
+      --white: #ffffff;
+      --text: #e2e4e9;
+      --muted: #6b7280;
+      --border: rgba(255,255,255,0.07);
+      --green: #22c55e;
+      --green-light: rgba(34,197,94,0.1);
+      --yellow: #f59e0b;
+      --yellow-light: rgba(245,158,11,0.1);
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--dark); min-height: 100vh; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
     a { text-decoration: none; color: inherit; }
     button { cursor: pointer; font-family: inherit; }
 
     /* LOGIN */
-    .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1a1d23 0%, #2d3748 100%); padding: 1.5rem; }
-    .login-card { background: var(--white); border-radius: 16px; padding: 2.5rem; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .login-wrap {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: var(--bg);
+      background-image: 
+        linear-gradient(rgba(220,38,38,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(220,38,38,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      padding: 1.5rem;
+      position: relative;
+    }
+    .login-wrap::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(220,38,38,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .login-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-top: 2px solid var(--red);
+      padding: 2.5rem;
+      width: 100%; max-width: 420px;
+      position: relative; z-index: 1;
+    }
     .login-logo { text-align: center; margin-bottom: 2rem; }
-    .login-logo .brand { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; color: var(--dark); }
-    .login-logo .brand span { color: var(--accent); }
-    .login-logo .sub { font-size: 0.8rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
+    .login-logo .shield {
+      width: 56px; height: 56px; background: var(--red);
+      margin: 0 auto 1rem;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; font-weight: 900; color: white;
+      font-family: 'Barlow Condensed', sans-serif;
+    }
+    .login-logo .brand {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 2rem; font-weight: 800;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--white);
+    }
+    .login-logo .brand span { color: var(--red); }
+    .login-logo .sub {
+      font-size: 0.7rem; color: var(--muted);
+      letter-spacing: 0.2em; text-transform: uppercase; margin-top: 4px;
+    }
+    .login-divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
     .form-group { margin-bottom: 1.25rem; }
-    .form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--mid); margin-bottom: 0.4rem; letter-spacing: 0.05em; text-transform: uppercase; }
-    .form-group input { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; font-family: inherit; transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
-    .form-group input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-    .btn-login { width: 100%; padding: 0.85rem; background: var(--accent); color: white; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; transition: background 0.2s, transform 0.2s; }
-    .btn-login:hover { background: #1d4ed8; transform: translateY(-1px); }
-    .login-error { background: var(--red-light); color: var(--red); padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.875rem; margin-bottom: 1rem; display: none; }
-    .demo-hint { margin-top: 1.5rem; padding: 1rem; background: var(--accent-light); border-radius: 8px; font-size: 0.8rem; color: var(--accent); }
-    .demo-hint strong { display: block; margin-bottom: 0.4rem; font-weight: 600; }
+    .form-group label {
+      display: block; font-size: 0.7rem; font-weight: 600;
+      color: var(--muted); margin-bottom: 0.5rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .form-group input {
+      width: 100%; padding: 0.75rem 1rem;
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--white); font-size: 0.9rem; font-family: inherit;
+      outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus { border-color: var(--red); }
+    .form-group input::placeholder { color: var(--muted); }
+    .btn-login {
+      width: 100%; padding: 0.9rem;
+      background: var(--red); color: white; border: none;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      transition: background 0.2s;
+    }
+    .btn-login:hover { background: var(--red-dark); }
+    .login-error {
+      background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.3);
+      color: #fc8181; padding: 0.75rem 1rem; font-size: 0.85rem;
+      margin-bottom: 1rem; display: none;
+    }
+    .demo-hint {
+      margin-top: 1.5rem; padding: 1rem;
+      background: var(--bg3); border: 1px solid var(--border);
+      font-size: 0.78rem; color: var(--muted); line-height: 1.7;
+    }
+    .demo-hint strong { color: var(--text); display: block; margin-bottom: 0.25rem; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; }
 
-    /* LAYOUT */
+    /* APP */
     .app { display: none; min-height: 100vh; }
-    .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 240px; background: var(--dark); color: white; display: flex; flex-direction: column; z-index: 50; }
-    .sidebar-logo { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
-    .sidebar-logo .brand { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; }
-    .sidebar-logo .brand span { color: var(--accent); }
-    .sidebar-logo .role { font-size: 0.7rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
-    .sidebar-nav { flex: 1; padding: 1rem 0; }
-    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.5rem; font-size: 0.875rem; font-weight: 500; color: rgba(255,255,255,0.6); transition: background 0.2s, color 0.2s; cursor: pointer; border: none; background: none; width: 100%; text-align: left; }
-    .nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
-    .nav-item.active { background: rgba(37,99,235,0.2); color: white; border-right: 3px solid var(--accent); }
-    .nav-item svg { width: 1.1rem; height: 1.1rem; flex-shrink: 0; }
-    .sidebar-footer { padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); }
+
+    /* SIDEBAR */
+    .sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0; width: 260px;
+      background: var(--bg2); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; z-index: 50;
+    }
+    .sidebar-logo {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .sidebar-shield {
+      width: 38px; height: 38px; background: var(--red); flex-shrink: 0;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem; font-weight: 900; color: white;
+    }
+    .sidebar-brand { font-family: 'Barlow Condensed', sans-serif; font-size: 1.3rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--white); }
+    .sidebar-brand span { color: var(--red); }
+    .sidebar-role { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px; }
+    .sidebar-nav { flex: 1; padding: 1rem 0; overflow-y: auto; }
+    .nav-section { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); padding: 1rem 1.5rem 0.4rem; }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.7rem 1.5rem; font-size: 0.875rem; font-weight: 500;
+      color: var(--muted); transition: background 0.2s, color 0.2s;
+      cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+    .nav-item.active { background: var(--red-light); color: var(--white); border-left-color: var(--red); }
+    .nav-item svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+    .sidebar-footer { padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); }
     .user-info { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
-    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
-    .user-name { font-size: 0.875rem; font-weight: 500; }
-    .user-email { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
-    .btn-logout { width: 100%; padding: 0.6rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: rgba(255,255,255,0.6); font-size: 0.8rem; font-weight: 500; transition: background 0.2s, color 0.2s; }
-    .btn-logout:hover { background: rgba(220,38,38,0.2); color: #fc8181; border-color: rgba(220,38,38,0.3); }
+    .user-avatar {
+      width: 36px; height: 36px; background: var(--red);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700; font-size: 0.9rem; color: white; flex-shrink: 0;
+    }
+    .user-name { font-size: 0.875rem; font-weight: 500; color: var(--white); }
+    .user-role { font-size: 0.7rem; color: var(--muted); margin-top: 1px; }
+    .btn-logout {
+      width: 100%; padding: 0.6rem;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--muted); font-size: 0.78rem; font-weight: 500;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .btn-logout:hover { background: var(--red-light); color: #fc8181; border-color: rgba(220,38,38,0.3); }
 
     /* MAIN */
-    .main { margin-left: 240px; padding: 2rem; min-height: 100vh; }
-    .page { display: none; }
+    .main { margin-left: 260px; padding: 2rem; min-height: 100vh; }
+    .page { display: none; animation: fadeIn 0.3s ease; }
     .page.active { display: block; }
-    .page-header { margin-bottom: 2rem; }
-    .page-header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; }
-    .page-header p { font-size: 0.9rem; color: var(--muted); margin-top: 0.25rem; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* PAGE HEADER */
+    .page-header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+    .page-header-top { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .page-eyebrow { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--red); margin-bottom: 0.4rem; }
+    .page-header h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; color: var(--white); }
+    .page-header p { font-size: 0.85rem; color: var(--muted); margin-top: 0.25rem; }
 
     /* CARDS */
-    .card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); padding: 1.5rem; }
-    .card-title { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
-    .card-value { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; }
+    .card { background: var(--bg2); border: 1px solid var(--border); padding: 1.5rem; }
+    .card-label { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+    .card-value { font-family: 'Barlow Condensed', sans-serif; font-size: 2.25rem; font-weight: 700; color: var(--white); letter-spacing: -0.01em; }
+    .card-sub { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+    .card-accent { border-top: 2px solid var(--red); }
 
-    /* STATS GRID */
     .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
 
-    /* BADGE */
-    .badge { display: inline-flex; align-items: center; padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+    /* BADGES */
+    .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
     .badge-green { background: var(--green-light); color: var(--green); }
+    .badge-green::before { background: var(--green); }
     .badge-yellow { background: var(--yellow-light); color: var(--yellow); }
-    .badge-red { background: var(--red-light); color: var(--red); }
-    .badge-blue { background: var(--accent-light); color: var(--accent); }
+    .badge-yellow::before { background: var(--yellow); }
+    .badge-red { background: var(--red-light); color: #fc8181; }
+    .badge-red::before { background: #fc8181; }
+    .badge-blue { background: rgba(59,130,246,0.1); color: #60a5fa; }
+    .badge-blue::before { background: #60a5fa; }
 
     /* TABLE */
     .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-    th { text-align: left; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
-    td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--border); color: var(--mid); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { text-align: left; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
+    td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--border); color: var(--text); }
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #fafafa; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
 
-    /* NOMINA */
-    .nomina-card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1rem; overflow: hidden; }
-    .nomina-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; cursor: pointer; transition: background 0.2s; }
-    .nomina-header:hover { background: #fafafa; }
-    .nomina-mes { font-weight: 600; font-size: 1rem; }
-    .nomina-importe { font-family: 'Inter', monospace; font-weight: 700; font-size: 1.1rem; color: var(--green); }
-    .nomina-body { padding: 1.5rem; border-top: 1px solid var(--border); display: none; }
+    /* NOMINAS */
+    .nomina-card { background: var(--bg2); border: 1px solid var(--border); margin-bottom: 0.75rem; overflow: hidden; transition: border-color 0.2s; }
+    .nomina-card:hover { border-color: rgba(220,38,38,0.3); }
+    .nomina-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; cursor: pointer; }
+    .nomina-mes { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--white); }
+    .nomina-fecha { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .nomina-importe { font-family: 'Barlow Condensed', sans-serif; font-size: 1.4rem; font-weight: 700; color: var(--green); }
+    .nomina-body { padding: 1.5rem; border-top: 1px solid var(--border); display: none; background: var(--bg3); }
     .nomina-body.open { display: block; }
-    .nomina-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px dotted var(--border); font-size: 0.875rem; }
+    .nomina-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.875rem; color: var(--text); }
     .nomina-row:last-child { border-bottom: none; }
-    .nomina-total { display: flex; justify-content: space-between; padding: 0.75rem 0 0; margin-top: 0.5rem; border-top: 2px solid var(--dark); font-weight: 700; font-size: 1rem; }
-    .btn-download { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: var(--accent); color: white; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; margin-top: 1rem; transition: background 0.2s; }
-    .btn-download:hover { background: #1d4ed8; }
+    .nomina-row.deduccion { color: #fc8181; }
+    .nomina-total { display: flex; justify-content: space-between; padding: 0.75rem 0 0; margin-top: 0.75rem; border-top: 1px solid var(--red); font-weight: 600; font-size: 1rem; color: var(--white); }
+    .btn-dl {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.6rem 1.2rem; background: var(--red); color: white; border: none;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.85rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      margin-top: 1.25rem; transition: background 0.2s;
+    }
+    .btn-dl:hover { background: var(--red-dark); }
 
     /* CALENDAR */
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-    .cal-day-label { text-align: center; font-size: 0.7rem; font-weight: 600; color: var(--muted); padding: 0.5rem 0; text-transform: uppercase; }
-    .cal-day { text-align: center; padding: 0.6rem 0.25rem; border-radius: 6px; font-size: 0.8rem; cursor: default; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+    .cal-label { text-align: center; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 0.5rem 0; }
+    .cal-day { text-align: center; padding: 0.6rem 0.2rem; font-size: 0.8rem; font-weight: 500; }
     .cal-day.empty { background: transparent; }
-    .cal-day.normal { background: var(--bg); color: var(--mid); }
-    .cal-day.trabajo { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+    .cal-day.normal { background: var(--bg3); color: var(--muted); }
+    .cal-day.trabajo { background: rgba(220,38,38,0.15); color: #fc8181; font-weight: 600; }
     .cal-day.libre { background: var(--green-light); color: var(--green); font-weight: 600; }
-    .cal-day.festivo { background: var(--red-light); color: var(--red); font-weight: 600; }
-    .cal-day.today { outline: 2px solid var(--accent); }
-    .cal-legend { display: flex; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap; }
-    .cal-legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: var(--mid); }
-    .cal-legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+    .cal-day.festivo { background: var(--yellow-light); color: var(--yellow); font-weight: 600; }
+    .cal-day.today { outline: 1px solid var(--red); }
+    .cal-legend { display: flex; gap: 1.5rem; margin-top: 1.25rem; flex-wrap: wrap; }
+    .cal-legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: var(--muted); }
+    .cal-dot { width: 10px; height: 10px; }
 
     /* DOCS */
-    .doc-item { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); }
+    .doc-item { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); transition: background 0.2s; }
     .doc-item:last-child { border-bottom: none; }
+    .doc-item:hover { background: rgba(255,255,255,0.02); }
     .doc-info { display: flex; align-items: center; gap: 1rem; }
-    .doc-icon { width: 40px; height: 40px; border-radius: 8px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 1.1rem; flex-shrink: 0; }
-    .doc-name { font-weight: 500; font-size: 0.9rem; }
-    .doc-date { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
-    .btn-ver { padding: 0.4rem 0.9rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.8rem; font-weight: 500; background: var(--white); color: var(--mid); transition: background 0.2s, border-color 0.2s; }
-    .btn-ver:hover { background: var(--bg); border-color: var(--accent); color: var(--accent); }
+    .doc-icon { width: 40px; height: 40px; background: var(--red-light); border: 1px solid rgba(220,38,38,0.2); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .doc-name { font-size: 0.9rem; font-weight: 500; color: var(--white); }
+    .doc-meta { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .btn-ver { padding: 0.4rem 0.9rem; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; transition: all 0.2s; }
+    .btn-ver:hover { border-color: var(--red); color: var(--red); }
 
     /* ADMIN */
     .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-    .form-inline { display: flex; gap: 0.75rem; flex-wrap: wrap; }
-    .form-inline select, .form-inline input { flex: 1; min-width: 140px; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.875rem; font-family: inherit; outline: none; }
-    .form-inline select:focus, .form-inline input:focus { border-color: var(--accent); }
-    .btn-action { padding: 0.6rem 1.2rem; background: var(--accent); color: white; border: none; border-radius: 6px; font-size: 0.875rem; font-weight: 600; transition: background 0.2s; white-space: nowrap; }
-    .btn-action:hover { background: #1d4ed8; }
+    .form-group { margin-bottom: 1.1rem; }
+    .form-group label { display: block; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+    .form-group select, .form-group input[type="file"] { width: 100%; padding: 0.65rem 0.75rem; background: var(--bg3); border: 1px solid var(--border); color: var(--text); font-size: 0.875rem; font-family: inherit; outline: none; }
+    .form-group select:focus { border-color: var(--red); }
+    .btn-action {
+      padding: 0.65rem 1.5rem; background: var(--red); color: white; border: none;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.9rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      transition: background 0.2s; width: 100%;
+    }
+    .btn-action:hover { background: var(--red-dark); }
 
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-      .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; flex-wrap: wrap; }
-      .main { margin-left: 0; padding: 1rem; }
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    /* STAT BAR */
+    .stat-bar-wrap { margin-top: 0.75rem; }
+    .stat-bar-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.4rem; }
+    .stat-bar { height: 4px; background: var(--bg3); }
+    .stat-bar-fill { height: 100%; background: var(--red); }
+
+    @media (max-width: 900px) {
+      .stats-grid { grid-template-columns: repeat(2,1fr); }
       .admin-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .sidebar { width: 100%; height: auto; position: relative; }
+      .main { margin-left: 0; padding: 1rem; }
     }
   </style>
 </head>
@@ -157,23 +288,25 @@
   <div class="login-wrap" id="loginWrap">
     <div class="login-card">
       <div class="login-logo">
-        <div class="brand">ENER<span>BETA</span></div>
-        <div class="sub">Portal del Empleado · Demo</div>
+        <div class="shield">E</div>
+        <div class="brand">ENER<span>PRO</span></div>
+        <div class="sub">Portal del Empleado · Acceso Privado</div>
       </div>
-      <div class="login-error" id="loginError">Email o contraseña incorrectos.</div>
+      <div class="login-divider"></div>
+      <div class="login-error" id="loginError">Credenciales incorrectas. Inténtalo de nuevo.</div>
       <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="loginEmail" placeholder="tu@email.com">
+        <label>Identificador / Email</label>
+        <input type="email" id="loginEmail" placeholder="usuario@enerpro.com">
       </div>
       <div class="form-group">
         <label>Contraseña</label>
         <input type="password" id="loginPassword" placeholder="••••••••">
       </div>
-      <button class="btn-login" id="btnLogin">Entrar al portal</button>
+      <button class="btn-login" id="btnLogin">Acceder al portal</button>
       <div class="demo-hint">
-        <strong>👤 Accesos de demo</strong>
-        Empleado: empleado@enerbeta.com / demo1234<br>
-        Admin: admin@enerbeta.com / admin1234
+        <strong>Accesos de demostración</strong>
+        Empleado: empleado@enerpro.com / demo1234<br>
+        Admin: admin@enerpro.com / admin1234
       </div>
     </div>
   </div>
@@ -182,14 +315,19 @@
   <div class="app" id="app">
     <aside class="sidebar">
       <div class="sidebar-logo">
-        <div class="brand">ENER<span>BETA</span></div>
-        <div class="role" id="sidebarRole">Portal del Empleado</div>
+        <div class="sidebar-shield">E</div>
+        <div>
+          <div class="sidebar-brand">ENER<span>PRO</span></div>
+          <div class="sidebar-role" id="sidebarRole">Portal del Empleado</div>
+        </div>
       </div>
-      <nav class="sidebar-nav" id="sidebarNav">
+      <nav class="sidebar-nav">
+        <div class="nav-section">Principal</div>
         <button class="nav-item active" data-page="inicio">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
           Inicio
         </button>
+        <div class="nav-section">Mi área</div>
         <button class="nav-item" data-page="nominas">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           Nóminas
@@ -208,15 +346,15 @@
         </button>
         <button class="nav-item admin-only" data-page="admin" style="display:none">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-          Admin
+          Administración
         </button>
       </nav>
       <div class="sidebar-footer">
         <div class="user-info">
           <div class="user-avatar" id="userAvatar">ML</div>
           <div>
-            <div class="user-name" id="userName">Cargando...</div>
-            <div class="user-email" id="userEmail"></div>
+            <div class="user-name" id="userName">—</div>
+            <div class="user-role" id="userRoleLabel">Empleado</div>
           </div>
         </div>
         <button class="btn-logout" id="btnLogout">Cerrar sesión</button>
@@ -228,33 +366,47 @@
       <!-- INICIO -->
       <div class="page active" id="page-inicio">
         <div class="page-header">
-          <h1 id="welcomeMsg">Bienvenido</h1>
-          <p>Resumen de tu portal · Mayo 2026</p>
+          <div class="page-eyebrow">Panel principal</div>
+          <div class="page-header-top">
+            <div>
+              <h1 id="welcomeMsg">Bienvenido</h1>
+              <p>Mayo 2026 · Resumen de actividad</p>
+            </div>
+            <span class="badge badge-green">Servicio activo</span>
+          </div>
         </div>
         <div class="stats-grid">
-          <div class="card">
-            <div class="card-title">Días trabajados</div>
+          <div class="card card-accent">
+            <div class="card-label">Días trabajados</div>
             <div class="card-value">18</div>
-            <div style="font-size:0.8rem;color:var(--muted);margin-top:4px">Este mes</div>
+            <div class="card-sub">Este mes</div>
+            <div class="stat-bar-wrap">
+              <div class="stat-bar-label"><span>Progreso mensual</span><span>82%</span></div>
+              <div class="stat-bar"><div class="stat-bar-fill" style="width:82%"></div></div>
+            </div>
           </div>
           <div class="card">
-            <div class="card-title">Vacaciones restantes</div>
+            <div class="card-label">Vacaciones restantes</div>
             <div class="card-value">14</div>
-            <div style="font-size:0.8rem;color:var(--muted);margin-top:4px">Días disponibles</div>
+            <div class="card-sub">Días disponibles 2026</div>
+            <div class="stat-bar-wrap">
+              <div class="stat-bar-label"><span>Disfrutados</span><span>16/30</span></div>
+              <div class="stat-bar"><div class="stat-bar-fill" style="width:53%;background:var(--yellow)"></div></div>
+            </div>
           </div>
           <div class="card">
-            <div class="card-title">Última nómina</div>
+            <div class="card-label">Última nómina</div>
             <div class="card-value" style="color:var(--green)">1.842€</div>
-            <div style="font-size:0.8rem;color:var(--muted);margin-top:4px">Abril 2026</div>
+            <div class="card-sub">Abril 2026 · Pagada</div>
           </div>
           <div class="card">
-            <div class="card-title">Documentos nuevos</div>
-            <div class="card-value">2</div>
-            <div style="font-size:0.8rem;color:var(--muted);margin-top:4px">Sin leer</div>
+            <div class="card-label">Documentos nuevos</div>
+            <div class="card-value" style="color:var(--red)">2</div>
+            <div class="card-sub">Pendientes de leer</div>
           </div>
         </div>
         <div class="card">
-          <div style="font-size:1rem;font-weight:600;margin-bottom:1rem">Próximos turnos</div>
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem">Próximos turnos</div>
           <table>
             <thead><tr><th>Día</th><th>Turno</th><th>Horario</th><th>Estado</th></tr></thead>
             <tbody>
@@ -271,64 +423,44 @@
       <!-- NOMINAS -->
       <div class="page" id="page-nominas">
         <div class="page-header">
-          <h1>Mis nóminas</h1>
-          <p>Historial de nóminas detallado</p>
+          <div class="page-eyebrow">Mi área</div>
+          <h1>Nóminas</h1>
+          <p>Historial de retribuciones</p>
         </div>
-
         <div class="nomina-card">
           <div class="nomina-header" onclick="toggleNomina(this)">
-            <div>
-              <div class="nomina-mes">Mayo 2026</div>
-              <div style="font-size:0.8rem;color:var(--muted);margin-top:2px">En proceso</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:1rem">
-              <span class="badge badge-yellow">En proceso</span>
-              <span class="nomina-importe">—</span>
-            </div>
+            <div><div class="nomina-mes">Mayo 2026</div><div class="nomina-fecha">En proceso</div></div>
+            <div style="display:flex;align-items:center;gap:1rem"><span class="badge badge-yellow">En proceso</span><span class="nomina-importe" style="color:var(--muted)">—</span></div>
           </div>
         </div>
-
         <div class="nomina-card">
           <div class="nomina-header" onclick="toggleNomina(this)">
-            <div>
-              <div class="nomina-mes">Abril 2026</div>
-              <div style="font-size:0.8rem;color:var(--muted);margin-top:2px">Pagada el 28 abr</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:1rem">
-              <span class="badge badge-green">Pagada</span>
-              <span class="nomina-importe">1.842,00€</span>
-            </div>
+            <div><div class="nomina-mes">Abril 2026</div><div class="nomina-fecha">Pagada el 28 abr 2026</div></div>
+            <div style="display:flex;align-items:center;gap:1rem"><span class="badge badge-green">Pagada</span><span class="nomina-importe">1.842,00 €</span></div>
           </div>
           <div class="nomina-body">
-            <div class="nomina-row"><span>Salario base</span><span>1.600,00€</span></div>
-            <div class="nomina-row"><span>Plus turnicidad</span><span>120,00€</span></div>
-            <div class="nomina-row"><span>Plus nocturnidad</span><span>80,00€</span></div>
-            <div class="nomina-row"><span>Horas extra (4h)</span><span>72,00€</span></div>
-            <div class="nomina-row" style="color:var(--red)"><span>IRPF (12%)</span><span>– 22,00€</span></div>
-            <div class="nomina-row" style="color:var(--red)"><span>Seg. Social</span><span>– 8,00€</span></div>
-            <div class="nomina-total"><span>TOTAL NETO</span><span style="color:var(--green)">1.842,00€</span></div>
-            <button class="btn-download">⬇ Descargar PDF</button>
+            <div class="nomina-row"><span>Salario base</span><span>1.600,00 €</span></div>
+            <div class="nomina-row"><span>Plus turnicidad</span><span>120,00 €</span></div>
+            <div class="nomina-row"><span>Plus nocturnidad</span><span>80,00 €</span></div>
+            <div class="nomina-row"><span>Horas extra (4h)</span><span>72,00 €</span></div>
+            <div class="nomina-row deduccion"><span>Retención IRPF (12%)</span><span>– 22,00 €</span></div>
+            <div class="nomina-row deduccion"><span>Seguridad Social</span><span>– 8,00 €</span></div>
+            <div class="nomina-total"><span>TOTAL NETO</span><span style="color:var(--green)">1.842,00 €</span></div>
+            <button class="btn-dl">⬇ Descargar PDF</button>
           </div>
         </div>
-
         <div class="nomina-card">
           <div class="nomina-header" onclick="toggleNomina(this)">
-            <div>
-              <div class="nomina-mes">Marzo 2026</div>
-              <div style="font-size:0.8rem;color:var(--muted);margin-top:2px">Pagada el 28 mar</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:1rem">
-              <span class="badge badge-green">Pagada</span>
-              <span class="nomina-importe">1.798,00€</span>
-            </div>
+            <div><div class="nomina-mes">Marzo 2026</div><div class="nomina-fecha">Pagada el 28 mar 2026</div></div>
+            <div style="display:flex;align-items:center;gap:1rem"><span class="badge badge-green">Pagada</span><span class="nomina-importe">1.798,00 €</span></div>
           </div>
           <div class="nomina-body">
-            <div class="nomina-row"><span>Salario base</span><span>1.600,00€</span></div>
-            <div class="nomina-row"><span>Plus turnicidad</span><span>120,00€</span></div>
-            <div class="nomina-row"><span>Plus nocturnidad</span><span>80,00€</span></div>
-            <div class="nomina-row" style="color:var(--red)"><span>IRPF (12%)</span><span>– 2,00€</span></div>
-            <div class="nomina-total"><span>TOTAL NETO</span><span style="color:var(--green)">1.798,00€</span></div>
-            <button class="btn-download">⬇ Descargar PDF</button>
+            <div class="nomina-row"><span>Salario base</span><span>1.600,00 €</span></div>
+            <div class="nomina-row"><span>Plus turnicidad</span><span>120,00 €</span></div>
+            <div class="nomina-row"><span>Plus nocturnidad</span><span>80,00 €</span></div>
+            <div class="nomina-row deduccion"><span>Retención IRPF (12%)</span><span>– 2,00 €</span></div>
+            <div class="nomina-total"><span>TOTAL NETO</span><span style="color:var(--green)">1.798,00 €</span></div>
+            <button class="btn-dl">⬇ Descargar PDF</button>
           </div>
         </div>
       </div>
@@ -336,57 +468,24 @@
       <!-- TURNOS -->
       <div class="page" id="page-turnos">
         <div class="page-header">
-          <h1>Mis turnos</h1>
-          <p>Calendario de Mayo 2026</p>
+          <div class="page-eyebrow">Mi área</div>
+          <h1>Turnos</h1>
+          <p>Calendario Mayo 2026</p>
         </div>
         <div class="card">
-          <div class="calendar-grid">
-            <div class="cal-day-label">Lun</div>
-            <div class="cal-day-label">Mar</div>
-            <div class="cal-day-label">Mié</div>
-            <div class="cal-day-label">Jue</div>
-            <div class="cal-day-label">Vie</div>
-            <div class="cal-day-label">Sáb</div>
-            <div class="cal-day-label">Dom</div>
-            <div class="cal-day empty"></div>
-            <div class="cal-day empty"></div>
-            <div class="cal-day empty"></div>
-            <div class="cal-day trabajo" title="Mañana 07-15h">1</div>
-            <div class="cal-day trabajo" title="Tarde 15-23h">2</div>
-            <div class="cal-day libre">3</div>
-            <div class="cal-day libre">4</div>
-            <div class="cal-day trabajo" title="Mañana 07-15h">5</div>
-            <div class="cal-day trabajo" title="Noche 23-07h">6</div>
-            <div class="cal-day trabajo" title="Mañana 07-15h">7</div>
-            <div class="cal-day libre">8</div>
-            <div class="cal-day libre">9</div>
-            <div class="cal-day libre">10</div>
-            <div class="cal-day libre">11</div>
-            <div class="cal-day trabajo" title="Tarde 15-23h">12</div>
-            <div class="cal-day trabajo" title="Tarde 15-23h">13</div>
-            <div class="cal-day trabajo" title="Noche 23-07h">14</div>
-            <div class="cal-day trabajo" title="Mañana 07-15h">15</div>
-            <div class="cal-day libre">16</div>
-            <div class="cal-day libre">17</div>
-            <div class="cal-day libre">18</div>
-            <div class="cal-day today trabajo" title="Mañana 07-15h">19</div>
-            <div class="cal-day trabajo" title="Mañana 07-15h">20</div>
-            <div class="cal-day trabajo" title="Tarde 15-23h">21</div>
-            <div class="cal-day libre">22</div>
-            <div class="cal-day trabajo" title="Noche 23-07h">23</div>
-            <div class="cal-day libre">24</div>
-            <div class="cal-day libre">25</div>
-            <div class="cal-day trabajo" title="Mañana 07-15h">26</div>
-            <div class="cal-day trabajo" title="Tarde 15-23h">27</div>
-            <div class="cal-day trabajo" title="Mañana 07-15h">28</div>
-            <div class="cal-day libre">29</div>
-            <div class="cal-day festivo" title="Festivo">30</div>
-            <div class="cal-day libre">31</div>
+          <div class="cal-grid">
+            <div class="cal-label">Lun</div><div class="cal-label">Mar</div><div class="cal-label">Mié</div><div class="cal-label">Jue</div><div class="cal-label">Vie</div><div class="cal-label">Sáb</div><div class="cal-label">Dom</div>
+            <div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div>
+            <div class="cal-day trabajo">1</div><div class="cal-day trabajo">2</div><div class="cal-day libre">3</div><div class="cal-day libre">4</div>
+            <div class="cal-day trabajo">5</div><div class="cal-day trabajo">6</div><div class="cal-day trabajo">7</div><div class="cal-day libre">8</div><div class="cal-day libre">9</div><div class="cal-day libre">10</div><div class="cal-day libre">11</div>
+            <div class="cal-day trabajo">12</div><div class="cal-day trabajo">13</div><div class="cal-day trabajo">14</div><div class="cal-day trabajo">15</div><div class="cal-day libre">16</div><div class="cal-day libre">17</div><div class="cal-day libre">18</div>
+            <div class="cal-day today trabajo">19</div><div class="cal-day trabajo">20</div><div class="cal-day trabajo">21</div><div class="cal-day libre">22</div><div class="cal-day trabajo">23</div><div class="cal-day libre">24</div><div class="cal-day libre">25</div>
+            <div class="cal-day trabajo">26</div><div class="cal-day trabajo">27</div><div class="cal-day trabajo">28</div><div class="cal-day libre">29</div><div class="cal-day festivo">30</div><div class="cal-day libre">31</div>
           </div>
           <div class="cal-legend">
-            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--accent-light);border:1px solid var(--accent)"></div> Turno trabajo</div>
-            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--green-light)"></div> Libre</div>
-            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--red-light)"></div> Festivo</div>
+            <div class="cal-legend-item"><div class="cal-dot" style="background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.4)"></div>Turno trabajo</div>
+            <div class="cal-legend-item"><div class="cal-dot" style="background:var(--green-light)"></div>Libre</div>
+            <div class="cal-legend-item"><div class="cal-dot" style="background:var(--yellow-light)"></div>Festivo</div>
           </div>
         </div>
       </div>
@@ -394,25 +493,17 @@
       <!-- VACACIONES -->
       <div class="page" id="page-vacaciones">
         <div class="page-header">
+          <div class="page-eyebrow">Mi área</div>
           <h1>Vacaciones</h1>
-          <p>Gestión de días de descanso</p>
+          <p>Gestión de días de descanso 2026</p>
         </div>
-        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
-          <div class="card">
-            <div class="card-title">Días totales</div>
-            <div class="card-value">30</div>
-          </div>
-          <div class="card">
-            <div class="card-title">Disfrutados</div>
-            <div class="card-value" style="color:var(--yellow)">16</div>
-          </div>
-          <div class="card">
-            <div class="card-title">Disponibles</div>
-            <div class="card-value" style="color:var(--green)">14</div>
-          </div>
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:1.5rem">
+          <div class="card card-accent"><div class="card-label">Días totales</div><div class="card-value">30</div></div>
+          <div class="card"><div class="card-label">Disfrutados</div><div class="card-value" style="color:var(--yellow)">16</div></div>
+          <div class="card"><div class="card-label">Disponibles</div><div class="card-value" style="color:var(--green)">14</div></div>
         </div>
         <div class="card">
-          <div style="font-size:1rem;font-weight:600;margin-bottom:1rem">Historial de solicitudes</div>
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem">Solicitudes</div>
           <table>
             <thead><tr><th>Período</th><th>Días</th><th>Tipo</th><th>Estado</th></tr></thead>
             <tbody>
@@ -428,49 +519,26 @@
       <!-- DOCUMENTOS -->
       <div class="page" id="page-documentos">
         <div class="page-header">
+          <div class="page-eyebrow">Mi área</div>
           <h1>Documentos</h1>
-          <p>Documentación de empresa y personal</p>
+          <p>Documentación personal y de empresa</p>
         </div>
-        <div class="card">
+        <div class="card" style="padding:0">
           <div class="doc-item">
-            <div class="doc-info">
-              <div class="doc-icon">📋</div>
-              <div>
-                <div class="doc-name">Contrato de trabajo 2024</div>
-                <div class="doc-date">Subido el 1 ene 2024 · PDF · 245 KB</div>
-              </div>
-            </div>
-            <button class="btn-ver">Ver documento</button>
+            <div class="doc-info"><div class="doc-icon">📋</div><div><div class="doc-name">Contrato de trabajo 2024</div><div class="doc-meta">1 ene 2024 · PDF · 245 KB</div></div></div>
+            <button class="btn-ver">Ver</button>
           </div>
           <div class="doc-item">
-            <div class="doc-info">
-              <div class="doc-icon">🛡️</div>
-              <div>
-                <div class="doc-name">Protocolo de seguridad 2026</div>
-                <div class="doc-date">Subido el 15 ene 2026 · PDF · 1.2 MB · <span style="color:var(--red);font-weight:600">Nuevo</span></div>
-              </div>
-            </div>
-            <button class="btn-ver">Ver documento</button>
+            <div class="doc-info"><div class="doc-icon">🛡️</div><div><div class="doc-name">Protocolo de seguridad 2026</div><div class="doc-meta">15 ene 2026 · PDF · 1.2 MB · <span style="color:var(--red)">Nuevo</span></div></div></div>
+            <button class="btn-ver">Ver</button>
           </div>
           <div class="doc-item">
-            <div class="doc-info">
-              <div class="doc-icon">📊</div>
-              <div>
-                <div class="doc-name">Manual del empleado</div>
-                <div class="doc-date">Subido el 3 mar 2026 · PDF · 890 KB · <span style="color:var(--red);font-weight:600">Nuevo</span></div>
-              </div>
-            </div>
-            <button class="btn-ver">Ver documento</button>
+            <div class="doc-info"><div class="doc-icon">📊</div><div><div class="doc-name">Manual del empleado</div><div class="doc-meta">3 mar 2026 · PDF · 890 KB · <span style="color:var(--red)">Nuevo</span></div></div></div>
+            <button class="btn-ver">Ver</button>
           </div>
           <div class="doc-item">
-            <div class="doc-info">
-              <div class="doc-icon">📝</div>
-              <div>
-                <div class="doc-name">Política de vacaciones 2026</div>
-                <div class="doc-date">Subido el 2 ene 2026 · PDF · 120 KB</div>
-              </div>
-            </div>
-            <button class="btn-ver">Ver documento</button>
+            <div class="doc-info"><div class="doc-icon">📝</div><div><div class="doc-name">Política de vacaciones 2026</div><div class="doc-meta">2 ene 2026 · PDF · 120 KB</div></div></div>
+            <button class="btn-ver">Ver</button>
           </div>
         </div>
       </div>
@@ -478,12 +546,13 @@
       <!-- ADMIN -->
       <div class="page" id="page-admin">
         <div class="page-header">
-          <h1>Panel de administración</h1>
-          <p>Gestión de empleados y documentos · Solo administradores</p>
+          <div class="page-eyebrow">Administración</div>
+          <h1>Panel de control</h1>
+          <p>Gestión de empleados y documentos · Acceso restringido</p>
         </div>
         <div class="admin-grid">
           <div class="card">
-            <div style="font-size:1rem;font-weight:600;margin-bottom:1rem">Empleados activos</div>
+            <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem">Empleados activos</div>
             <table>
               <thead><tr><th>Nombre</th><th>Turno</th><th>Estado</th></tr></thead>
               <tbody>
@@ -496,30 +565,20 @@
             </table>
           </div>
           <div class="card">
-            <div style="font-size:1rem;font-weight:600;margin-bottom:1.25rem">Subir documento</div>
+            <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem">Subir documento</div>
             <div class="form-group">
-              <label>Empleado</label>
-              <select style="width:100%;padding:0.6rem 0.75rem;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:0.875rem;">
-                <option>Todos los empleados</option>
-                <option>Carlos M.</option>
-                <option>Laura P.</option>
-                <option>Jordi R.</option>
-              </select>
+              <label>Empleado destinatario</label>
+              <select><option>Todos los empleados</option><option>Carlos M.</option><option>Laura P.</option><option>Jordi R.</option><option>Ana S.</option></select>
             </div>
             <div class="form-group">
               <label>Tipo de documento</label>
-              <select style="width:100%;padding:0.6rem 0.75rem;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:0.875rem;">
-                <option>Nómina</option>
-                <option>Contrato</option>
-                <option>Protocolo</option>
-                <option>Otro</option>
-              </select>
+              <select><option>Nómina</option><option>Contrato</option><option>Protocolo de seguridad</option><option>Manual</option><option>Otro</option></select>
             </div>
             <div class="form-group">
-              <label>Archivo</label>
-              <input type="file" accept=".pdf" style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:6px;font-size:0.875rem;">
+              <label>Seleccionar archivo (PDF)</label>
+              <input type="file" accept=".pdf">
             </div>
-            <button class="btn-action" style="width:100%">Subir documento</button>
+            <button class="btn-action">Subir documento</button>
           </div>
         </div>
       </div>
@@ -528,76 +587,64 @@
   </div>
 
   <script>
-    // Demo users
     var USERS = {
-      'empleado@enerbeta.com': { password: 'demo1234', name: 'Carlos Martínez', role: 'empleado', initials: 'CM' },
-      'admin@enerbeta.com':    { password: 'admin1234', name: 'Administrador', role: 'admin', initials: 'AD' }
+      'empleado@enerpro.com': { password: 'demo1234', name: 'Carlos Martínez', role: 'empleado', initials: 'CM' },
+      'admin@enerpro.com':    { password: 'admin1234', name: 'Administrador', role: 'admin', initials: 'AD' }
     };
-
     var currentUser = null;
 
-    // LOGIN
-    document.getElementById('btnLogin').addEventListener('click', function() {
+    document.getElementById('btnLogin').addEventListener('click', doLogin);
+    document.getElementById('loginPassword').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
+
+    function doLogin() {
       var email = document.getElementById('loginEmail').value.trim();
       var pass  = document.getElementById('loginPassword').value;
       var err   = document.getElementById('loginError');
-
       if (USERS[email] && USERS[email].password === pass) {
         err.style.display = 'none';
         currentUser = Object.assign({ email: email }, USERS[email]);
-        showApp();
+        document.getElementById('loginWrap').style.display = 'none';
+        document.getElementById('app').style.display = 'flex';
+        document.getElementById('userName').textContent = currentUser.name;
+        document.getElementById('userAvatar').textContent = currentUser.initials;
+        document.getElementById('welcomeMsg').textContent = 'Bienvenido, ' + currentUser.name.split(' ')[0];
+        if (currentUser.role === 'admin') {
+          document.getElementById('sidebarRole').textContent = 'Administrador';
+          document.getElementById('userRoleLabel').textContent = 'Administrador';
+          document.querySelectorAll('.admin-only').forEach(function(el){ el.style.display='flex'; });
+        }
       } else {
         err.style.display = 'block';
       }
-    });
-
-    document.getElementById('loginPassword').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') document.getElementById('btnLogin').click();
-    });
-
-    function showApp() {
-      document.getElementById('loginWrap').style.display = 'none';
-      document.getElementById('app').style.display = 'flex';
-      document.getElementById('userName').textContent = currentUser.name;
-      document.getElementById('userEmail').textContent = currentUser.email;
-      document.getElementById('userAvatar').textContent = currentUser.initials;
-      document.getElementById('welcomeMsg').textContent = 'Hola, ' + currentUser.name.split(' ')[0] + ' 👋';
-
-      if (currentUser.role === 'admin') {
-        document.getElementById('sidebarRole').textContent = 'Administrador';
-        document.querySelectorAll('.admin-only').forEach(function(el) { el.style.display = 'flex'; });
-      }
     }
 
-    // NAVIGATION
-    document.querySelectorAll('.nav-item').forEach(function(btn) {
-      btn.addEventListener('click', function() {
+    document.querySelectorAll('.nav-item').forEach(function(btn){
+      btn.addEventListener('click', function(){
         var page = this.getAttribute('data-page');
-        document.querySelectorAll('.nav-item').forEach(function(b) { b.classList.remove('active'); });
-        document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+        document.querySelectorAll('.nav-item').forEach(function(b){ b.classList.remove('active'); });
+        document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
         this.classList.add('active');
-        document.getElementById('page-' + page).classList.add('active');
+        document.getElementById('page-'+page).classList.add('active');
       });
     });
 
-    // LOGOUT
-    document.getElementById('btnLogout').addEventListener('click', function() {
+    document.getElementById('btnLogout').addEventListener('click', function(){
       currentUser = null;
       document.getElementById('app').style.display = 'none';
       document.getElementById('loginWrap').style.display = 'flex';
       document.getElementById('loginEmail').value = '';
       document.getElementById('loginPassword').value = '';
-      document.querySelectorAll('.admin-only').forEach(function(el) { el.style.display = 'none'; });
+      document.querySelectorAll('.admin-only').forEach(function(el){ el.style.display='none'; });
+      document.querySelectorAll('.nav-item').forEach(function(b){ b.classList.remove('active'); });
+      document.querySelector('[data-page="inicio"]').classList.add('active');
+      document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+      document.getElementById('page-inicio').classList.add('active');
     });
 
-    // NOMINAS TOGGLE
     function toggleNomina(header) {
       var body = header.nextElementSibling;
-      if (body && body.classList.contains('nomina-body')) {
-        body.classList.toggle('open');
-      }
+      if (body && body.classList.contains('nomina-body')) body.classList.toggle('open');
     }
   </script>
-
 </body>
 </html>
