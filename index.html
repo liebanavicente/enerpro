@@ -344,6 +344,10 @@
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
           Documentos
         </button>
+        <button class="nav-item" data-page="solicitudes">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          Solicitudes
+        </button>
         <button class="nav-item admin-only" data-page="admin" style="display:none">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
           Administración
@@ -543,6 +547,42 @@
         </div>
       </div>
 
+      <!-- SOLICITUDES -->
+      <div class="page" id="page-solicitudes">
+        <div class="page-header">
+          <div class="page-eyebrow">Buzón</div>
+          <h1>Solicitudes</h1>
+          <p>Envía una solicitud de permiso, vacaciones o consulta al coordinador</p>
+        </div>
+        <div class="card" style="max-width:600px">
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.5rem">Nueva solicitud</div>
+          <form id="solicitudForm" action="https://formspree.io/f/xgoqvejw" method="POST">
+            <div class="form-group">
+              <label>Tipo de solicitud</label>
+              <select name="tipo" style="width:100%;padding:0.65rem 0.75rem;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:0.875rem;font-family:inherit;outline:none;">
+                <option>Solicitud de vacaciones</option>
+                <option>Solicitud de permiso</option>
+                <option>Cambio de turno</option>
+                <option>Baja médica</option>
+                <option>Consulta general</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Fechas (si aplica)</label>
+              <input type="text" name="fechas" placeholder="Ej: 15 al 20 de junio" style="width:100%;padding:0.65rem 0.75rem;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:0.875rem;font-family:inherit;outline:none;">
+            </div>
+            <div class="form-group">
+              <label>Motivo / descripción</label>
+              <textarea name="motivo" rows="4" placeholder="Describe tu solicitud..." style="width:100%;padding:0.65rem 0.75rem;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:0.875rem;font-family:inherit;outline:none;resize:vertical;"></textarea>
+            </div>
+            <input type="hidden" name="empleado" id="formEmpleado" value="">
+            <input type="hidden" name="_subject" value="Nueva solicitud — Portal ENERPRO">
+            <div id="solicitudMsg" style="display:none;padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.875rem;"></div>
+            <button type="submit" class="btn-action">Enviar solicitud</button>
+          </form>
+        </div>
+      </div>
+
       <!-- ADMIN -->
       <div class="page" id="page-admin">
         <div class="page-header">
@@ -641,7 +681,35 @@
       document.getElementById('page-inicio').classList.add('active');
     });
 
-    function toggleNomina(header) {
+    // FORMULARIO SOLICITUDES
+    var form = document.getElementById('solicitudForm');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        document.getElementById('formEmpleado').value = currentUser ? currentUser.name : 'Empleado';
+        var msg = document.getElementById('solicitudMsg');
+        fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { 'Accept': 'application/json' }
+        }).then(function(r) {
+          if (r.ok) {
+            msg.style.display = 'block';
+            msg.style.background = 'var(--green-light)';
+            msg.style.color = 'var(--green)';
+            msg.style.border = '1px solid rgba(34,197,94,0.2)';
+            msg.textContent = '✓ Solicitud enviada correctamente. El coordinador la revisará en breve.';
+            form.reset();
+          } else {
+            msg.style.display = 'block';
+            msg.style.background = 'var(--red-light)';
+            msg.style.color = '#fc8181';
+            msg.textContent = 'Error al enviar. Inténtalo de nuevo.';
+          }
+        });
+      });
+    }
+
       var body = header.nextElementSibling;
       if (body && body.classList.contains('nomina-body')) body.classList.toggle('open');
     }
