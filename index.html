@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ENERBETA — Portal del Empleado</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f5f7;
+      --white: #ffffff;
+      --dark: #1a1d23;
+      --mid: #4a5568;
+      --muted: #a0aec0;
+      --border: #e2e8f0;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --green: #16a34a;
+      --green-light: #dcfce7;
+      --red: #dc2626;
+      --red-light: #fee2e2;
+      --yellow: #d97706;
+      --yellow-light: #fef3c7;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--dark); min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; font-family: inherit; }
+
+    /* LOGIN */
+    .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1a1d23 0%, #2d3748 100%); padding: 1.5rem; }
+    .login-card { background: var(--white); border-radius: 16px; padding: 2.5rem; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .login-logo { text-align: center; margin-bottom: 2rem; }
+    .login-logo .brand { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; color: var(--dark); }
+    .login-logo .brand span { color: var(--accent); }
+    .login-logo .sub { font-size: 0.8rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--mid); margin-bottom: 0.4rem; letter-spacing: 0.05em; text-transform: uppercase; }
+    .form-group input { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; font-family: inherit; transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
+    .form-group input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .btn-login { width: 100%; padding: 0.85rem; background: var(--accent); color: white; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; transition: background 0.2s, transform 0.2s; }
+    .btn-login:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .login-error { background: var(--red-light); color: var(--red); padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.875rem; margin-bottom: 1rem; display: none; }
+    .demo-hint { margin-top: 1.5rem; padding: 1rem; background: var(--accent-light); border-radius: 8px; font-size: 0.8rem; color: var(--accent); }
+    .demo-hint strong { display: block; margin-bottom: 0.4rem; font-weight: 600; }
+
+    /* LAYOUT */
+    .app { display: none; min-height: 100vh; }
+    .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 240px; background: var(--dark); color: white; display: flex; flex-direction: column; z-index: 50; }
+    .sidebar-logo { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .sidebar-logo .brand { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; }
+    .sidebar-logo .brand span { color: var(--accent); }
+    .sidebar-logo .role { font-size: 0.7rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
+    .sidebar-nav { flex: 1; padding: 1rem 0; }
+    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.5rem; font-size: 0.875rem; font-weight: 500; color: rgba(255,255,255,0.6); transition: background 0.2s, color 0.2s; cursor: pointer; border: none; background: none; width: 100%; text-align: left; }
+    .nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
+    .nav-item.active { background: rgba(37,99,235,0.2); color: white; border-right: 3px solid var(--accent); }
+    .nav-item svg { width: 1.1rem; height: 1.1rem; flex-shrink: 0; }
+    .sidebar-footer { padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); }
+    .user-info { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+    .user-name { font-size: 0.875rem; font-weight: 500; }
+    .user-email { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+    .btn-logout { width: 100%; padding: 0.6rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: rgba(255,255,255,0.6); font-size: 0.8rem; font-weight: 500; transition: background 0.2s, color 0.2s; }
+    .btn-logout:hover { background: rgba(220,38,38,0.2); color: #fc8181; border-color: rgba(220,38,38,0.3); }
+
+    /* MAIN */
+    .main { margin-left: 240px; padding: 2rem; min-height: 100vh; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .page-header { margin-bottom: 2rem; }
+    .page-header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; }
+    .page-header p { font-size: 0.9rem; color: var(--muted); margin-top: 0.25rem; }
+
+    /* CARDS */
+    .card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); padding: 1.5rem; }
+    .card-title { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+    .card-value { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; }
+
+    /* STATS GRID */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+
+    /* BADGE */
+    .badge { display: inline-flex; align-items: center; padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+    .badge-green { background: var(--green-light); color: var(--green); }
+    .badge-yellow { background: var(--yellow-light); color: var(--yellow); }
+    .badge-red { background: var(--red-light); color: var(--red); }
+    .badge-blue { background: var(--accent-light); color: var(--accent); }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    th { text-align: left; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
+    td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--border); color: var(--mid); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
+
+    /* NOMINA */
+    .nomina-card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1rem; overflow: hidden; }
+    .nomina-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; cursor: pointer; transition: background 0.2s; }
+    .nomina-header:hover { background: #fafafa; }
+    .nomina-mes { font-weight: 600; font-size: 1rem; }
+    .nomina-importe { font-family: 'Inter', monospace; font-weight: 700; font-size: 1.1rem; color: var(--green); }
+    .nomina-body { padding: 1.5rem; border-top: 1px solid var(--border); display: none; }
+    .nomina-body.open { display: block; }
+    .nomina-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px dotted var(--border); font-size: 0.875rem; }
+    .nomina-row:last-child { border-bottom: none; }
+    .nomina-total { display: flex; justify-content: space-between; padding: 0.75rem 0 0; margin-top: 0.5rem; border-top: 2px solid var(--dark); font-weight: 700; font-size: 1rem; }
+    .btn-download { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: var(--accent); color: white; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; margin-top: 1rem; transition: background 0.2s; }
+    .btn-download:hover { background: #1d4ed8; }
+
+    /* CALENDAR */
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-day-label { text-align: center; font-size: 0.7rem; font-weight: 600; color: var(--muted); padding: 0.5rem 0; text-transform: uppercase; }
+    .cal-day { text-align: center; padding: 0.6rem 0.25rem; border-radius: 6px; font-size: 0.8rem; cursor: default; }
+    .cal-day.empty { background: transparent; }
+    .cal-day.normal { background: var(--bg); color: var(--mid); }
+    .cal-day.trabajo { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+    .cal-day.libre { background: var(--green-light); color: var(--green); font-weight: 600; }
+    .cal-day.festivo { background: var(--red-light); color: var(--red); font-weight: 600; }
+    .cal-day.today { outline: 2px solid var(--accent); }
+    .cal-legend { display: flex; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap; }
+    .cal-legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: var(--mid); }
+    .cal-legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+    /* DOCS */
+    .doc-item { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); }
+    .doc-item:last-child { border-bottom: none; }
+    .doc-info { display: flex; align-items: center; gap: 1rem; }
+    .doc-icon { width: 40px; height: 40px; border-radius: 8px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 1.1rem; flex-shrink: 0; }
+    .doc-name { font-weight: 500; font-size: 0.9rem; }
+    .doc-date { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+    .btn-ver { padding: 0.4rem 0.9rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.8rem; font-weight: 500; background: var(--white); color: var(--mid); transition: background 0.2s, border-color 0.2s; }
+    .btn-ver:hover { background: var(--bg); border-color: var(--accent); color: var(--accent); }
+
+    /* ADMIN */
+    .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .form-inline { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .form-inline select, .form-inline input { flex: 1; min-width: 140px; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.875rem; font-family: inherit; outline: none; }
+    .form-inline select:focus, .form-inline input:focus { border-color: var(--accent); }
+    .btn-action { padding: 0.6rem 1.2rem; background: var(--accent); color: white; border: none; border-radius: 6px; font-size: 0.875rem; font-weight: 600; transition: background 0.2s; white-space: nowrap; }
+    .btn-action:hover { background: #1d4ed8; }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; flex-wrap: wrap; }
+      .main { margin-left: 0; padding: 1rem; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .admin-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div class="login-wrap" id="loginWrap">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="brand">ENER<span>BETA</span></div>
+        <div class="sub">Portal del Empleado · Demo</div>
+      </div>
+      <div class="login-error" id="loginError">Email o contraseña incorrectos.</div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="tu@email.com">
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="loginPassword" placeholder="••••••••">
+      </div>
+      <button class="btn-login" id="btnLogin">Entrar al portal</button>
+      <div class="demo-hint">
+        <strong>👤 Accesos de demo</strong>
+        Empleado: empleado@enerbeta.com / demo1234<br>
+        Admin: admin@enerbeta.com / admin1234
+      </div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div class="app" id="app">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="brand">ENER<span>BETA</span></div>
+        <div class="role" id="sidebarRole">Portal del Empleado</div>
+      </div>
+      <nav class="sidebar-nav" id="sidebarNav">
+        <button class="nav-item active" data-page="inicio">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Inicio
+        </button>
+        <button class="nav-item" data-page="nominas">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Nóminas
+        </button>
+        <button class="nav-item" data-page="turnos">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Turnos
+        </button>
+        <button class="nav-item" data-page="vacaciones">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Vacaciones
+        </button>
+        <button class="nav-item" data-page="documentos">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+          Documentos
+        </button>
+        <button class="nav-item admin-only" data-page="admin" style="display:none">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          Admin
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="userAvatar">ML</div>
+          <div>
+            <div class="user-name" id="userName">Cargando...</div>
+            <div class="user-email" id="userEmail"></div>
+          </div>
+        </div>
+        <button class="btn-logout" id="btnLogout">Cerrar sesión</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <!-- INICIO -->
+      <div class="page active" id="page-inicio">
+        <div class="page-header">
+          <h1 id="welcomeMsg">Bienvenido</h1>
+          <p>Resumen de tu portal · Mayo 2026</p>
+        </div>
+        <div class="stats-grid">
+          <div class="card">
+            <div class="card-title">Días trabajados</div>
+            <div class="card-value">18</div>
+            <div style="font-size:0.8rem;color:var(--muted);margin-top:4px">Este mes</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Vacaciones restantes</div>
+            <div class="card-value">14</div>
+            <div style="font-size:0.8rem;color:var(--muted);margin-top:4px">Días disponibles</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Última nómina</div>
+            <div class="card-value" style="color:var(--green)">1.842€</div>
+            <div style="font-size:0.8rem;color:var(--muted);margin-top:4px">Abril 2026</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Documentos nuevos</div>
+            <div class="card-value">2</div>
+            <div style="font-size:0.8rem;color:var(--muted);margin-top:4px">Sin leer</div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-size:1rem;font-weight:600;margin-bottom:1rem">Próximos turnos</div>
+          <table>
+            <thead><tr><th>Día</th><th>Turno</th><th>Horario</th><th>Estado</th></tr></thead>
+            <tbody>
+              <tr><td>Lun 19 Mayo</td><td>Mañana</td><td>07:00 – 15:00</td><td><span class="badge badge-green">Confirmado</span></td></tr>
+              <tr><td>Mar 20 Mayo</td><td>Mañana</td><td>07:00 – 15:00</td><td><span class="badge badge-green">Confirmado</span></td></tr>
+              <tr><td>Mié 21 Mayo</td><td>Tarde</td><td>15:00 – 23:00</td><td><span class="badge badge-yellow">Pendiente</span></td></tr>
+              <tr><td>Jue 22 Mayo</td><td>Libre</td><td>—</td><td><span class="badge badge-blue">Libre</span></td></tr>
+              <tr><td>Vie 23 Mayo</td><td>Noche</td><td>23:00 – 07:00</td><td><span class="badge badge-green">Confirmado</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- NOMINAS -->
+      <div class="page" id="page-nominas">
+        <div class="page-header">
+          <h1>Mis nóminas</h1>
+          <p>Historial de nóminas detallado</p>
+        </div>
+
+        <div class="nomina-card">
+          <div class="nomina-header" onclick="toggleNomina(this)">
+            <div>
+              <div class="nomina-mes">Mayo 2026</div>
+              <div style="font-size:0.8rem;color:var(--muted);margin-top:2px">En proceso</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:1rem">
+              <span class="badge badge-yellow">En proceso</span>
+              <span class="nomina-importe">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="nomina-card">
+          <div class="nomina-header" onclick="toggleNomina(this)">
+            <div>
+              <div class="nomina-mes">Abril 2026</div>
+              <div style="font-size:0.8rem;color:var(--muted);margin-top:2px">Pagada el 28 abr</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:1rem">
+              <span class="badge badge-green">Pagada</span>
+              <span class="nomina-importe">1.842,00€</span>
+            </div>
+          </div>
+          <div class="nomina-body">
+            <div class="nomina-row"><span>Salario base</span><span>1.600,00€</span></div>
+            <div class="nomina-row"><span>Plus turnicidad</span><span>120,00€</span></div>
+            <div class="nomina-row"><span>Plus nocturnidad</span><span>80,00€</span></div>
+            <div class="nomina-row"><span>Horas extra (4h)</span><span>72,00€</span></div>
+            <div class="nomina-row" style="color:var(--red)"><span>IRPF (12%)</span><span>– 22,00€</span></div>
+            <div class="nomina-row" style="color:var(--red)"><span>Seg. Social</span><span>– 8,00€</span></div>
+            <div class="nomina-total"><span>TOTAL NETO</span><span style="color:var(--green)">1.842,00€</span></div>
+            <button class="btn-download">⬇ Descargar PDF</button>
+          </div>
+        </div>
+
+        <div class="nomina-card">
+          <div class="nomina-header" onclick="toggleNomina(this)">
+            <div>
+              <div class="nomina-mes">Marzo 2026</div>
+              <div style="font-size:0.8rem;color:var(--muted);margin-top:2px">Pagada el 28 mar</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:1rem">
+              <span class="badge badge-green">Pagada</span>
+              <span class="nomina-importe">1.798,00€</span>
+            </div>
+          </div>
+          <div class="nomina-body">
+            <div class="nomina-row"><span>Salario base</span><span>1.600,00€</span></div>
+            <div class="nomina-row"><span>Plus turnicidad</span><span>120,00€</span></div>
+            <div class="nomina-row"><span>Plus nocturnidad</span><span>80,00€</span></div>
+            <div class="nomina-row" style="color:var(--red)"><span>IRPF (12%)</span><span>– 2,00€</span></div>
+            <div class="nomina-total"><span>TOTAL NETO</span><span style="color:var(--green)">1.798,00€</span></div>
+            <button class="btn-download">⬇ Descargar PDF</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TURNOS -->
+      <div class="page" id="page-turnos">
+        <div class="page-header">
+          <h1>Mis turnos</h1>
+          <p>Calendario de Mayo 2026</p>
+        </div>
+        <div class="card">
+          <div class="calendar-grid">
+            <div class="cal-day-label">Lun</div>
+            <div class="cal-day-label">Mar</div>
+            <div class="cal-day-label">Mié</div>
+            <div class="cal-day-label">Jue</div>
+            <div class="cal-day-label">Vie</div>
+            <div class="cal-day-label">Sáb</div>
+            <div class="cal-day-label">Dom</div>
+            <div class="cal-day empty"></div>
+            <div class="cal-day empty"></div>
+            <div class="cal-day empty"></div>
+            <div class="cal-day trabajo" title="Mañana 07-15h">1</div>
+            <div class="cal-day trabajo" title="Tarde 15-23h">2</div>
+            <div class="cal-day libre">3</div>
+            <div class="cal-day libre">4</div>
+            <div class="cal-day trabajo" title="Mañana 07-15h">5</div>
+            <div class="cal-day trabajo" title="Noche 23-07h">6</div>
+            <div class="cal-day trabajo" title="Mañana 07-15h">7</div>
+            <div class="cal-day libre">8</div>
+            <div class="cal-day libre">9</div>
+            <div class="cal-day libre">10</div>
+            <div class="cal-day libre">11</div>
+            <div class="cal-day trabajo" title="Tarde 15-23h">12</div>
+            <div class="cal-day trabajo" title="Tarde 15-23h">13</div>
+            <div class="cal-day trabajo" title="Noche 23-07h">14</div>
+            <div class="cal-day trabajo" title="Mañana 07-15h">15</div>
+            <div class="cal-day libre">16</div>
+            <div class="cal-day libre">17</div>
+            <div class="cal-day libre">18</div>
+            <div class="cal-day today trabajo" title="Mañana 07-15h">19</div>
+            <div class="cal-day trabajo" title="Mañana 07-15h">20</div>
+            <div class="cal-day trabajo" title="Tarde 15-23h">21</div>
+            <div class="cal-day libre">22</div>
+            <div class="cal-day trabajo" title="Noche 23-07h">23</div>
+            <div class="cal-day libre">24</div>
+            <div class="cal-day libre">25</div>
+            <div class="cal-day trabajo" title="Mañana 07-15h">26</div>
+            <div class="cal-day trabajo" title="Tarde 15-23h">27</div>
+            <div class="cal-day trabajo" title="Mañana 07-15h">28</div>
+            <div class="cal-day libre">29</div>
+            <div class="cal-day festivo" title="Festivo">30</div>
+            <div class="cal-day libre">31</div>
+          </div>
+          <div class="cal-legend">
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--accent-light);border:1px solid var(--accent)"></div> Turno trabajo</div>
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--green-light)"></div> Libre</div>
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--red-light)"></div> Festivo</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VACACIONES -->
+      <div class="page" id="page-vacaciones">
+        <div class="page-header">
+          <h1>Vacaciones</h1>
+          <p>Gestión de días de descanso</p>
+        </div>
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="card">
+            <div class="card-title">Días totales</div>
+            <div class="card-value">30</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Disfrutados</div>
+            <div class="card-value" style="color:var(--yellow)">16</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Disponibles</div>
+            <div class="card-value" style="color:var(--green)">14</div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-size:1rem;font-weight:600;margin-bottom:1rem">Historial de solicitudes</div>
+          <table>
+            <thead><tr><th>Período</th><th>Días</th><th>Tipo</th><th>Estado</th></tr></thead>
+            <tbody>
+              <tr><td>1–15 Ago 2026</td><td>11</td><td>Vacaciones verano</td><td><span class="badge badge-green">Aprobado</span></td></tr>
+              <tr><td>23–27 Dic 2025</td><td>5</td><td>Navidad</td><td><span class="badge badge-green">Aprobado</span></td></tr>
+              <tr><td>10–11 Abr 2026</td><td>2</td><td>Asuntos propios</td><td><span class="badge badge-green">Aprobado</span></td></tr>
+              <tr><td>2–6 Jun 2026</td><td>5</td><td>Vacaciones</td><td><span class="badge badge-yellow">Pendiente</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- DOCUMENTOS -->
+      <div class="page" id="page-documentos">
+        <div class="page-header">
+          <h1>Documentos</h1>
+          <p>Documentación de empresa y personal</p>
+        </div>
+        <div class="card">
+          <div class="doc-item">
+            <div class="doc-info">
+              <div class="doc-icon">📋</div>
+              <div>
+                <div class="doc-name">Contrato de trabajo 2024</div>
+                <div class="doc-date">Subido el 1 ene 2024 · PDF · 245 KB</div>
+              </div>
+            </div>
+            <button class="btn-ver">Ver documento</button>
+          </div>
+          <div class="doc-item">
+            <div class="doc-info">
+              <div class="doc-icon">🛡️</div>
+              <div>
+                <div class="doc-name">Protocolo de seguridad 2026</div>
+                <div class="doc-date">Subido el 15 ene 2026 · PDF · 1.2 MB · <span style="color:var(--red);font-weight:600">Nuevo</span></div>
+              </div>
+            </div>
+            <button class="btn-ver">Ver documento</button>
+          </div>
+          <div class="doc-item">
+            <div class="doc-info">
+              <div class="doc-icon">📊</div>
+              <div>
+                <div class="doc-name">Manual del empleado</div>
+                <div class="doc-date">Subido el 3 mar 2026 · PDF · 890 KB · <span style="color:var(--red);font-weight:600">Nuevo</span></div>
+              </div>
+            </div>
+            <button class="btn-ver">Ver documento</button>
+          </div>
+          <div class="doc-item">
+            <div class="doc-info">
+              <div class="doc-icon">📝</div>
+              <div>
+                <div class="doc-name">Política de vacaciones 2026</div>
+                <div class="doc-date">Subido el 2 ene 2026 · PDF · 120 KB</div>
+              </div>
+            </div>
+            <button class="btn-ver">Ver documento</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN -->
+      <div class="page" id="page-admin">
+        <div class="page-header">
+          <h1>Panel de administración</h1>
+          <p>Gestión de empleados y documentos · Solo administradores</p>
+        </div>
+        <div class="admin-grid">
+          <div class="card">
+            <div style="font-size:1rem;font-weight:600;margin-bottom:1rem">Empleados activos</div>
+            <table>
+              <thead><tr><th>Nombre</th><th>Turno</th><th>Estado</th></tr></thead>
+              <tbody>
+                <tr><td>Carlos M.</td><td>Mañana</td><td><span class="badge badge-green">Activo</span></td></tr>
+                <tr><td>Laura P.</td><td>Tarde</td><td><span class="badge badge-green">Activo</span></td></tr>
+                <tr><td>Jordi R.</td><td>Noche</td><td><span class="badge badge-yellow">Vacaciones</span></td></tr>
+                <tr><td>Ana S.</td><td>Mañana</td><td><span class="badge badge-green">Activo</span></td></tr>
+                <tr><td>Pedro L.</td><td>Tarde</td><td><span class="badge badge-red">Baja</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div style="font-size:1rem;font-weight:600;margin-bottom:1.25rem">Subir documento</div>
+            <div class="form-group">
+              <label>Empleado</label>
+              <select style="width:100%;padding:0.6rem 0.75rem;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:0.875rem;">
+                <option>Todos los empleados</option>
+                <option>Carlos M.</option>
+                <option>Laura P.</option>
+                <option>Jordi R.</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Tipo de documento</label>
+              <select style="width:100%;padding:0.6rem 0.75rem;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:0.875rem;">
+                <option>Nómina</option>
+                <option>Contrato</option>
+                <option>Protocolo</option>
+                <option>Otro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Archivo</label>
+              <input type="file" accept=".pdf" style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:6px;font-size:0.875rem;">
+            </div>
+            <button class="btn-action" style="width:100%">Subir documento</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // Demo users
+    var USERS = {
+      'empleado@enerbeta.com': { password: 'demo1234', name: 'Carlos Martínez', role: 'empleado', initials: 'CM' },
+      'admin@enerbeta.com':    { password: 'admin1234', name: 'Administrador', role: 'admin', initials: 'AD' }
+    };
+
+    var currentUser = null;
+
+    // LOGIN
+    document.getElementById('btnLogin').addEventListener('click', function() {
+      var email = document.getElementById('loginEmail').value.trim();
+      var pass  = document.getElementById('loginPassword').value;
+      var err   = document.getElementById('loginError');
+
+      if (USERS[email] && USERS[email].password === pass) {
+        err.style.display = 'none';
+        currentUser = Object.assign({ email: email }, USERS[email]);
+        showApp();
+      } else {
+        err.style.display = 'block';
+      }
+    });
+
+    document.getElementById('loginPassword').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') document.getElementById('btnLogin').click();
+    });
+
+    function showApp() {
+      document.getElementById('loginWrap').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      document.getElementById('userName').textContent = currentUser.name;
+      document.getElementById('userEmail').textContent = currentUser.email;
+      document.getElementById('userAvatar').textContent = currentUser.initials;
+      document.getElementById('welcomeMsg').textContent = 'Hola, ' + currentUser.name.split(' ')[0] + ' 👋';
+
+      if (currentUser.role === 'admin') {
+        document.getElementById('sidebarRole').textContent = 'Administrador';
+        document.querySelectorAll('.admin-only').forEach(function(el) { el.style.display = 'flex'; });
+      }
+    }
+
+    // NAVIGATION
+    document.querySelectorAll('.nav-item').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var page = this.getAttribute('data-page');
+        document.querySelectorAll('.nav-item').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+        this.classList.add('active');
+        document.getElementById('page-' + page).classList.add('active');
+      });
+    });
+
+    // LOGOUT
+    document.getElementById('btnLogout').addEventListener('click', function() {
+      currentUser = null;
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('loginWrap').style.display = 'flex';
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginPassword').value = '';
+      document.querySelectorAll('.admin-only').forEach(function(el) { el.style.display = 'none'; });
+    });
+
+    // NOMINAS TOGGLE
+    function toggleNomina(header) {
+      var body = header.nextElementSibling;
+      if (body && body.classList.contains('nomina-body')) {
+        body.classList.toggle('open');
+      }
+    }
+  </script>
+
+</body>
+</html>
