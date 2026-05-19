@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ENERPRO — Portal del Empleado</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -31,689 +32,605 @@
     .login-wrap {
       min-height: 100vh; display: flex; align-items: center; justify-content: center;
       background: var(--bg);
-      background-image: 
-        linear-gradient(rgba(220,38,38,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(220,38,38,0.03) 1px, transparent 1px);
+      background-image: linear-gradient(rgba(220,38,38,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(220,38,38,0.03) 1px, transparent 1px);
       background-size: 40px 40px;
-      padding: 1.5rem;
-      position: relative;
+      padding: 1.5rem; position: relative;
     }
-    .login-wrap::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: radial-gradient(ellipse at 50% 0%, rgba(220,38,38,0.08) 0%, transparent 60%);
-      pointer-events: none;
-    }
-    .login-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-top: 2px solid var(--red);
-      padding: 2.5rem;
-      width: 100%; max-width: 420px;
-      position: relative; z-index: 1;
-    }
-    .login-logo { text-align: center; margin-bottom: 2rem; }
-    .login-logo .shield {
-      width: 56px; height: 56px; background: var(--red);
-      margin: 0 auto 1rem;
-      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem; font-weight: 900; color: white;
-      font-family: 'Barlow Condensed', sans-serif;
-    }
-    .login-logo .brand {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 2rem; font-weight: 800;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--white);
-    }
-    .login-logo .brand span { color: var(--red); }
-    .login-logo .sub {
-      font-size: 0.7rem; color: var(--muted);
-      letter-spacing: 0.2em; text-transform: uppercase; margin-top: 4px;
-    }
-    .login-divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
-    .form-group { margin-bottom: 1.25rem; }
-    .form-group label {
-      display: block; font-size: 0.7rem; font-weight: 600;
-      color: var(--muted); margin-bottom: 0.5rem;
-      letter-spacing: 0.12em; text-transform: uppercase;
-    }
-    .form-group input {
-      width: 100%; padding: 0.75rem 1rem;
-      background: var(--bg3); border: 1px solid var(--border);
-      color: var(--white); font-size: 0.9rem; font-family: inherit;
-      outline: none; transition: border-color 0.2s;
-    }
-    .form-group input:focus { border-color: var(--red); }
-    .form-group input::placeholder { color: var(--muted); }
-    .btn-login {
-      width: 100%; padding: 0.9rem;
-      background: var(--red); color: white; border: none;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-      transition: background 0.2s;
-    }
-    .btn-login:hover { background: var(--red-dark); }
-    .login-error {
-      background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.3);
-      color: #fc8181; padding: 0.75rem 1rem; font-size: 0.85rem;
-      margin-bottom: 1rem; display: none;
-    }
-    .demo-hint {
-      margin-top: 1.5rem; padding: 1rem;
-      background: var(--bg3); border: 1px solid var(--border);
-      font-size: 0.78rem; color: var(--muted); line-height: 1.7;
-    }
-    .demo-hint strong { color: var(--text); display: block; margin-bottom: 0.25rem; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; }
+    .login-wrap::before { content:''; position:absolute; top:0; left:0; right:0; bottom:0; background:radial-gradient(ellipse at 50% 0%, rgba(220,38,38,0.08) 0%, transparent 60%); pointer-events:none; }
+    .login-card { background:var(--bg2); border:1px solid var(--border); border-top:2px solid var(--red); padding:2.5rem; width:100%; max-width:420px; position:relative; z-index:1; }
+    .login-logo { text-align:center; margin-bottom:2rem; }
+    .shield-icon { width:56px; height:56px; background:var(--red); margin:0 auto 1rem; clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); display:flex; align-items:center; justify-content:center; font-family:'Barlow Condensed',sans-serif; font-size:1.5rem; font-weight:900; color:white; }
+    .brand { font-family:'Barlow Condensed',sans-serif; font-size:2rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:var(--white); }
+    .brand span { color:var(--red); }
+    .brand-sub { font-size:0.7rem; color:var(--muted); letter-spacing:0.2em; text-transform:uppercase; margin-top:4px; }
+    .divider { height:1px; background:var(--border); margin:1.5rem 0; }
+    .form-group { margin-bottom:1.25rem; }
+    .form-group label { display:block; font-size:0.7rem; font-weight:600; color:var(--muted); margin-bottom:0.5rem; letter-spacing:0.12em; text-transform:uppercase; }
+    .form-group input, .form-group select, .form-group textarea { width:100%; padding:0.75rem 1rem; background:var(--bg3); border:1px solid var(--border); color:var(--white); font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.2s; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--red); }
+    .form-group input::placeholder, .form-group textarea::placeholder { color:var(--muted); }
+    .form-group textarea { resize:vertical; }
+    .btn-primary { width:100%; padding:0.9rem; background:var(--red); color:white; border:none; font-family:'Barlow Condensed',sans-serif; font-size:1rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; transition:background 0.2s; }
+    .btn-primary:hover { background:var(--red-dark); }
+    .error-box { background:rgba(220,38,38,0.1); border:1px solid rgba(220,38,38,0.3); color:#fc8181; padding:0.75rem 1rem; font-size:0.85rem; margin-bottom:1rem; display:none; }
 
     /* APP */
-    .app { display: none; min-height: 100vh; }
+    .app { display:none; min-height:100vh; }
+    .sidebar { position:fixed; top:0; left:0; bottom:0; width:260px; background:var(--bg2); border-right:1px solid var(--border); display:flex; flex-direction:column; z-index:50; }
+    .sidebar-logo { padding:1.5rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:1rem; }
+    .sidebar-shield { width:38px; height:38px; background:var(--red); clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); display:flex; align-items:center; justify-content:center; font-family:'Barlow Condensed',sans-serif; font-size:1rem; font-weight:900; color:white; flex-shrink:0; }
+    .sidebar-brand { font-family:'Barlow Condensed',sans-serif; font-size:1.3rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--white); }
+    .sidebar-brand span { color:var(--red); }
+    .sidebar-role { font-size:0.65rem; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; margin-top:1px; }
+    .sidebar-nav { flex:1; padding:1rem 0; overflow-y:auto; }
+    .nav-section { font-size:0.6rem; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); padding:1rem 1.5rem 0.4rem; }
+    .nav-item { display:flex; align-items:center; gap:0.75rem; padding:0.7rem 1.5rem; font-size:0.875rem; font-weight:500; color:var(--muted); transition:background 0.2s, color 0.2s; cursor:pointer; border:none; background:none; width:100%; text-align:left; border-left:3px solid transparent; }
+    .nav-item:hover { background:rgba(255,255,255,0.04); color:var(--text); }
+    .nav-item.active { background:var(--red-light); color:var(--white); border-left-color:var(--red); }
+    .nav-item svg { width:1rem; height:1rem; flex-shrink:0; }
+    .sidebar-footer { padding:1.25rem 1.5rem; border-top:1px solid var(--border); }
+    .user-info { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem; }
+    .user-avatar { width:36px; height:36px; background:var(--red); display:flex; align-items:center; justify-content:center; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.9rem; color:white; flex-shrink:0; }
+    .user-name { font-size:0.875rem; font-weight:500; color:var(--white); }
+    .user-role { font-size:0.7rem; color:var(--muted); margin-top:1px; }
+    .btn-logout { width:100%; padding:0.6rem; background:transparent; border:1px solid var(--border); color:var(--muted); font-size:0.78rem; font-weight:500; letter-spacing:0.05em; text-transform:uppercase; transition:all 0.2s; }
+    .btn-logout:hover { background:var(--red-light); color:#fc8181; border-color:rgba(220,38,38,0.3); }
 
-    /* SIDEBAR */
-    .sidebar {
-      position: fixed; top: 0; left: 0; bottom: 0; width: 260px;
-      background: var(--bg2); border-right: 1px solid var(--border);
-      display: flex; flex-direction: column; z-index: 50;
-    }
-    .sidebar-logo {
-      padding: 1.5rem;
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 1rem;
-    }
-    .sidebar-shield {
-      width: 38px; height: 38px; background: var(--red); flex-shrink: 0;
-      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1rem; font-weight: 900; color: white;
-    }
-    .sidebar-brand { font-family: 'Barlow Condensed', sans-serif; font-size: 1.3rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--white); }
-    .sidebar-brand span { color: var(--red); }
-    .sidebar-role { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px; }
-    .sidebar-nav { flex: 1; padding: 1rem 0; overflow-y: auto; }
-    .nav-section { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); padding: 1rem 1.5rem 0.4rem; }
-    .nav-item {
-      display: flex; align-items: center; gap: 0.75rem;
-      padding: 0.7rem 1.5rem; font-size: 0.875rem; font-weight: 500;
-      color: var(--muted); transition: background 0.2s, color 0.2s;
-      cursor: pointer; border: none; background: none; width: 100%; text-align: left;
-      border-left: 3px solid transparent;
-    }
-    .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
-    .nav-item.active { background: var(--red-light); color: var(--white); border-left-color: var(--red); }
-    .nav-item svg { width: 1rem; height: 1rem; flex-shrink: 0; }
-    .sidebar-footer { padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); }
-    .user-info { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
-    .user-avatar {
-      width: 36px; height: 36px; background: var(--red);
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 700; font-size: 0.9rem; color: white; flex-shrink: 0;
-    }
-    .user-name { font-size: 0.875rem; font-weight: 500; color: var(--white); }
-    .user-role { font-size: 0.7rem; color: var(--muted); margin-top: 1px; }
-    .btn-logout {
-      width: 100%; padding: 0.6rem;
-      background: transparent; border: 1px solid var(--border);
-      color: var(--muted); font-size: 0.78rem; font-weight: 500;
-      letter-spacing: 0.05em; text-transform: uppercase;
-      transition: background 0.2s, color 0.2s, border-color 0.2s;
-    }
-    .btn-logout:hover { background: var(--red-light); color: #fc8181; border-color: rgba(220,38,38,0.3); }
+    .main { margin-left:260px; padding:2rem; min-height:100vh; }
+    .page { display:none; animation:fadeIn 0.3s ease; }
+    .page.active { display:block; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 
-    /* MAIN */
-    .main { margin-left: 260px; padding: 2rem; min-height: 100vh; }
-    .page { display: none; animation: fadeIn 0.3s ease; }
-    .page.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .page-header { margin-bottom:2rem; padding-bottom:1.5rem; border-bottom:1px solid var(--border); }
+    .page-eyebrow { font-size:0.65rem; font-weight:600; letter-spacing:0.2em; text-transform:uppercase; color:var(--red); margin-bottom:0.4rem; }
+    .page-header h1 { font-family:'Barlow Condensed',sans-serif; font-size:2rem; font-weight:700; letter-spacing:0.02em; text-transform:uppercase; color:var(--white); }
+    .page-header p { font-size:0.85rem; color:var(--muted); margin-top:0.25rem; }
 
-    /* PAGE HEADER */
-    .page-header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
-    .page-header-top { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
-    .page-eyebrow { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--red); margin-bottom: 0.4rem; }
-    .page-header h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; color: var(--white); }
-    .page-header p { font-size: 0.85rem; color: var(--muted); margin-top: 0.25rem; }
+    .card { background:var(--bg2); border:1px solid var(--border); padding:1.5rem; margin-bottom:1rem; }
+    .card-accent { border-top:2px solid var(--red); }
+    .card-label { font-size:0.65rem; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); margin-bottom:0.5rem; }
+    .card-value { font-family:'Barlow Condensed',sans-serif; font-size:2.25rem; font-weight:700; color:var(--white); }
+    .card-sub { font-size:0.78rem; color:var(--muted); margin-top:4px; }
+    .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1rem; }
 
-    /* CARDS */
-    .card { background: var(--bg2); border: 1px solid var(--border); padding: 1.5rem; }
-    .card-label { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
-    .card-value { font-family: 'Barlow Condensed', sans-serif; font-size: 2.25rem; font-weight: 700; color: var(--white); letter-spacing: -0.01em; }
-    .card-sub { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
-    .card-accent { border-top: 2px solid var(--red); }
+    .badge { display:inline-flex; align-items:center; gap:0.3rem; padding:0.2rem 0.6rem; font-size:0.65rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; }
+    .badge::before { content:''; width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+    .badge-green { background:var(--green-light); color:var(--green); } .badge-green::before { background:var(--green); }
+    .badge-yellow { background:var(--yellow-light); color:var(--yellow); } .badge-yellow::before { background:var(--yellow); }
+    .badge-red { background:var(--red-light); color:#fc8181; } .badge-red::before { background:#fc8181; }
+    .badge-blue { background:rgba(59,130,246,0.1); color:#60a5fa; } .badge-blue::before { background:#60a5fa; }
 
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    th { text-align:left; font-size:0.65rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); padding:0.75rem 1rem; border-bottom:1px solid var(--border); }
+    td { padding:0.875rem 1rem; border-bottom:1px solid var(--border); color:var(--text); }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:rgba(255,255,255,0.02); }
 
-    /* BADGES */
-    .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
-    .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-    .badge-green { background: var(--green-light); color: var(--green); }
-    .badge-green::before { background: var(--green); }
-    .badge-yellow { background: var(--yellow-light); color: var(--yellow); }
-    .badge-yellow::before { background: var(--yellow); }
-    .badge-red { background: var(--red-light); color: #fc8181; }
-    .badge-red::before { background: #fc8181; }
-    .badge-blue { background: rgba(59,130,246,0.1); color: #60a5fa; }
-    .badge-blue::before { background: #60a5fa; }
+    .doc-item { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.5rem; border-bottom:1px solid var(--border); transition:background 0.2s; }
+    .doc-item:last-child { border-bottom:none; }
+    .doc-item:hover { background:rgba(255,255,255,0.02); }
+    .doc-info { display:flex; align-items:center; gap:1rem; }
+    .doc-icon { width:40px; height:40px; background:var(--red-light); border:1px solid rgba(220,38,38,0.2); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+    .doc-name { font-size:0.9rem; font-weight:500; color:var(--white); }
+    .doc-meta { font-size:0.75rem; color:var(--muted); margin-top:2px; }
+    .btn-sm { padding:0.4rem 0.9rem; border:1px solid var(--border); background:transparent; color:var(--muted); font-size:0.75rem; font-weight:500; letter-spacing:0.05em; text-transform:uppercase; transition:all 0.2s; margin-left:0.5rem; }
+    .btn-sm:hover { border-color:var(--red); color:var(--red); }
+    .btn-sm.primary { background:var(--red); border-color:var(--red); color:white; }
+    .btn-sm.primary:hover { background:var(--red-dark); }
 
-    /* TABLE */
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    th { text-align: left; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
-    td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--border); color: var(--text); }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(255,255,255,0.02); }
+    .loading { text-align:center; padding:3rem; color:var(--muted); font-size:0.875rem; }
+    .empty { text-align:center; padding:3rem; color:var(--muted); font-size:0.875rem; border:1px dashed var(--border); }
 
-    /* NOMINAS */
-    .nomina-card { background: var(--bg2); border: 1px solid var(--border); margin-bottom: 0.75rem; overflow: hidden; transition: border-color 0.2s; }
-    .nomina-card:hover { border-color: rgba(220,38,38,0.3); }
-    .nomina-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; cursor: pointer; }
-    .nomina-mes { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--white); }
-    .nomina-fecha { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
-    .nomina-importe { font-family: 'Barlow Condensed', sans-serif; font-size: 1.4rem; font-weight: 700; color: var(--green); }
-    .nomina-body { padding: 1.5rem; border-top: 1px solid var(--border); display: none; background: var(--bg3); }
-    .nomina-body.open { display: block; }
-    .nomina-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.875rem; color: var(--text); }
-    .nomina-row:last-child { border-bottom: none; }
-    .nomina-row.deduccion { color: #fc8181; }
-    .nomina-total { display: flex; justify-content: space-between; padding: 0.75rem 0 0; margin-top: 0.75rem; border-top: 1px solid var(--red); font-weight: 600; font-size: 1rem; color: var(--white); }
-    .btn-dl {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      padding: 0.6rem 1.2rem; background: var(--red); color: white; border: none;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 0.85rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-      margin-top: 1.25rem; transition: background 0.2s;
-    }
-    .btn-dl:hover { background: var(--red-dark); }
-
-    /* CALENDAR */
-    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
-    .cal-label { text-align: center; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 0.5rem 0; }
-    .cal-day { text-align: center; padding: 0.6rem 0.2rem; font-size: 0.8rem; font-weight: 500; }
-    .cal-day.empty { background: transparent; }
-    .cal-day.normal { background: var(--bg3); color: var(--muted); }
-    .cal-day.trabajo { background: rgba(220,38,38,0.15); color: #fc8181; font-weight: 600; }
-    .cal-day.libre { background: var(--green-light); color: var(--green); font-weight: 600; }
-    .cal-day.festivo { background: var(--yellow-light); color: var(--yellow); font-weight: 600; }
-    .cal-day.today { outline: 1px solid var(--red); }
-    .cal-legend { display: flex; gap: 1.5rem; margin-top: 1.25rem; flex-wrap: wrap; }
-    .cal-legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: var(--muted); }
-    .cal-dot { width: 10px; height: 10px; }
-
-    /* DOCS */
-    .doc-item { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); transition: background 0.2s; }
-    .doc-item:last-child { border-bottom: none; }
-    .doc-item:hover { background: rgba(255,255,255,0.02); }
-    .doc-info { display: flex; align-items: center; gap: 1rem; }
-    .doc-icon { width: 40px; height: 40px; background: var(--red-light); border: 1px solid rgba(220,38,38,0.2); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
-    .doc-name { font-size: 0.9rem; font-weight: 500; color: var(--white); }
-    .doc-meta { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
-    .btn-ver { padding: 0.4rem 0.9rem; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; transition: all 0.2s; }
-    .btn-ver:hover { border-color: var(--red); color: var(--red); }
+    .success-box { background:var(--green-light); border:1px solid rgba(34,197,94,0.2); color:var(--green); padding:0.75rem 1rem; font-size:0.875rem; margin-bottom:1rem; display:none; }
 
     /* ADMIN */
-    .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-    .form-group { margin-bottom: 1.1rem; }
-    .form-group label { display: block; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
-    .form-group select, .form-group input[type="file"] { width: 100%; padding: 0.65rem 0.75rem; background: var(--bg3); border: 1px solid var(--border); color: var(--text); font-size: 0.875rem; font-family: inherit; outline: none; }
-    .form-group select:focus { border-color: var(--red); }
-    .btn-action {
-      padding: 0.65rem 1.5rem; background: var(--red); color: white; border: none;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 0.9rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-      transition: background 0.2s; width: 100%;
-    }
-    .btn-action:hover { background: var(--red-dark); }
+    .admin-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:1.5rem; }
+    .admin-tab { padding:0.75rem 1.5rem; font-size:0.8rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); border:none; background:none; cursor:pointer; border-bottom:2px solid transparent; transition:color 0.2s, border-color 0.2s; }
+    .admin-tab.active { color:var(--red); border-bottom-color:var(--red); }
+    .admin-tab-content { display:none; }
+    .admin-tab-content.active { display:block; }
 
-    /* STAT BAR */
-    .stat-bar-wrap { margin-top: 0.75rem; }
-    .stat-bar-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.4rem; }
-    .stat-bar { height: 4px; background: var(--bg3); }
-    .stat-bar-fill { height: 100%; background: var(--red); }
-
-    @media (max-width: 900px) {
-      .stats-grid { grid-template-columns: repeat(2,1fr); }
-      .admin-grid { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 640px) {
-      .sidebar { width: 100%; height: auto; position: relative; }
-      .main { margin-left: 0; padding: 1rem; }
-    }
+    @media (max-width:900px) { .stats-grid { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:640px) { .sidebar { width:100%; height:auto; position:relative; } .main { margin-left:0; padding:1rem; } }
   </style>
 </head>
 <body>
 
-  <!-- LOGIN -->
-  <div class="login-wrap" id="loginWrap">
-    <div class="login-card">
-      <div class="login-logo">
-        <div class="shield">E</div>
-        <div class="brand">ENER<span>PRO</span></div>
-        <div class="sub">Portal del Empleado · Acceso Privado</div>
-      </div>
-      <div class="login-divider"></div>
-      <div class="login-error" id="loginError">Credenciales incorrectas. Inténtalo de nuevo.</div>
-      <div class="form-group">
-        <label>Identificador / Email</label>
-        <input type="email" id="loginEmail" placeholder="usuario@enerpro.com">
-      </div>
-      <div class="form-group">
-        <label>Contraseña</label>
-        <input type="password" id="loginPassword" placeholder="••••••••">
-      </div>
-      <button class="btn-login" id="btnLogin">Acceder al portal</button>
-      <div class="demo-hint">
-        <strong>Accesos de demostración</strong>
-        Empleado: empleado@enerpro.com / demo1234<br>
-        Admin: admin@enerpro.com / admin1234
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="shield-icon">E</div>
+      <div class="brand">ENER<span>PRO</span></div>
+      <div class="brand-sub">Portal del Empleado · Acceso Privado</div>
+    </div>
+    <div class="divider"></div>
+    <div class="error-box" id="loginError">Credenciales incorrectas. Inténtalo de nuevo.</div>
+    <div class="form-group">
+      <label>Email corporativo</label>
+      <input type="email" id="loginEmail" placeholder="usuario@enerpro.com">
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="loginPassword" placeholder="••••••••">
+    </div>
+    <button class="btn-primary" id="btnLogin">Acceder al portal</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-shield">E</div>
+      <div>
+        <div class="sidebar-brand">ENER<span>PRO</span></div>
+        <div class="sidebar-role" id="sidebarRole">Portal del Empleado</div>
       </div>
     </div>
-  </div>
-
-  <!-- APP -->
-  <div class="app" id="app">
-    <aside class="sidebar">
-      <div class="sidebar-logo">
-        <div class="sidebar-shield">E</div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Principal</div>
+      <button class="nav-item active" data-page="inicio">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Inicio
+      </button>
+      <div class="nav-section">Mi área</div>
+      <button class="nav-item" data-page="documentos">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Mis documentos
+      </button>
+      <button class="nav-item" data-page="solicitudes">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        Solicitudes
+      </button>
+      <button class="nav-item admin-only" data-page="admin" style="display:none">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        Administración
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">?</div>
         <div>
-          <div class="sidebar-brand">ENER<span>PRO</span></div>
-          <div class="sidebar-role" id="sidebarRole">Portal del Empleado</div>
+          <div class="user-name" id="userName">—</div>
+          <div class="user-role" id="userRoleLabel">Empleado</div>
         </div>
       </div>
-      <nav class="sidebar-nav">
-        <div class="nav-section">Principal</div>
-        <button class="nav-item active" data-page="inicio">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-          Inicio
-        </button>
-        <div class="nav-section">Mi área</div>
-        <button class="nav-item" data-page="nominas">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          Nóminas
-        </button>
-        <button class="nav-item" data-page="turnos">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Turnos
-        </button>
-        <button class="nav-item" data-page="vacaciones">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          Vacaciones
-        </button>
-        <button class="nav-item" data-page="documentos">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
-          Documentos
-        </button>
-        <button class="nav-item" data-page="solicitudes">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-          Solicitudes
-        </button>
-        <button class="nav-item admin-only" data-page="admin" style="display:none">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-          Administración
-        </button>
-      </nav>
-      <div class="sidebar-footer">
-        <div class="user-info">
-          <div class="user-avatar" id="userAvatar">ML</div>
-          <div>
-            <div class="user-name" id="userName">—</div>
-            <div class="user-role" id="userRoleLabel">Empleado</div>
-          </div>
-        </div>
-        <button class="btn-logout" id="btnLogout">Cerrar sesión</button>
+      <button class="btn-logout" id="btnLogout">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- INICIO -->
+    <div class="page active" id="page-inicio">
+      <div class="page-header">
+        <div class="page-eyebrow">Panel principal</div>
+        <h1 id="welcomeMsg">Bienvenido</h1>
+        <p id="welcomeSub">Cargando datos...</p>
       </div>
-    </aside>
-
-    <main class="main">
-
-      <!-- INICIO -->
-      <div class="page active" id="page-inicio">
-        <div class="page-header">
-          <div class="page-eyebrow">Panel principal</div>
-          <div class="page-header-top">
-            <div>
-              <h1 id="welcomeMsg">Bienvenido</h1>
-              <p>Mayo 2026 · Resumen de actividad</p>
-            </div>
-            <span class="badge badge-green">Servicio activo</span>
-          </div>
-        </div>
-        <div class="stats-grid">
-          <div class="card card-accent">
-            <div class="card-label">Días trabajados</div>
-            <div class="card-value">18</div>
-            <div class="card-sub">Este mes</div>
-            <div class="stat-bar-wrap">
-              <div class="stat-bar-label"><span>Progreso mensual</span><span>82%</span></div>
-              <div class="stat-bar"><div class="stat-bar-fill" style="width:82%"></div></div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-label">Vacaciones restantes</div>
-            <div class="card-value">14</div>
-            <div class="card-sub">Días disponibles 2026</div>
-            <div class="stat-bar-wrap">
-              <div class="stat-bar-label"><span>Disfrutados</span><span>16/30</span></div>
-              <div class="stat-bar"><div class="stat-bar-fill" style="width:53%;background:var(--yellow)"></div></div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-label">Última nómina</div>
-            <div class="card-value" style="color:var(--green)">1.842€</div>
-            <div class="card-sub">Abril 2026 · Pagada</div>
-          </div>
-          <div class="card">
-            <div class="card-label">Documentos nuevos</div>
-            <div class="card-value" style="color:var(--red)">2</div>
-            <div class="card-sub">Pendientes de leer</div>
-          </div>
+      <div class="stats-grid">
+        <div class="card card-accent">
+          <div class="card-label">Documentos disponibles</div>
+          <div class="card-value" id="statDocs">—</div>
+          <div class="card-sub">Nóminas y cuadrantes</div>
         </div>
         <div class="card">
-          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem">Próximos turnos</div>
-          <table>
-            <thead><tr><th>Día</th><th>Turno</th><th>Horario</th><th>Estado</th></tr></thead>
-            <tbody>
-              <tr><td>Lun 19 Mayo</td><td>Mañana</td><td>07:00 – 15:00</td><td><span class="badge badge-green">Confirmado</span></td></tr>
-              <tr><td>Mar 20 Mayo</td><td>Mañana</td><td>07:00 – 15:00</td><td><span class="badge badge-green">Confirmado</span></td></tr>
-              <tr><td>Mié 21 Mayo</td><td>Tarde</td><td>15:00 – 23:00</td><td><span class="badge badge-yellow">Pendiente</span></td></tr>
-              <tr><td>Jue 22 Mayo</td><td>Libre</td><td>—</td><td><span class="badge badge-blue">Libre</span></td></tr>
-              <tr><td>Vie 23 Mayo</td><td>Noche</td><td>23:00 – 07:00</td><td><span class="badge badge-green">Confirmado</span></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- NOMINAS -->
-      <div class="page" id="page-nominas">
-        <div class="page-header">
-          <div class="page-eyebrow">Mi área</div>
-          <h1>Nóminas</h1>
-          <p>Historial de retribuciones</p>
-        </div>
-        <div class="nomina-card">
-          <div class="nomina-header" onclick="toggleNomina(this)">
-            <div><div class="nomina-mes">Mayo 2026</div><div class="nomina-fecha">En proceso</div></div>
-            <div style="display:flex;align-items:center;gap:1rem"><span class="badge badge-yellow">En proceso</span><span class="nomina-importe" style="color:var(--muted)">—</span></div>
-          </div>
-        </div>
-        <div class="nomina-card">
-          <div class="nomina-header" onclick="toggleNomina(this)">
-            <div><div class="nomina-mes">Abril 2026</div><div class="nomina-fecha">Pagada el 28 abr 2026</div></div>
-            <div style="display:flex;align-items:center;gap:1rem"><span class="badge badge-green">Pagada</span><span class="nomina-importe">1.842,00 €</span></div>
-          </div>
-          <div class="nomina-body">
-            <div class="nomina-row"><span>Salario base</span><span>1.600,00 €</span></div>
-            <div class="nomina-row"><span>Plus turnicidad</span><span>120,00 €</span></div>
-            <div class="nomina-row"><span>Plus nocturnidad</span><span>80,00 €</span></div>
-            <div class="nomina-row"><span>Horas extra (4h)</span><span>72,00 €</span></div>
-            <div class="nomina-row deduccion"><span>Retención IRPF (12%)</span><span>– 22,00 €</span></div>
-            <div class="nomina-row deduccion"><span>Seguridad Social</span><span>– 8,00 €</span></div>
-            <div class="nomina-total"><span>TOTAL NETO</span><span style="color:var(--green)">1.842,00 €</span></div>
-            <button class="btn-dl">⬇ Descargar PDF</button>
-          </div>
-        </div>
-        <div class="nomina-card">
-          <div class="nomina-header" onclick="toggleNomina(this)">
-            <div><div class="nomina-mes">Marzo 2026</div><div class="nomina-fecha">Pagada el 28 mar 2026</div></div>
-            <div style="display:flex;align-items:center;gap:1rem"><span class="badge badge-green">Pagada</span><span class="nomina-importe">1.798,00 €</span></div>
-          </div>
-          <div class="nomina-body">
-            <div class="nomina-row"><span>Salario base</span><span>1.600,00 €</span></div>
-            <div class="nomina-row"><span>Plus turnicidad</span><span>120,00 €</span></div>
-            <div class="nomina-row"><span>Plus nocturnidad</span><span>80,00 €</span></div>
-            <div class="nomina-row deduccion"><span>Retención IRPF (12%)</span><span>– 2,00 €</span></div>
-            <div class="nomina-total"><span>TOTAL NETO</span><span style="color:var(--green)">1.798,00 €</span></div>
-            <button class="btn-dl">⬇ Descargar PDF</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- TURNOS -->
-      <div class="page" id="page-turnos">
-        <div class="page-header">
-          <div class="page-eyebrow">Mi área</div>
-          <h1>Turnos</h1>
-          <p>Calendario Mayo 2026</p>
+          <div class="card-label">Sin leer</div>
+          <div class="card-value" id="statUnread" style="color:var(--red)">—</div>
+          <div class="card-sub">Documentos nuevos</div>
         </div>
         <div class="card">
-          <div class="cal-grid">
-            <div class="cal-label">Lun</div><div class="cal-label">Mar</div><div class="cal-label">Mié</div><div class="cal-label">Jue</div><div class="cal-label">Vie</div><div class="cal-label">Sáb</div><div class="cal-label">Dom</div>
-            <div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div>
-            <div class="cal-day trabajo">1</div><div class="cal-day trabajo">2</div><div class="cal-day libre">3</div><div class="cal-day libre">4</div>
-            <div class="cal-day trabajo">5</div><div class="cal-day trabajo">6</div><div class="cal-day trabajo">7</div><div class="cal-day libre">8</div><div class="cal-day libre">9</div><div class="cal-day libre">10</div><div class="cal-day libre">11</div>
-            <div class="cal-day trabajo">12</div><div class="cal-day trabajo">13</div><div class="cal-day trabajo">14</div><div class="cal-day trabajo">15</div><div class="cal-day libre">16</div><div class="cal-day libre">17</div><div class="cal-day libre">18</div>
-            <div class="cal-day today trabajo">19</div><div class="cal-day trabajo">20</div><div class="cal-day trabajo">21</div><div class="cal-day libre">22</div><div class="cal-day trabajo">23</div><div class="cal-day libre">24</div><div class="cal-day libre">25</div>
-            <div class="cal-day trabajo">26</div><div class="cal-day trabajo">27</div><div class="cal-day trabajo">28</div><div class="cal-day libre">29</div><div class="cal-day festivo">30</div><div class="cal-day libre">31</div>
-          </div>
-          <div class="cal-legend">
-            <div class="cal-legend-item"><div class="cal-dot" style="background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.4)"></div>Turno trabajo</div>
-            <div class="cal-legend-item"><div class="cal-dot" style="background:var(--green-light)"></div>Libre</div>
-            <div class="cal-legend-item"><div class="cal-dot" style="background:var(--yellow-light)"></div>Festivo</div>
-          </div>
+          <div class="card-label">Estado</div>
+          <div class="card-value" style="font-size:1.2rem;margin-top:0.5rem"><span class="badge badge-green">Activo</span></div>
+          <div class="card-sub">Servicio en curso</div>
         </div>
       </div>
+      <div class="card" style="padding:0">
+        <div style="padding:1rem 1.5rem;font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Últimos documentos</div>
+        <div id="recentDocs"><div class="loading">Cargando...</div></div>
+      </div>
+    </div>
 
-      <!-- VACACIONES -->
-      <div class="page" id="page-vacaciones">
-        <div class="page-header">
-          <div class="page-eyebrow">Mi área</div>
-          <h1>Vacaciones</h1>
-          <p>Gestión de días de descanso 2026</p>
+    <!-- DOCUMENTOS -->
+    <div class="page" id="page-documentos">
+      <div class="page-header">
+        <div class="page-eyebrow">Mi área</div>
+        <h1>Mis documentos</h1>
+        <p>Nóminas, cuadrantes y documentación personal</p>
+      </div>
+      <div class="card" style="padding:0;margin-bottom:1rem">
+        <div style="padding:1rem 1.5rem;display:flex;gap:0.5rem;flex-wrap:wrap;border-bottom:1px solid var(--border)">
+          <button class="btn-sm primary" onclick="filterDocs('todos')">Todos</button>
+          <button class="btn-sm" onclick="filterDocs('nomina')">Nóminas</button>
+          <button class="btn-sm" onclick="filterDocs('cuadrante')">Cuadrantes</button>
+          <button class="btn-sm" onclick="filterDocs('contrato')">Contratos</button>
         </div>
-        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:1.5rem">
-          <div class="card card-accent"><div class="card-label">Días totales</div><div class="card-value">30</div></div>
-          <div class="card"><div class="card-label">Disfrutados</div><div class="card-value" style="color:var(--yellow)">16</div></div>
-          <div class="card"><div class="card-label">Disponibles</div><div class="card-value" style="color:var(--green)">14</div></div>
-        </div>
-        <div class="card">
-          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem">Solicitudes</div>
-          <table>
-            <thead><tr><th>Período</th><th>Días</th><th>Tipo</th><th>Estado</th></tr></thead>
-            <tbody>
-              <tr><td>1–15 Ago 2026</td><td>11</td><td>Vacaciones verano</td><td><span class="badge badge-green">Aprobado</span></td></tr>
-              <tr><td>23–27 Dic 2025</td><td>5</td><td>Navidad</td><td><span class="badge badge-green">Aprobado</span></td></tr>
-              <tr><td>10–11 Abr 2026</td><td>2</td><td>Asuntos propios</td><td><span class="badge badge-green">Aprobado</span></td></tr>
-              <tr><td>2–6 Jun 2026</td><td>5</td><td>Vacaciones</td><td><span class="badge badge-yellow">Pendiente</span></td></tr>
-            </tbody>
-          </table>
-        </div>
+        <div id="docsList"><div class="loading">Cargando documentos...</div></div>
+      </div>
+    </div>
+
+    <!-- SOLICITUDES -->
+    <div class="page" id="page-solicitudes">
+      <div class="page-header">
+        <div class="page-eyebrow">Buzón</div>
+        <h1>Solicitudes</h1>
+        <p>Envía una solicitud al coordinador</p>
+      </div>
+      <div class="card" style="max-width:600px">
+        <div class="success-box" id="solicitudOk">✓ Solicitud enviada correctamente. El coordinador la revisará en breve.</div>
+        <div class="error-box" id="solicitudError">Error al enviar. Inténtalo de nuevo.</div>
+        <form id="solicitudForm" action="https://formspree.io/f/xgoqvejw" method="POST">
+          <div class="form-group">
+            <label>Tipo de solicitud</label>
+            <select name="tipo">
+              <option>Solicitud de vacaciones</option>
+              <option>Solicitud de permiso</option>
+              <option>Cambio de turno</option>
+              <option>Baja médica</option>
+              <option>Consulta general</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Fechas (si aplica)</label>
+            <input type="text" name="fechas" placeholder="Ej: 15 al 20 de junio">
+          </div>
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea name="motivo" rows="4" placeholder="Describe tu solicitud..."></textarea>
+          </div>
+          <input type="hidden" name="empleado" id="formEmpleado">
+          <input type="hidden" name="_subject" value="Nueva solicitud — Portal ENERPRO">
+          <button type="submit" class="btn-primary">Enviar solicitud</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="page" id="page-admin">
+      <div class="page-header">
+        <div class="page-eyebrow">Administración</div>
+        <h1>Panel de control</h1>
+        <p>Gestión de empleados y documentos</p>
+      </div>
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="switchTab('empleados')">Empleados</button>
+        <button class="admin-tab" onclick="switchTab('subir')">Subir documento</button>
       </div>
 
-      <!-- DOCUMENTOS -->
-      <div class="page" id="page-documentos">
-        <div class="page-header">
-          <div class="page-eyebrow">Mi área</div>
-          <h1>Documentos</h1>
-          <p>Documentación personal y de empresa</p>
-        </div>
+      <div class="admin-tab-content active" id="tab-empleados">
         <div class="card" style="padding:0">
-          <div class="doc-item">
-            <div class="doc-info"><div class="doc-icon">📋</div><div><div class="doc-name">Contrato de trabajo 2024</div><div class="doc-meta">1 ene 2024 · PDF · 245 KB</div></div></div>
-            <button class="btn-ver">Ver</button>
+          <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem">
+            <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Empleados registrados</span>
+            <button class="btn-sm primary" onclick="showAddEmpleado()">+ Añadir empleado</button>
           </div>
-          <div class="doc-item">
-            <div class="doc-info"><div class="doc-icon">🛡️</div><div><div class="doc-name">Protocolo de seguridad 2026</div><div class="doc-meta">15 ene 2026 · PDF · 1.2 MB · <span style="color:var(--red)">Nuevo</span></div></div></div>
-            <button class="btn-ver">Ver</button>
+          <div id="empleadosList"><div class="loading">Cargando...</div></div>
+        </div>
+        <div class="card" id="addEmpleadoForm" style="display:none;max-width:500px;margin-top:1rem">
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem">Nuevo empleado</div>
+          <div class="success-box" id="empleadoOk">✓ Empleado creado correctamente.</div>
+          <div class="error-box" id="empleadoError"></div>
+          <div class="form-group"><label>Nombre completo</label><input type="text" id="empNombre" placeholder="Carlos Martínez López"></div>
+          <div class="form-group"><label>Email corporativo</label><input type="email" id="empEmail" placeholder="cmartinez@enerpro.com"></div>
+          <div class="form-group"><label>DNI</label><input type="text" id="empDni" placeholder="12345678A"></div>
+          <div class="form-group"><label>Cargo</label>
+            <select id="empCargo">
+              <option>Vigilante de seguridad</option>
+              <option>Auxiliar de servicio</option>
+              <option>Coordinador</option>
+              <option>Administrativo</option>
+            </select>
           </div>
-          <div class="doc-item">
-            <div class="doc-info"><div class="doc-icon">📊</div><div><div class="doc-name">Manual del empleado</div><div class="doc-meta">3 mar 2026 · PDF · 890 KB · <span style="color:var(--red)">Nuevo</span></div></div></div>
-            <button class="btn-ver">Ver</button>
-          </div>
-          <div class="doc-item">
-            <div class="doc-info"><div class="doc-icon">📝</div><div><div class="doc-name">Política de vacaciones 2026</div><div class="doc-meta">2 ene 2026 · PDF · 120 KB</div></div></div>
-            <button class="btn-ver">Ver</button>
+          <div class="form-group"><label>Contraseña inicial</label><input type="password" id="empPassword" placeholder="Mínimo 6 caracteres"></div>
+          <div style="display:flex;gap:0.75rem">
+            <button class="btn-sm primary" onclick="crearEmpleado()" style="flex:1;padding:0.65rem">Crear empleado</button>
+            <button class="btn-sm" onclick="hideAddEmpleado()" style="padding:0.65rem 1rem">Cancelar</button>
           </div>
         </div>
       </div>
 
-      <!-- SOLICITUDES -->
-      <div class="page" id="page-solicitudes">
-        <div class="page-header">
-          <div class="page-eyebrow">Buzón</div>
-          <h1>Solicitudes</h1>
-          <p>Envía una solicitud de permiso, vacaciones o consulta al coordinador</p>
-        </div>
-        <div class="card" style="max-width:600px">
-          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.5rem">Nueva solicitud</div>
-          <form id="solicitudForm" action="https://formspree.io/f/xgoqvejw" method="POST">
-            <div class="form-group">
-              <label>Tipo de solicitud</label>
-              <select name="tipo" style="width:100%;padding:0.65rem 0.75rem;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:0.875rem;font-family:inherit;outline:none;">
-                <option>Solicitud de vacaciones</option>
-                <option>Solicitud de permiso</option>
-                <option>Cambio de turno</option>
-                <option>Baja médica</option>
-                <option>Consulta general</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Fechas (si aplica)</label>
-              <input type="text" name="fechas" placeholder="Ej: 15 al 20 de junio" style="width:100%;padding:0.65rem 0.75rem;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:0.875rem;font-family:inherit;outline:none;">
-            </div>
-            <div class="form-group">
-              <label>Motivo / descripción</label>
-              <textarea name="motivo" rows="4" placeholder="Describe tu solicitud..." style="width:100%;padding:0.65rem 0.75rem;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:0.875rem;font-family:inherit;outline:none;resize:vertical;"></textarea>
-            </div>
-            <input type="hidden" name="empleado" id="formEmpleado" value="">
-            <input type="hidden" name="_subject" value="Nueva solicitud — Portal ENERPRO">
-            <div id="solicitudMsg" style="display:none;padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.875rem;"></div>
-            <button type="submit" class="btn-action">Enviar solicitud</button>
-          </form>
+      <div class="admin-tab-content" id="tab-subir">
+        <div class="card" style="max-width:500px">
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem">Subir documento a empleado</div>
+          <div class="success-box" id="subirOk">✓ Documento subido y asignado correctamente.</div>
+          <div class="error-box" id="subirError"></div>
+          <div class="form-group"><label>Empleado</label>
+            <select id="subirEmpleado"><option value="">Selecciona empleado...</option></select>
+          </div>
+          <div class="form-group"><label>Tipo de documento</label>
+            <select id="subirTipo">
+              <option value="nomina">Nómina</option>
+              <option value="cuadrante">Cuadrante</option>
+              <option value="contrato">Contrato</option>
+              <option value="protocolo">Protocolo de seguridad</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Nombre del documento</label><input type="text" id="subirNombre" placeholder="Ej: Nómina Mayo 2026"></div>
+          <div class="form-group"><label>Archivo PDF</label><input type="file" id="subirArchivo" accept=".pdf"></div>
+          <button class="btn-sm primary" onclick="subirDocumento()" style="width:100%;padding:0.75rem">Subir documento</button>
         </div>
       </div>
+    </div>
 
-      <!-- ADMIN -->
-      <div class="page" id="page-admin">
-        <div class="page-header">
-          <div class="page-eyebrow">Administración</div>
-          <h1>Panel de control</h1>
-          <p>Gestión de empleados y documentos · Acceso restringido</p>
-        </div>
-        <div class="admin-grid">
-          <div class="card">
-            <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem">Empleados activos</div>
-            <table>
-              <thead><tr><th>Nombre</th><th>Turno</th><th>Estado</th></tr></thead>
-              <tbody>
-                <tr><td>Carlos M.</td><td>Mañana</td><td><span class="badge badge-green">Activo</span></td></tr>
-                <tr><td>Laura P.</td><td>Tarde</td><td><span class="badge badge-green">Activo</span></td></tr>
-                <tr><td>Jordi R.</td><td>Noche</td><td><span class="badge badge-yellow">Vacaciones</span></td></tr>
-                <tr><td>Ana S.</td><td>Mañana</td><td><span class="badge badge-green">Activo</span></td></tr>
-                <tr><td>Pedro L.</td><td>Tarde</td><td><span class="badge badge-red">Baja</span></td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="card">
-            <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem">Subir documento</div>
-            <div class="form-group">
-              <label>Empleado destinatario</label>
-              <select><option>Todos los empleados</option><option>Carlos M.</option><option>Laura P.</option><option>Jordi R.</option><option>Ana S.</option></select>
-            </div>
-            <div class="form-group">
-              <label>Tipo de documento</label>
-              <select><option>Nómina</option><option>Contrato</option><option>Protocolo de seguridad</option><option>Manual</option><option>Otro</option></select>
-            </div>
-            <div class="form-group">
-              <label>Seleccionar archivo (PDF)</label>
-              <input type="file" accept=".pdf">
-            </div>
-            <button class="btn-action">Subir documento</button>
-          </div>
-        </div>
-      </div>
+  </main>
+</div>
 
-    </main>
-  </div>
+<script>
+  const SUPABASE_URL = 'https://rmiaxqbmmnbnxbmlnuny.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtaWF4cWJtbW5ibnhibWxudW55Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMTkyMTAsImV4cCI6MjA5NDY5NTIxMH0.oT256vpF6dgop0CAdy9MOAyGyoW3ZK2NAncQVk2tonU';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  <script>
-    var USERS = {
-      'empleado@enerpro.com': { password: 'demo1234', name: 'Carlos Martínez', role: 'empleado', initials: 'CM' },
-      'admin@enerpro.com':    { password: 'admin1234', name: 'Administrador', role: 'admin', initials: 'AD' }
-    };
-    var currentUser = null;
+  var currentUser = null;
+  var currentEmpleado = null;
+  var allDocs = [];
 
-    document.getElementById('btnLogin').addEventListener('click', doLogin);
-    document.getElementById('loginPassword').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
+  // LOGIN
+  document.getElementById('btnLogin').addEventListener('click', doLogin);
+  document.getElementById('loginPassword').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
 
-    function doLogin() {
-      var email = document.getElementById('loginEmail').value.trim();
-      var pass  = document.getElementById('loginPassword').value;
-      var err   = document.getElementById('loginError');
-      if (USERS[email] && USERS[email].password === pass) {
-        err.style.display = 'none';
-        currentUser = Object.assign({ email: email }, USERS[email]);
-        document.getElementById('loginWrap').style.display = 'none';
-        document.getElementById('app').style.display = 'flex';
-        document.getElementById('userName').textContent = currentUser.name;
-        document.getElementById('userAvatar').textContent = currentUser.initials;
-        document.getElementById('welcomeMsg').textContent = 'Bienvenido, ' + currentUser.name.split(' ')[0];
-        if (currentUser.role === 'admin') {
-          document.getElementById('sidebarRole').textContent = 'Administrador';
-          document.getElementById('userRoleLabel').textContent = 'Administrador';
-          document.querySelectorAll('.admin-only').forEach(function(el){ el.style.display='flex'; });
-        }
-      } else {
-        err.style.display = 'block';
-      }
+  async function doLogin() {
+    var email = document.getElementById('loginEmail').value.trim();
+    var pass  = document.getElementById('loginPassword').value;
+    var err   = document.getElementById('loginError');
+    err.style.display = 'none';
+
+    var btn = document.getElementById('btnLogin');
+    btn.textContent = 'Accediendo...';
+    btn.disabled = true;
+
+    var { data, error } = await sb.auth.signInWithPassword({ email: email, password: pass });
+
+    btn.textContent = 'Acceder al portal';
+    btn.disabled = false;
+
+    if (error) { err.style.display = 'block'; return; }
+
+    currentUser = data.user;
+
+    // Buscar datos del empleado
+    var { data: emp } = await sb.from('empleados').select('*').eq('email', email).single();
+    currentEmpleado = emp;
+
+    var isAdmin = email.includes('admin') || (emp && emp.cargo === 'Coordinador');
+
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('userName').textContent = emp ? emp.nombre : email;
+    document.getElementById('userAvatar').textContent = emp ? emp.nombre.charAt(0).toUpperCase() : '?';
+    document.getElementById('welcomeMsg').textContent = 'Bienvenido, ' + (emp ? emp.nombre.split(' ')[0] : 'empleado');
+    document.getElementById('welcomeSub').textContent = emp ? emp.cargo + ' · Mayo 2026' : 'Mayo 2026';
+    document.getElementById('formEmpleado').value = emp ? emp.nombre : email;
+
+    if (isAdmin) {
+      document.getElementById('sidebarRole').textContent = 'Administrador';
+      document.getElementById('userRoleLabel').textContent = 'Administrador';
+      document.querySelectorAll('.admin-only').forEach(function(el){ el.style.display='flex'; });
+      cargarEmpleados();
     }
 
-    document.querySelectorAll('.nav-item').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        var page = this.getAttribute('data-page');
-        document.querySelectorAll('.nav-item').forEach(function(b){ b.classList.remove('active'); });
-        document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
-        this.classList.add('active');
-        document.getElementById('page-'+page).classList.add('active');
-      });
+    cargarDocumentos();
+  }
+
+  // NAVEGACIÓN
+  document.querySelectorAll('.nav-item').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var page = this.getAttribute('data-page');
+      if (!page) return;
+      document.querySelectorAll('.nav-item').forEach(function(b){ b.classList.remove('active'); });
+      document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+      this.classList.add('active');
+      document.getElementById('page-'+page).classList.add('active');
+    });
+  });
+
+  // LOGOUT
+  document.getElementById('btnLogout').addEventListener('click', async function(){
+    await sb.auth.signOut();
+    currentUser = null; currentEmpleado = null; allDocs = [];
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('loginWrap').style.display = 'flex';
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+    document.querySelectorAll('.admin-only').forEach(function(el){ el.style.display='none'; });
+    document.querySelectorAll('.nav-item').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelector('[data-page="inicio"]').classList.add('active');
+    document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+    document.getElementById('page-inicio').classList.add('active');
+  });
+
+  // CARGAR DOCUMENTOS
+  async function cargarDocumentos() {
+    var query = sb.from('documentos').select('*').order('fecha', { ascending: false });
+    if (currentEmpleado) query = query.eq('empleado_id', currentEmpleado.id);
+
+    var { data, error } = await query;
+    if (error || !data) { allDocs = []; return; }
+    allDocs = data;
+
+    document.getElementById('statDocs').textContent = data.length;
+    document.getElementById('statUnread').textContent = data.filter(function(d){ return !d.leido; }).length;
+
+    renderDocs(data, 'recentDocs', 3);
+    renderDocs(data, 'docsList');
+  }
+
+  function renderDocs(docs, containerId, limit) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
+    var list = limit ? docs.slice(0, limit) : docs;
+    if (list.length === 0) {
+      container.innerHTML = '<div class="empty">No hay documentos disponibles</div>';
+      return;
+    }
+    container.innerHTML = list.map(function(doc) {
+      var icon = doc.tipo === 'nomina' ? '📄' : doc.tipo === 'cuadrante' ? '📅' : doc.tipo === 'contrato' ? '📋' : '📁';
+      var badge = doc.leido ? '' : '<span class="badge badge-red" style="margin-left:0.5rem">Nuevo</span>';
+      return '<div class="doc-item">' +
+        '<div class="doc-info"><div class="doc-icon">' + icon + '</div>' +
+        '<div><div class="doc-name">' + doc.nombre + badge + '</div>' +
+        '<div class="doc-meta">' + (doc.fecha || '') + ' · ' + doc.tipo + '</div></div></div>' +
+        '<div>' +
+        '<button class="btn-sm primary" onclick="descargarDoc(\'' + doc.id + '\', \'' + doc.url + '\', \'' + doc.nombre + '\')">Descargar</button>' +
+        '</div></div>';
+    }).join('');
+  }
+
+  function filterDocs(tipo) {
+    var filtered = tipo === 'todos' ? allDocs : allDocs.filter(function(d){ return d.tipo === tipo; });
+    renderDocs(filtered, 'docsList');
+  }
+
+  async function descargarDoc(docId, url, nombre) {
+    // Marcar como leído
+    await sb.from('documentos').update({ leido: true }).eq('id', docId);
+
+    // Descargar desde Storage
+    var { data, error } = await sb.storage.from('documentos').download(url);
+    if (error) { alert('Error al descargar el documento.'); return; }
+
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(data);
+    link.download = nombre + '.pdf';
+    link.click();
+
+    cargarDocumentos();
+  }
+
+  // ADMIN — EMPLEADOS
+  async function cargarEmpleados() {
+    var { data } = await sb.from('empleados').select('*').order('nombre');
+    if (!data) return;
+
+    // Llenar select de subir doc
+    var sel = document.getElementById('subirEmpleado');
+    sel.innerHTML = '<option value="">Selecciona empleado...</option>';
+    data.forEach(function(e){
+      sel.innerHTML += '<option value="' + e.id + '">' + e.nombre + ' — ' + e.cargo + '</option>';
     });
 
-    document.getElementById('btnLogout').addEventListener('click', function(){
-      currentUser = null;
+    // Tabla
+    var container = document.getElementById('empleadosList');
+    if (!data.length) { container.innerHTML = '<div class="empty">No hay empleados registrados</div>'; return; }
+    container.innerHTML = '<table><thead><tr><th>Nombre</th><th>Email</th><th>Cargo</th><th>Estado</th></tr></thead><tbody>' +
+      data.map(function(e){
+        return '<tr><td>' + e.nombre + '</td><td style="color:var(--muted)">' + e.email + '</td><td>' + e.cargo + '</td><td><span class="badge ' + (e.activo ? 'badge-green">Activo' : 'badge-red">Inactivo') + '</span></td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+
+  function showAddEmpleado() { document.getElementById('addEmpleadoForm').style.display = 'block'; }
+  function hideAddEmpleado() { document.getElementById('addEmpleadoForm').style.display = 'none'; }
+
+  async function crearEmpleado() {
+    var nombre   = document.getElementById('empNombre').value.trim();
+    var email    = document.getElementById('empEmail').value.trim();
+    var dni      = document.getElementById('empDni').value.trim();
+    var cargo    = document.getElementById('empCargo').value;
+    var password = document.getElementById('empPassword').value;
+    var ok  = document.getElementById('empleadoOk');
+    var err = document.getElementById('empleadoError');
+    ok.style.display = 'none'; err.style.display = 'none';
+
+    if (!nombre || !email || !dni || !password) {
+      err.style.display = 'block'; err.textContent = 'Rellena todos los campos.'; return;
+    }
+
+    // Crear usuario en Supabase Auth
+    var { data: authData, error: authError } = await sb.auth.admin ? 
+      { data: null, error: { message: 'Usa la función de invitación' } } :
+      { data: null, error: null };
+
+    // Insertar en tabla empleados
+    var { error: dbError } = await sb.from('empleados').insert({
+      nombre: nombre, email: email, dni: dni, cargo: cargo, activo: true
+    });
+
+    if (dbError) {
+      err.style.display = 'block'; err.textContent = 'Error: ' + dbError.message; return;
+    }
+
+    ok.style.display = 'block';
+    document.getElementById('empNombre').value = '';
+    document.getElementById('empEmail').value = '';
+    document.getElementById('empDni').value = '';
+    document.getElementById('empPassword').value = '';
+    cargarEmpleados();
+  }
+
+  // ADMIN — SUBIR DOCUMENTO
+  async function subirDocumento() {
+    var empleadoId = document.getElementById('subirEmpleado').value;
+    var tipo       = document.getElementById('subirTipo').value;
+    var nombre     = document.getElementById('subirNombre').value.trim();
+    var archivo    = document.getElementById('subirArchivo').files[0];
+    var ok  = document.getElementById('subirOk');
+    var err = document.getElementById('subirError');
+    ok.style.display = 'none'; err.style.display = 'none';
+
+    if (!empleadoId || !nombre || !archivo) {
+      err.style.display = 'block'; err.textContent = 'Rellena todos los campos y selecciona un archivo.'; return;
+    }
+
+    var fileName = empleadoId + '/' + Date.now() + '_' + archivo.name;
+
+    // Subir a Storage
+    var { error: storageError } = await sb.storage.from('documentos').upload(fileName, archivo);
+    if (storageError) {
+      err.style.display = 'block'; err.textContent = 'Error al subir: ' + storageError.message; return;
+    }
+
+    // Guardar en BD
+    var { error: dbError } = await sb.from('documentos').insert({
+      empleado_id: empleadoId,
+      nombre: nombre,
+      tipo: tipo,
+      url: fileName,
+      fecha: new Date().toISOString().split('T')[0],
+      leido: false
+    });
+
+    if (dbError) {
+      err.style.display = 'block'; err.textContent = 'Error en BD: ' + dbError.message; return;
+    }
+
+    ok.style.display = 'block';
+    document.getElementById('subirNombre').value = '';
+    document.getElementById('subirArchivo').value = '';
+  }
+
+  // TABS ADMIN
+  function switchTab(tab) {
+    document.querySelectorAll('.admin-tab').forEach(function(t){ t.classList.remove('active'); });
+    document.querySelectorAll('.admin-tab-content').forEach(function(t){ t.classList.remove('active'); });
+    event.target.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+    if (tab === 'subir') cargarEmpleados();
+  }
+
+  // SOLICITUDES
+  document.getElementById('solicitudForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var ok  = document.getElementById('solicitudOk');
+    var err = document.getElementById('solicitudError');
+    ok.style.display = 'none'; err.style.display = 'none';
+
+    fetch(this.action, {
+      method: 'POST',
+      body: new FormData(this),
+      headers: { 'Accept': 'application/json' }
+    }).then(function(r){
+      if (r.ok) { ok.style.display = 'block'; document.getElementById('solicitudForm').reset(); }
+      else { err.style.display = 'block'; }
+    });
+  });
+
+  // Check sesión activa
+  sb.auth.onAuthStateChange(function(event, session) {
+    if (event === 'SIGNED_OUT') {
       document.getElementById('app').style.display = 'none';
       document.getElementById('loginWrap').style.display = 'flex';
-      document.getElementById('loginEmail').value = '';
-      document.getElementById('loginPassword').value = '';
-      document.querySelectorAll('.admin-only').forEach(function(el){ el.style.display='none'; });
-      document.querySelectorAll('.nav-item').forEach(function(b){ b.classList.remove('active'); });
-      document.querySelector('[data-page="inicio"]').classList.add('active');
-      document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
-      document.getElementById('page-inicio').classList.add('active');
-    });
-
-    // FORMULARIO SOLICITUDES
-    var form = document.getElementById('solicitudForm');
-    if (form) {
-      form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        document.getElementById('formEmpleado').value = currentUser ? currentUser.name : 'Empleado';
-        var msg = document.getElementById('solicitudMsg');
-        fetch(form.action, {
-          method: 'POST',
-          body: new FormData(form),
-          headers: { 'Accept': 'application/json' }
-        }).then(function(r) {
-          if (r.ok) {
-            msg.style.display = 'block';
-            msg.style.background = 'var(--green-light)';
-            msg.style.color = 'var(--green)';
-            msg.style.border = '1px solid rgba(34,197,94,0.2)';
-            msg.textContent = '✓ Solicitud enviada correctamente. El coordinador la revisará en breve.';
-            form.reset();
-          } else {
-            msg.style.display = 'block';
-            msg.style.background = 'var(--red-light)';
-            msg.style.color = '#fc8181';
-            msg.textContent = 'Error al enviar. Inténtalo de nuevo.';
-          }
-        });
-      });
     }
-
-    function toggleNomina(header) {
-      var body = header.nextElementSibling;
-      if (body && body.classList.contains('nomina-body')) body.classList.toggle('open');
-    }
-  </script>
+  });
+</script>
 </body>
 </html>
