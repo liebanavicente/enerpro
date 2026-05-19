@@ -670,7 +670,7 @@
 
     try {
       var zip = await JSZip.loadAsync(archivo);
-      var files = Object.keys(zip.files).filter(function(f){ return !zip.files[f].dir && f.toLowerCase().endsWith('.pdf'); });
+      var files = Object.keys(zip.files).filter(function(f){ return !zip.files[f].dir && f.toLowerCase().endsWith('.pdf') && !f.startsWith('__MACOSX') && !f.startsWith('.'); });
 
       if (!files.length) {
         err.style.display = 'block'; err.textContent = 'El ZIP no contiene archivos PDF.';
