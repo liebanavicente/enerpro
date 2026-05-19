@@ -142,11 +142,14 @@
     .success-box { background:var(--green-light); border:1px solid rgba(34,197,94,0.2); color:var(--green); padding:0.75rem 1rem; font-size:0.875rem; margin-bottom:1rem; display:none; }
 
     /* ADMIN */
-    .admin-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:1.5rem; }
-    .admin-tab { padding:0.75rem 1.5rem; font-size:0.8rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); border:none; background:none; cursor:pointer; border-bottom:2px solid transparent; transition:color 0.2s, border-color 0.2s; }
-    .admin-tab.active { color:var(--red); border-bottom-color:var(--red); }
-    .admin-tab-content { display:none; }
-    .admin-tab-content.active { display:block; }
+    .admin-tabs {
+  display:grid !important;
+  grid-template-columns:1fr;
+  gap:.5rem;
+  overflow:visible;
+  margin:0 0 1rem 0;
+  padding:0;
+}
 
     /* Mobile shell */
     .mobile-header { display:none; align-items:center; justify-content:space-between; gap:1rem; padding:0.875rem 1.25rem; background:var(--bg2); border-bottom:1px solid rgba(245,184,0,0.1); position:sticky; top:0; z-index:40; }
@@ -308,11 +311,85 @@
       .form-group textarea { min-height:130px !important; }
       .admin-tabs { display:flex; overflow-x:auto; gap:0; margin-left:-1rem; margin-right:-1rem; padding-left:1rem; }
       .admin-tab { min-height:48px; white-space:nowrap; }
-      table { min-width:620px; }
+      table { min-width:100% !important; }
       .login-card { max-width:100%; }
       #pdfModal > div:first-child { padding:0.75rem 1rem !important; }
       #pdfModalTitle { font-size:0.95rem !important; max-width:65%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    }
+    }@media (max-width:767px) {
+
+.admin-tabs {
+  display:grid !important;
+  grid-template-columns:1fr;
+  gap:.5rem;
+  border-bottom:none;
+  margin:0 0 1rem 0 !important;
+  padding:0 !important;
+}
+
+.admin-tab {
+  width:100%;
+  min-height:52px;
+  border:1px solid var(--border);
+  background:var(--bg2);
+  border-radius:10px;
+  text-align:center;
+  font-size:.8rem;
+}
+
+.admin-tab.active {
+  background:var(--red);
+  color:white;
+  border-color:var(--red);
+}
+
+#empleadosList table,
+#empleadosList thead,
+#empleadosList tbody,
+#empleadosList tr,
+#empleadosList td {
+  display:block;
+  width:100%;
+}
+
+#empleadosList table {
+  min-width:100% !important;
+}
+
+#empleadosList thead {
+  display:none;
+}
+
+#empleadosList tr {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:1rem;
+  margin-bottom:1rem;
+}
+
+#empleadosList td {
+  border:none;
+  padding:.5rem 0;
+  font-size:.92rem;
+  word-break:break-word;
+}
+
+#empleadosList td::before {
+  display:block;
+  margin-bottom:.2rem;
+  font-size:.68rem;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+
+#empleadosList td:nth-child(1)::before { content:"Nombre"; }
+#empleadosList td:nth-child(2)::before { content:"Email"; }
+#empleadosList td:nth-child(3)::before { content:"Cargo"; }
+#empleadosList td:nth-child(4)::before { content:"Estado"; }
+
+}
 
   </style>
 </head>
