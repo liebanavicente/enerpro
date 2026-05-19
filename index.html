@@ -227,6 +227,13 @@
           <div class="card-sub">Servicio en curso</div>
         </div>
       </div>
+      <div class="card" style="padding:0;border-top:2px solid var(--red);margin-bottom:1rem">
+        <div style="padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)">
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Mi cuadrante del mes</div>
+          <span class="badge badge-red" id="cuadranteMes"></span>
+        </div>
+        <div id="cuadranteDestacado" style="padding:1.5rem"><div class="loading">Cargando...</div></div>
+      </div>
       <div class="card" style="padding:0">
         <div style="padding:1rem 1.5rem;font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Últimos documentos</div>
         <div id="recentDocs"><div class="loading">Cargando...</div></div>
@@ -487,6 +494,25 @@
 
     renderDocs(data, 'recentDocs', 3);
     renderDocs(data, 'docsList');
+
+    // Cuadrante destacado
+    var cuadrante = data.find(function(d){ return d.tipo === 'cuadrante'; });
+    var cuadranteDiv = document.getElementById('cuadranteDestacado');
+    var cuadranteMes = document.getElementById('cuadranteMes');
+    if (cuadrante) {
+      cuadranteMes.textContent = cuadrante.fecha || 'Actual';
+      cuadranteDiv.innerHTML =
+        '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">' +
+        '<div style="display:flex;align-items:center;gap:1rem">' +
+        '<div style="width:48px;height:48px;background:var(--red-light);border:1px solid rgba(220,38,38,0.3);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">📅</div>' +
+        '<div><div style="font-size:1rem;font-weight:600;color:var(--white)">' + cuadrante.nombre + '</div>' +
+        '<div style="font-size:0.8rem;color:var(--muted);margin-top:2px">' + cuadrante.fecha + ' · Cuadrante de servicio</div></div></div>' +
+        '<button class="btn-sm primary" style="padding:0.6rem 1.5rem;font-size:0.85rem" onclick="descargarDoc(\'' + cuadrante.id + '\', \'' + cuadrante.url + '\', \'' + cuadrante.nombre + '\')">⬇ Descargar cuadrante</button>' +
+        '</div>';
+    } else {
+      cuadranteMes.style.display = 'none';
+      cuadranteDiv.innerHTML = '<div style="color:var(--muted);font-size:0.875rem">No hay cuadrante disponible este mes.</div>';
+    }
   }
 
   function renderDocs(docs, containerId, limit) {
