@@ -506,7 +506,7 @@
         '<div class="doc-meta">' + (doc.fecha || '') + ' · ' + doc.tipo + '</div></div></div>' +
         '<div>' +
         '<button class="btn-sm primary" onclick="descargarDoc(\'' + doc.id + '\', \'' + doc.url + '\', \'' + doc.nombre + '\')">Descargar</button>' +
-        (currentEmpleado && currentEmpleado.cargo === 'Coordinador' || (currentUser && currentUser.email && currentUser.email.includes('admin')) ? '<button class="btn-sm" style="margin-left:0.5rem;border-color:var(--red);color:var(--red)" onclick="eliminarDoc(\'' + doc.id + '\', \'' + doc.url + '\')">Eliminar</button>' : '') +
+        '<button class="btn-sm" style="margin-left:0.5rem;border-color:#dc2626;color:#dc2626" onclick="eliminarDoc(\'' + doc.id + '\', \'' + doc.url + '\')">Eliminar</button>' +
         '</div></div>';
     }).join('');
   }
