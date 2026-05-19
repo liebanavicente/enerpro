@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ENERPRO — Portal del Empleado</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -294,8 +295,9 @@
         <p>Gestión de empleados y documentos</p>
       </div>
       <div class="admin-tabs">
-        <button class="admin-tab active" onclick="switchTab('empleados')">Empleados</button>
-        <button class="admin-tab" onclick="switchTab('subir')">Subir documento</button>
+        <button class="admin-tab active" onclick="switchTab('empleados', this)">Empleados</button>
+        <button class="admin-tab" onclick="switchTab('subir', this)">Subir documento</button>
+        <button class="admin-tab" onclick="switchTab('masivo', this)">Subida masiva ZIP</button>
       </div>
 
       <div class="admin-tab-content active" id="tab-empleados">
@@ -350,6 +352,38 @@
           <div class="form-group"><label>Archivo PDF</label><input type="file" id="subirArchivo" accept=".pdf"></div>
           <button class="btn-sm primary" onclick="subirDocumento()" style="width:100%;padding:0.75rem">Subir documento</button>
         </div>
+      </div>
+    </div>
+
+    <!-- SUBIDA MASIVA -->
+    <div class="admin-tab-content" id="tab-masivo" style="display:none">
+      <div class="card" style="max-width:560px">
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem">Subida masiva por ZIP</div>
+        <p style="font-size:0.8rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.6">Sube un ZIP con los PDFs de cada empleado. Cada PDF debe llamarse con el <strong style="color:var(--text)">DNI del empleado</strong> (ej: <code style="color:var(--red)">12345678A.pdf</code>). El sistema los asignará automáticamente.</p>
+        <div class="success-box" id="masivoOk"></div>
+        <div class="error-box" id="masivoError"></div>
+        <div class="form-group">
+          <label>Tipo de documento</label>
+          <select id="masivoTipo">
+            <option value="nomina">Nómina</option>
+            <option value="cuadrante">Cuadrante</option>
+            <option value="contrato">Contrato</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nombre base del documento</label>
+          <input type="text" id="masivoNombre" placeholder="Ej: Nómina Mayo 2026">
+        </div>
+        <div class="form-group">
+          <label>Archivo ZIP</label>
+          <input type="file" id="masivoArchivo" accept=".zip">
+        </div>
+        <div id="masivoProgress" style="display:none;margin-bottom:1rem">
+          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem" id="masivoProgressText">Procesando...</div>
+          <div style="height:4px;background:var(--bg3)"><div id="masivoProgressBar" style="height:100%;background:var(--red);width:0%;transition:width 0.3s"></div></div>
+        </div>
+        <button class="btn-sm primary" onclick="subirMasivo()" style="width:100%;padding:0.75rem">Procesar y subir ZIP</button>
       </div>
     </div>
 
@@ -599,13 +633,92 @@
   }
 
   // TABS ADMIN
-  function switchTab(tab) {
+  function switchTab(tab, el) {
     document.querySelectorAll('.admin-tab').forEach(function(t){ t.classList.remove('active'); });
-    document.querySelectorAll('.admin-tab-content').forEach(function(t){ t.classList.remove('active'); });
-    event.target.classList.add('active');
-    document.getElementById('tab-' + tab).classList.add('active');
-    if (tab === 'subir') cargarEmpleados();
+    document.querySelectorAll('.admin-tab-content').forEach(function(t){ t.style.display='none'; });
+    if (el) el.classList.add('active');
+    document.getElementById('tab-' + tab).style.display = 'block';
+    if (tab === 'subir' || tab === 'masivo') cargarEmpleados();
   }
+
+  // SUBIDA MASIVA
+  async function subirMasivo() {
+    var tipo    = document.getElementById('masivoTipo').value;
+    var nombre  = document.getElementById('masivoNombre').value.trim();
+    var archivo = document.getElementById('masivoArchivo').files[0];
+    var ok      = document.getElementById('masivoOk');
+    var err     = document.getElementById('masivoError');
+    var progress = document.getElementById('masivoProgress');
+    var progressText = document.getElementById('masivoProgressText');
+    var progressBar  = document.getElementById('masivoProgressBar');
+    ok.style.display = 'none'; err.style.display = 'none';
+
+    if (!nombre || !archivo) {
+      err.style.display = 'block'; err.textContent = 'Rellena todos los campos y selecciona un ZIP.'; return;
+    }
+
+    // Cargar empleados para buscar por DNI
+    var { data: empleados } = await sb.from('empleados').select('*');
+    if (!empleados || !empleados.length) {
+      err.style.display = 'block'; err.textContent = 'No hay empleados en la base de datos.'; return;
+    }
+
+    var dniMap = {};
+    empleados.forEach(function(e){ dniMap[e.dni.toUpperCase()] = e; });
+
+    progress.style.display = 'block';
+
+    try {
+      var zip = await JSZip.loadAsync(archivo);
+      var files = Object.keys(zip.files).filter(function(f){ return !zip.files[f].dir && f.toLowerCase().endsWith('.pdf'); });
+
+      if (!files.length) {
+        err.style.display = 'block'; err.textContent = 'El ZIP no contiene archivos PDF.';
+        progress.style.display = 'none'; return;
+      }
+
+      var ok_count = 0, fail_count = 0;
+
+      for (var i = 0; i < files.length; i++) {
+        var filename = files[i];
+        var dni = filename.replace(/\.pdf$/i, '').split('/').pop().toUpperCase();
+        var empleado = dniMap[dni];
+
+        progressText.textContent = 'Procesando ' + (i+1) + ' de ' + files.length + ': ' + filename;
+        progressBar.style.width = Math.round(((i+1)/files.length)*100) + '%';
+
+        if (!empleado) { fail_count++; continue; }
+
+        var blob = await zip.files[filename].async('blob');
+        var pdfFile = new File([blob], filename, { type: 'application/pdf' });
+        var storagePath = empleado.id + '/' + Date.now() + '_' + filename;
+
+        var { error: storageError } = await sb.storage.from('documentos').upload(storagePath, pdfFile);
+        if (storageError) { fail_count++; continue; }
+
+        await sb.from('documentos').insert({
+          empleado_id: empleado.id,
+          nombre: nombre,
+          tipo: tipo,
+          url: storagePath,
+          fecha: new Date().toISOString().split('T')[0],
+          leido: false
+        });
+        ok_count++;
+      }
+
+      progress.style.display = 'none';
+      ok.style.display = 'block';
+      ok.textContent = '✓ Proceso completado: ' + ok_count + ' documentos subidos correctamente.' + (fail_count ? ' ' + fail_count + ' no encontrados por DNI.' : '');
+      document.getElementById('masivoNombre').value = '';
+      document.getElementById('masivoArchivo').value = '';
+
+    } catch(e) {
+      progress.style.display = 'none';
+      err.style.display = 'block'; err.textContent = 'Error al procesar el ZIP: ' + e.message;
+    }
+  }
+
 
   // SOLICITUDES
   document.getElementById('solicitudForm').addEventListener('submit', function(e){
