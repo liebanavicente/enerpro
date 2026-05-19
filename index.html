@@ -506,6 +506,7 @@
         '<div class="doc-meta">' + (doc.fecha || '') + ' · ' + doc.tipo + '</div></div></div>' +
         '<div>' +
         '<button class="btn-sm primary" onclick="descargarDoc(\'' + doc.id + '\', \'' + doc.url + '\', \'' + doc.nombre + '\')">Descargar</button>' +
+        (currentEmpleado && currentEmpleado.cargo === 'Coordinador' || (currentUser && currentUser.email && currentUser.email.includes('admin')) ? '<button class="btn-sm" style="margin-left:0.5rem;border-color:var(--red);color:var(--red)" onclick="eliminarDoc(\'' + doc.id + '\', \'' + doc.url + '\')">Eliminar</button>' : '') +
         '</div></div>';
     }).join('');
   }
@@ -513,6 +514,13 @@
   function filterDocs(tipo) {
     var filtered = tipo === 'todos' ? allDocs : allDocs.filter(function(d){ return d.tipo === tipo; });
     renderDocs(filtered, 'docsList');
+  }
+
+  async function eliminarDoc(docId, url) {
+    if (!confirm('¿Eliminar este documento? Esta acción no se puede deshacer.')) return;
+    await sb.storage.from('documentos').remove([url]);
+    await sb.from('documentos').delete().eq('id', docId);
+    cargarDocumentos();
   }
 
   async function descargarDoc(docId, url, nombre) {
