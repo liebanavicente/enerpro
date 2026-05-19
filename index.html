@@ -246,6 +246,74 @@
     @media (min-width:768px) {
       .mobile-header, .bottom-nav { display:none !important; }
     }
+
+
+    /* MOBILE FIX FINAL - navegación tipo app y contenido cómodo */
+    @media (max-width:767px) {
+      html, body { width:100%; max-width:100%; overflow-x:hidden; }
+      body { -webkit-text-size-adjust:100%; }
+      .app { display:none; width:100%; min-height:100vh; }
+      .sidebar { display:none !important; visibility:hidden !important; width:0 !important; }
+      .mobile-header { display:flex !important; position:sticky; top:0; left:0; right:0; width:100%; z-index:60; padding:0.75rem 1rem; }
+      .mobile-header-title { font-size:1rem; }
+      .mobile-header-user { max-width:7.5rem; }
+      .btn-logout-mobile { min-height:44px; padding:0 0.75rem; }
+      .main {
+        margin-left:0 !important;
+        padding:1rem 1rem calc(6.25rem + env(safe-area-inset-bottom, 0px)) !important;
+        width:100% !important;
+        max-width:100% !important;
+        overflow-x:hidden;
+      }
+      .page-header { margin-bottom:1rem; padding-bottom:0.875rem; }
+      .page-header h1 { font-size:1.45rem; line-height:1.05; }
+      .page-header p { font-size:0.85rem; line-height:1.45; }
+      .card { width:100%; padding:1rem; margin-bottom:0.875rem; }
+      .card[style] { max-width:none !important; }
+      .stats-grid { grid-template-columns:1fr !important; gap:0.75rem; }
+      .card-value { font-size:1.9rem; }
+      .bottom-nav {
+        display:flex !important;
+        position:fixed !important;
+        left:0; right:0; bottom:0;
+        width:100%; z-index:1000;
+      }
+      .bottom-nav-item {
+        min-height:64px;
+        font-size:0.58rem;
+        padding:0.4rem 0.2rem;
+      }
+      .bottom-nav-item svg { width:1.35rem; height:1.35rem; }
+      .bottom-nav-item.active { color:var(--gold) !important; }
+      .doc-item { padding:1rem !important; flex-direction:column !important; align-items:stretch !important; gap:0.85rem; }
+      .doc-info { align-items:flex-start; gap:0.75rem; min-width:0; }
+      .doc-name { font-size:0.95rem; line-height:1.35; word-break:break-word; }
+      .doc-meta { font-size:0.78rem; line-height:1.35; }
+      .doc-item > div:last-child { display:grid; grid-template-columns:1fr; gap:0.5rem; width:100%; }
+      .btn-sm, .btn-primary, button[type="submit"] {
+        min-height:48px !important;
+        width:100%;
+        font-size:0.85rem;
+        padding:0.8rem 1rem !important;
+        margin-left:0 !important;
+      }
+      .doc-filters { padding:0.75rem !important; display:grid !important; grid-template-columns:1fr 1fr; gap:0.5rem !important; }
+      .doc-filters .btn-sm { width:100%; }
+      .form-group { margin-bottom:1.25rem; }
+      .form-group input, .form-group select, .form-group textarea {
+        min-height:48px !important;
+        font-size:16px !important;
+        padding:0.875rem 1rem !important;
+      }
+      .form-group textarea { min-height:130px !important; }
+      .admin-tabs { display:flex; overflow-x:auto; gap:0; margin-left:-1rem; margin-right:-1rem; padding-left:1rem; }
+      .admin-tab { min-height:48px; white-space:nowrap; }
+      table { min-width:620px; }
+      .login-card { max-width:100%; }
+      #pdfModal > div:first-child { padding:0.75rem 1rem !important; }
+      #pdfModalTitle { font-size:0.95rem !important; max-width:65%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    }
+
   </style>
 </head>
 <body>
