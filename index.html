@@ -73,7 +73,7 @@
     .error-box { background:rgba(220,38,38,0.1); border:1px solid rgba(220,38,38,0.3); color:#fc8181; padding:0.75rem 1rem; font-size:0.85rem; margin-bottom:1rem; display:none; }
 
     /* APP */
-    .app { display:none; min-height:100vh; }
+    .app { display:none; min-height:100vh; flex-direction:column; }
     .sidebar { position:fixed; top:0; left:0; bottom:0; width:260px; background: linear-gradient(180deg, #12141a 0%, #0e1018 100%); border-right:1px solid rgba(245,184,0,0.1); display:flex; flex-direction:column; z-index:50; }
     .sidebar-logo { padding:1.5rem; border-bottom:1px solid rgba(245,184,0,0.1); display:flex; align-items:center; gap:1rem; background:rgba(245,184,0,0.03); }
     .sidebar-shield { width:38px; height:38px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
@@ -148,8 +148,104 @@
     .admin-tab-content { display:none; }
     .admin-tab-content.active { display:block; }
 
+    /* Mobile shell */
+    .mobile-header { display:none; align-items:center; justify-content:space-between; gap:1rem; padding:0.875rem 1.25rem; background:var(--bg2); border-bottom:1px solid rgba(245,184,0,0.1); position:sticky; top:0; z-index:40; }
+    .mobile-header-brand { display:flex; align-items:center; gap:0.75rem; min-width:0; }
+    .mobile-header-brand img { width:32px; height:32px; object-fit:contain; flex-shrink:0; }
+    .mobile-header-title { font-family:'Barlow Condensed',sans-serif; font-size:1.15rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--white); }
+    .mobile-header-title span { color:var(--gold); }
+    .mobile-header-user { font-size:0.75rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:10rem; }
+    .btn-logout-mobile { flex-shrink:0; min-height:2.75rem; padding:0 0.9rem; background:transparent; border:1px solid var(--border); color:var(--muted); font-size:0.72rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; transition:all 0.2s; }
+    .btn-logout-mobile:hover { background:var(--red-light); color:#fc8181; border-color:rgba(220,38,38,0.3); }
+
+    .bottom-nav {
+      display:none; position:fixed; left:0; right:0; bottom:0; z-index:50;
+      background:linear-gradient(180deg, #12141a 0%, #0e1018 100%);
+      border-top:1px solid rgba(245,184,0,0.12);
+      padding:0.35rem 0 calc(0.35rem + env(safe-area-inset-bottom, 0px));
+      box-shadow:0 -8px 32px rgba(0,0,0,0.35);
+    }
+    .bottom-nav-item {
+      flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.2rem;
+      min-height:3.5rem; padding:0.35rem 0.25rem; border:none; background:none;
+      color:var(--muted); font-size:0.62rem; font-weight:600; letter-spacing:0.04em;
+      text-transform:uppercase; transition:color 0.2s, background 0.2s; cursor:pointer;
+    }
+    .bottom-nav-item svg { width:1.25rem; height:1.25rem; flex-shrink:0; }
+    .bottom-nav-item span { max-width:4.75rem; text-align:center; line-height:1.15; }
+    .bottom-nav-item.active { color:var(--gold); background:rgba(245,184,0,0.06); }
+    .bottom-nav-item.admin-only { display:none; }
+
+    .form-card-narrow { max-width:600px; }
+    .doc-filters { display:flex; gap:0.5rem; flex-wrap:wrap; }
+
     @media (max-width:900px) { .stats-grid { grid-template-columns:repeat(2,1fr); } }
-    @media (max-width:640px) { .sidebar { width:100%; height:auto; position:relative; } .main { margin-left:0; padding:1rem; } }
+
+    @media (max-width:767px) {
+      .sidebar { display:none !important; }
+
+      .mobile-header { display:flex; }
+      .bottom-nav { display:flex; }
+
+      .main {
+        margin-left:0; width:100%; max-width:100%;
+        padding:1rem 1.25rem calc(5.75rem + env(safe-area-inset-bottom, 0px));
+        min-height:100vh;
+      }
+
+      .page-header { margin-bottom:1.25rem; padding-bottom:1rem; }
+      .page-header h1 { font-size:1.5rem; }
+      .stats-grid { grid-template-columns:1fr; gap:0.75rem; }
+      .card { padding:1.25rem; }
+      .form-card-narrow, .card[style*="max-width"] { max-width:none !important; width:100%; }
+
+      .btn-primary {
+        width:100%; min-height:3rem; padding:0.9rem 1rem;
+        font-size:1rem; letter-spacing:0.08em;
+      }
+      .btn-sm {
+        min-height:3rem; padding:0.75rem 1rem; font-size:0.8125rem;
+        margin-left:0;
+      }
+      .doc-filters .btn-sm { flex:1 1 calc(50% - 0.25rem); min-width:0; }
+      .doc-filters .btn-sm:first-child { margin-left:0; }
+
+      .form-group { margin-bottom:1.5rem; }
+      .form-group label { font-size:0.8rem; margin-bottom:0.625rem; }
+      .form-group input,
+      .form-group select {
+        min-height:3rem; padding:0.875rem 1rem; font-size:1rem;
+      }
+      .form-group textarea {
+        min-height:8rem; padding:0.875rem 1rem; font-size:1rem; line-height:1.5;
+      }
+      .form-group input[type="file"] { min-height:3rem; padding:0.625rem 1rem; }
+
+      .doc-item {
+        flex-direction:column; align-items:stretch; gap:0.875rem;
+        padding:1rem 1.25rem;
+      }
+      .doc-item .btn-sm { width:100%; }
+
+      .admin-tabs { overflow-x:auto; -webkit-overflow-scrolling:touch; flex-wrap:nowrap; }
+      .admin-tab { flex-shrink:0; min-height:2.75rem; padding:0.75rem 1rem; }
+
+      .admin-form-actions { flex-direction:column !important; }
+      .admin-form-actions .btn-sm { width:100%; flex:none !important; }
+
+      table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+      .login-wrap { padding:1rem; }
+      .login-card { padding:1.75rem 1.25rem; }
+      .login-wrap .form-group { margin-bottom:1.5rem; }
+      .login-wrap .form-group label { font-size:0.8rem; }
+      .login-wrap .form-group input { min-height:3rem; font-size:1rem; padding:0.875rem 1rem; }
+      .login-wrap .btn-primary { min-height:3rem; font-size:1rem; }
+    }
+
+    @media (min-width:768px) {
+      .mobile-header, .bottom-nav { display:none !important; }
+    }
   </style>
 </head>
 <body>
@@ -218,6 +314,17 @@
     </div>
   </aside>
 
+  <header class="mobile-header" aria-label="Cabecera">
+    <div class="mobile-header-brand">
+      <img src="enerprologo.jpg" alt="ENERPRO">
+      <div>
+        <div class="mobile-header-title">ENER<span>PRO</span></div>
+        <div class="mobile-header-user" id="mobileUserName">Portal del empleado</div>
+      </div>
+    </div>
+    <button type="button" class="btn-logout-mobile" id="btnLogoutMobile">Salir</button>
+  </header>
+
   <main class="main">
 
     <!-- INICIO -->
@@ -265,7 +372,7 @@
         <p>Nóminas, cuadrantes y documentación personal</p>
       </div>
       <div class="card" style="padding:0;margin-bottom:1rem">
-        <div style="padding:1rem 1.5rem;display:flex;gap:0.5rem;flex-wrap:wrap;border-bottom:1px solid var(--border)">
+        <div class="doc-filters" style="padding:1rem 1.5rem;border-bottom:1px solid var(--border)">
           <button class="btn-sm primary" onclick="filterDocs('todos')">Todos</button>
           <button class="btn-sm" onclick="filterDocs('nomina')">Nóminas</button>
           <button class="btn-sm" onclick="filterDocs('cuadrante')">Cuadrantes</button>
@@ -282,7 +389,7 @@
         <h1>Solicitudes</h1>
         <p>Envía una solicitud al coordinador</p>
       </div>
-      <div class="card" style="max-width:600px">
+      <div class="card form-card-narrow">
         <div class="success-box" id="solicitudOk">✓ Solicitud enviada correctamente. El coordinador la revisará en breve.</div>
         <div class="error-box" id="solicitudError">Error al enviar. Inténtalo de nuevo.</div>
         <form id="solicitudForm" action="https://formspree.io/f/xgoqvejw" method="POST">
@@ -348,7 +455,7 @@
             </select>
           </div>
           <div class="form-group"><label>Contraseña inicial</label><input type="password" id="empPassword" placeholder="Mínimo 6 caracteres"></div>
-          <div style="display:flex;gap:0.75rem">
+          <div class="admin-form-actions" style="display:flex;gap:0.75rem">
             <button class="btn-sm primary" onclick="crearEmpleado()" style="flex:1;padding:0.65rem">Crear empleado</button>
             <button class="btn-sm" onclick="hideAddEmpleado()" style="padding:0.65rem 1rem">Cancelar</button>
           </div>
@@ -412,6 +519,25 @@
     </div>
 
   </main>
+
+  <nav class="bottom-nav" aria-label="Navegación principal">
+    <button type="button" class="bottom-nav-item nav-item active" data-page="inicio" aria-label="Inicio">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span>Inicio</span>
+    </button>
+    <button type="button" class="bottom-nav-item nav-item" data-page="documentos" aria-label="Documentos">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span>Documentos</span>
+    </button>
+    <button type="button" class="bottom-nav-item nav-item" data-page="solicitudes" aria-label="Solicitudes">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      <span>Solicitudes</span>
+    </button>
+    <button type="button" class="bottom-nav-item nav-item admin-only" data-page="admin" aria-label="Administración" style="display:none">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      <span>Admin</span>
+    </button>
+  </nav>
 </div>
 
 <script>
@@ -454,8 +580,11 @@
 
     document.getElementById('loginWrap').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
-    document.getElementById('userName').textContent = emp ? emp.nombre : email;
+    var displayName = emp ? emp.nombre : email;
+    document.getElementById('userName').textContent = displayName;
     document.getElementById('userAvatar').textContent = emp ? emp.nombre.charAt(0).toUpperCase() : '?';
+    var mobileUser = document.getElementById('mobileUserName');
+    if (mobileUser) mobileUser.textContent = emp ? emp.nombre.split(' ')[0] : email.split('@')[0];
     document.getElementById('welcomeMsg').textContent = 'Bienvenido, ' + (emp ? emp.nombre.split(' ')[0] : 'empleado');
     document.getElementById('welcomeSub').textContent = emp ? emp.cargo + ' · Mayo 2026' : 'Mayo 2026';
     document.getElementById('formEmpleado').value = emp ? emp.nombre : email;
@@ -471,19 +600,24 @@
   }
 
   // NAVEGACIÓN
+  function navigateToPage(page) {
+    if (!page) return;
+    document.querySelectorAll('.nav-item').forEach(function(b){
+      b.classList.toggle('active', b.getAttribute('data-page') === page);
+    });
+    document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+    var pageEl = document.getElementById('page-' + page);
+    if (pageEl) pageEl.classList.add('active');
+  }
+
   document.querySelectorAll('.nav-item').forEach(function(btn){
     btn.addEventListener('click', function(){
-      var page = this.getAttribute('data-page');
-      if (!page) return;
-      document.querySelectorAll('.nav-item').forEach(function(b){ b.classList.remove('active'); });
-      document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
-      this.classList.add('active');
-      document.getElementById('page-'+page).classList.add('active');
+      navigateToPage(this.getAttribute('data-page'));
     });
   });
 
   // LOGOUT
-  document.getElementById('btnLogout').addEventListener('click', async function(){
+  async function doLogout() {
     await sb.auth.signOut();
     currentUser = null; currentEmpleado = null; allDocs = [];
     document.getElementById('app').style.display = 'none';
@@ -491,11 +625,12 @@
     document.getElementById('loginEmail').value = '';
     document.getElementById('loginPassword').value = '';
     document.querySelectorAll('.admin-only').forEach(function(el){ el.style.display='none'; });
-    document.querySelectorAll('.nav-item').forEach(function(b){ b.classList.remove('active'); });
-    document.querySelector('[data-page="inicio"]').classList.add('active');
-    document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
-    document.getElementById('page-inicio').classList.add('active');
-  });
+    navigateToPage('inicio');
+  }
+
+  document.getElementById('btnLogout').addEventListener('click', doLogout);
+  var btnLogoutMobile = document.getElementById('btnLogoutMobile');
+  if (btnLogoutMobile) btnLogoutMobile.addEventListener('click', doLogout);
 
   // CARGAR DOCUMENTOS
   async function cargarDocumentos() {
