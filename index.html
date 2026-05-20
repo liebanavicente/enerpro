@@ -1269,21 +1269,43 @@
 
 
   // SOLICITUDES
-  document.getElementById('solicitudForm').addEventListener('submit', function(e){
-    e.preventDefault();
-    var ok  = document.getElementById('solicitudOk');
-    var err = document.getElementById('solicitudError');
-    ok.style.display = 'none'; err.style.display = 'none';
+  // SOLICITUDES
+document.getElementById('solicitudForm').addEventListener('submit', async function(e){
+  e.preventDefault();
 
-    fetch(this.action, {
-      method: 'POST',
-      body: new FormData(this),
-      headers: { 'Accept': 'application/json' }
-    }).then(function(r){
-      if (r.ok) { ok.style.display = 'block'; document.getElementById('solicitudForm').reset(); }
-      else { err.style.display = 'block'; }
-    });
+  var ok  = document.getElementById('solicitudOk');
+  var err = document.getElementById('solicitudError');
+  ok.style.display = 'none';
+  err.style.display = 'none';
+
+  if (!currentEmpleado) {
+    err.style.display = 'block';
+    err.textContent = 'No se ha podido identificar al empleado.';
+    return;
+  }
+
+  var tipo = this.querySelector('[name="tipo"]').value;
+  var fechas = this.querySelector('[name="fechas"]').value.trim();
+  var descripcion = this.querySelector('[name="motivo"]').value.trim();
+
+  var { error } = await sb.from('solicitudes').insert({
+    empleado_id: currentEmpleado.id,
+    tipo: tipo,
+    fechas: fechas,
+    descripcion: descripcion,
+    estado: 'pendiente'
   });
+
+  if (error) {
+    err.style.display = 'block';
+    err.textContent = 'Error al enviar la solicitud: ' + error.message;
+    return;
+  }
+
+  ok.style.display = 'block';
+  ok.textContent = '✓ Solicitud enviada correctamente. Queda pendiente de revisión.';
+  this.reset();
+});
 
   // Check sesión activa
   sb.auth.onAuthStateChange(function(event, session) {
