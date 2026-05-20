@@ -83,13 +83,8 @@
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--red); }
     .form-group input::placeholder, .form-group textarea::placeholder { color:var(--muted); }
     .form-group textarea { resize:vertical; }
-    .btn-primary { width:100%; padding:0.9rem; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%); color:#0a0b0d; border:none; font-family:'Barlow Condensed',sans-serif; font-size:1rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; transition:opacity 0.2s, transform 0.2s; }transition:
-  transform .18s ease,
-  box-shadow .18s ease,
-  opacity .18s ease;
-  .btn-primary:active {
-  transform: scale(.98);
-}
+    .btn-primary { width:100%; padding:0.9rem; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%); color:#0a0b0d; border:none; font-family:'Barlow Condensed',sans-serif; font-size:1rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; transition:opacity 0.2s, transform 0.2s; }
+    .btn-primary:active { transform: scale(.98); }
     .btn-primary:hover { opacity:0.9; transform:translateY(-1px); }
     .error-box { background:rgba(220,38,38,0.1); border:1px solid rgba(220,38,38,0.3); color:#fc8181; padding:0.75rem 1rem; font-size:0.85rem; margin-bottom:1rem; display:none; }
 
@@ -131,10 +126,6 @@
     .card-value { font-family:'Barlow Condensed',sans-serif; font-size:2.25rem; font-weight:700; color:var(--white); }
     .card-sub { font-size:0.78rem; color:var(--muted); margin-top:4px; }
     .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1rem; }
-    transition:
-  transform .25s ease,
-  border-color .25s ease,
-  box-shadow .25s ease;
 
     .badge { display:inline-flex; align-items:center; gap:0.3rem; padding:0.2rem 0.6rem; font-size:0.65rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; }
     .badge::before { content:''; width:5px; height:5px; border-radius:50%; flex-shrink:0; }
@@ -580,7 +571,43 @@
 }
 
 }
-  </style>
+  
+    /* MOBILE BOTTOM NAV */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 1rem 1rem 5rem; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .admin-grid { grid-template-columns: 1fr; }
+      .bottom-nav {
+        display: flex !important;
+        position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+        background: var(--bg2); border-top: 1px solid rgba(245,184,0,0.15);
+        padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
+      }
+      .bottom-nav-item {
+        flex: 1; display: flex; flex-direction: column; align-items: center;
+        gap: 3px; padding: 0.4rem; border: none; background: none;
+        color: var(--muted); font-size: 0.6rem; font-weight: 600;
+        letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer;
+        transition: color 0.2s;
+      }
+      .bottom-nav-item svg { width: 1.3rem; height: 1.3rem; }
+      .bottom-nav-item.active { color: var(--gold); }
+      .mobile-header {
+        display: flex !important;
+        position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+        background: var(--bg2); border-bottom: 1px solid rgba(245,184,0,0.1);
+        padding: 0.75rem 1rem; align-items: center; justify-content: space-between;
+      }
+      .main { padding-top: 4rem; }
+    }
+    @media (min-width: 769px) {
+      .bottom-nav { display: none; }
+      .mobile-header { display: none; }
+    }
+    .bottom-nav { display: none; }
+    .mobile-header { display: none; }
+</style>
 </head>
 <body>
 
@@ -1291,6 +1318,52 @@
   }
 
   document.addEventListener('keydown', function(e){ if(e.key === 'Escape') cerrarVisor(); });
+</script>
+
+
+<!-- MOBILE HEADER -->
+<div class="mobile-header" id="mobileHeader">
+  <div style="display:flex;align-items:center;gap:0.6rem">
+    <img src="enerprologo.jpg" alt="ENERPRO" style="height:28px;width:auto">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--white)">ENER<span style="color:var(--gold)">PRO</span></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:0.5rem">
+    <div style="font-size:0.75rem;color:var(--muted)" id="mobileUserName"></div>
+    <div id="mobileAvatar" style="width:30px;height:30px;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;color:white;border-radius:50%">?</div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bottom-nav-item active" data-page="inicio" onclick="navTo('inicio', this)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    Inicio
+  </button>
+  <button class="bottom-nav-item" data-page="documentos" onclick="navTo('documentos', this)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Docs
+  </button>
+  <button class="bottom-nav-item" data-page="solicitudes" onclick="navTo('solicitudes', this)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    Buzón
+  </button>
+  <button class="bottom-nav-item admin-only-mobile" data-page="admin" onclick="navTo('admin', this)" style="display:none">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    Admin
+  </button>
+  <button class="bottom-nav-item" onclick="document.getElementById('btnLogout').click()">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Salir
+  </button>
+</nav>
+
+<script>
+  function navTo(page, el) {
+    document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+    document.querySelectorAll('[data-page="' + page + '"]').forEach(function(b){ b.classList.add('active'); });
+    document.getElementById('page-' + page).classList.add('active');
+  }
 </script>
 
 </body>
