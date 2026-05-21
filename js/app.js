@@ -284,8 +284,8 @@ function switchTab(tab, el) {
 async function subirMasivo() {
   var tipo    = document.getElementById('masivoTipo').value;
   var nombre  = document.getElementById('masivoNombre').value.trim();
-  var archivo = document.getElementById('masivoArchivo').files[0];
-  var ok      = document.getElementById('masivoOk');
+  var archivoEl = document.getElementById('masivoArchivo');
+  var archivo = archivoEl ? archivoEl.files[0] : null;  var ok      = document.getElementById('masivoOk');
   var err     = document.getElementById('masivoError');
   var progress = document.getElementById('masivoProgress');
   var progressText = document.getElementById('masivoProgressText');
