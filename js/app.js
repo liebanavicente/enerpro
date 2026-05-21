@@ -285,7 +285,7 @@ const SUPABASE_URL = 'https://rmiaxqbmmnbnxbmlnuny.supabase.co';
     if (el) el.classList.add('active');
     document.getElementById('tab-' + tab).style.display = 'block';
     if (tab === 'subir' || tab === 'masivo') cargarEmpleados();
-  }
+    if (tab === 'solicitudes-admin') cargarSolicitudesAdmin();
 
   // SUBIDA MASIVA
   async function subirMasivo() {
