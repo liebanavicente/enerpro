@@ -493,3 +493,4 @@ async function gestionarSolicitud(id, estado) {
   await sb.from('solicitudes').update({ estado: estado }).eq('id', id);
   cargarSolicitudesAdmin();
 }
+}
