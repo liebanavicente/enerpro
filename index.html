@@ -3,1400 +3,378 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ENERPRO — Portal del Empleado</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <title>La Llar del Dolç — Lotes y packs regalo personalizados</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0a0b0d;
-      --bg2: #12141a;
-      --bg3: #1a1d26;
-      --red: #dc2626;
-      --red-dark: #b91c1c;
-      --red-light: rgba(220,38,38,0.12);
-      --gold: #f5b800;
-      --gold-dark: #d4a017;
-      --gold-light: rgba(245,184,0,0.12);
-      --white: #ffffff;
-      --text: #e2e4e9;
-      --muted: #6b7280;
-      --border: rgba(255,255,255,0.06);
-      --green: #22c55e;
-      --green-light: rgba(34,197,94,0.1);
-      --yellow: #f59e0b;
-      --yellow-light: rgba(245,158,11,0.1);
+      --bg:      #F9F7F4;
+      --white:   #FFFFFF;
+      --ink:     #1A1714;
+      --mid:     #6B6560;
+      --muted:   #A8A29E;
+      --border:  #E5E1DB;
+      --accent:  #C9A96E;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-  font-family: 'Inter', system-ui, sans-serif;
-  background:
-    radial-gradient(circle at top left, rgba(220,38,38,0.12), transparent 35%),
-    radial-gradient(circle at bottom right, rgba(245,184,0,0.08), transparent 35%),
-    linear-gradient(180deg, #0a0b0d 0%, #090a0f 100%);
-  color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
-  animation: bgMove 18s ease-in-out infinite alternate;
-}@keyframes bgMove {
-  0% {
-    background-position: 0% 0%, 100% 100%, center;
-  }
-  100% {
-    background-position: 10% 5%, 90% 95%, center;
-  }
-}
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.6; }
+    h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600; line-height: 1.15; }
+    a { text-decoration: none; color: inherit; transition: opacity 0.2s; }
+    img { display: block; }
+    .container { width: min(1120px, 92%); margin: 0 auto; }
 
-    /* LOGIN */
-    .login-wrap {
-      min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      background: radial-gradient(ellipse at 20% 50%, rgba(220,38,38,0.15) 0%, transparent 50%),
-                  radial-gradient(ellipse at 80% 20%, rgba(245,184,0,0.08) 0%, transparent 50%),
-                  var(--bg);
-      padding: 1.5rem; position: relative; overflow: hidden;
+    /* NAV */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(249,247,244,0.96); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
     }
-    .login-wrap::before {
-      content:''; position:absolute; top:0; left:0; right:0; bottom:0;
-      background-image: linear-gradient(rgba(245,184,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(245,184,0,0.03) 1px, transparent 1px);
-      background-size: 50px 50px;
-      pointer-events:none;
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 0; position: relative; }
+    .logo { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; letter-spacing: 0.04em; color: var(--ink); }
+    .logo em { font-style: italic; color: var(--accent); }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; align-items: center; }
+    .nav-links a { color: var(--mid); transition: color 0.2s; }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-cta { border: 1px solid var(--ink); padding: 0.5rem 1.25rem; color: var(--ink) !important; letter-spacing: 0.08em; transition: background 0.2s, color 0.2s !important; }
+    .nav-cta:hover { background: var(--ink); color: var(--white) !important; opacity: 1 !important; }
+    .menu-toggle { display: none; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--ink); }
+
+    /* HERO */
+    .hero { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
+    .hero-left {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 10rem 5% 5rem 0;
     }
-    .login-card {
-      background: linear-gradient(145deg, var(--bg2) 0%, var(--bg3) 100%);
-      border: 1px solid rgba(245,184,0,0.15);
-      border-top: 2px solid var(--gold);
-      padding: 2.5rem; width: 100%; max-width: 420px;
-      position: relative; z-index: 1;
-      animation: slideUp 0.5s cubic-bezier(0.22,1,0.36,1);
-      box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(245,184,0,0.05);
+    .hero-eyebrow { font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.5rem; }
+    .hero-left h1 { font-size: clamp(3rem, 5vw, 4.5rem); margin-bottom: 1.5rem; color: var(--ink); }
+    .hero-left h1 em { font-style: italic; font-weight: 400; }
+    .hero-left p { font-size: 1rem; color: var(--mid); max-width: 40ch; margin-bottom: 2.5rem; line-height: 1.8; }
+    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-dark { display: inline-block; padding: 0.85rem 2rem; background: var(--ink); color: var(--white); font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; transition: opacity 0.2s; }
+    .btn-dark:hover { opacity: 0.75; }
+    .btn-outline { display: inline-block; padding: 0.85rem 2rem; border: 1px solid var(--border); color: var(--mid); font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; transition: border-color 0.2s, color 0.2s; }
+    .btn-outline:hover { border-color: var(--ink); color: var(--ink); }
+
+    .hero-right { position: relative; overflow: hidden; }
+    .hero-right img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* DIVIDER */
+    .divider-line { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+    /* ABOUT STRIP */
+    .strip { padding: 2rem 0; border-bottom: 1px solid var(--border); }
+    .strip-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem; }
+    .strip-item { text-align: center; flex: 1; min-width: 120px; }
+    .strip-item .num { font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--ink); }
+    .strip-item .label { font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+    .strip-sep { width: 1px; height: 40px; background: var(--border); }
+
+    /* PRODUCTS */
+    .products { padding: 6rem 0; }
+    .section-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem; }
+    .section-eyebrow { font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.75rem; }
+    .section-title { font-size: clamp(1.75rem, 4vw, 2.75rem); }
+    .section-sub { font-size: 0.875rem; color: var(--mid); max-width: 36ch; line-height: 1.7; }
+
+    .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+    .product-card { background: var(--bg); overflow: hidden; transition: background 0.2s; }
+    .product-card:hover { background: var(--white); }
+    .product-img { height: 280px; overflow: hidden; }
+    .product-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+    .product-card:hover .product-img img { transform: scale(1.04); }
+    .product-body { padding: 1.75rem; }
+    .product-tag { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.5rem; }
+    .product-body h3 { font-size: 1.35rem; margin-bottom: 0.5rem; }
+    .product-body p { font-size: 0.875rem; color: var(--mid); line-height: 1.7; margin-bottom: 1.25rem; }
+    .product-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid var(--border); }
+    .product-price { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--ink); }
+    .product-price small { font-family: 'Inter', sans-serif; font-size: 0.7rem; color: var(--muted); margin-left: 4px; }
+    .product-link { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid); border-bottom: 1px solid var(--border); padding-bottom: 1px; transition: color 0.2s, border-color 0.2s; }
+    .product-link:hover { color: var(--ink); border-color: var(--ink); }
+
+    /* HOW */
+    .how { padding: 6rem 0; background: var(--white); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4rem; margin-top: 4rem; }
+    .how-item {}
+    .how-num { font-family: 'Cormorant Garamond', serif; font-size: 3rem; color: var(--border); line-height: 1; margin-bottom: 1rem; }
+    .how-item h3 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+    .how-item p { font-size: 0.875rem; color: var(--mid); line-height: 1.8; }
+
+    /* CONTACT */
+    .contact { padding: 6rem 0; }
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center; }
+    .contact-img { height: 480px; overflow: hidden; }
+    .contact-img img { width: 100%; height: 100%; object-fit: cover; }
+    .contact-text .section-eyebrow { margin-bottom: 0.75rem; }
+    .contact-text h2 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 1.25rem; }
+    .contact-text p { font-size: 0.9rem; color: var(--mid); line-height: 1.8; margin-bottom: 2.5rem; max-width: 40ch; }
+    .contact-links { display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2.5rem; }
+    .contact-item { display: flex; flex-direction: column; gap: 4px; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+    .contact-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .contact-item .lbl { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+    .contact-item a { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--ink); transition: color 0.2s; }
+    .contact-item a:hover { color: var(--accent); }
+
+    /* FOOTER */
+    footer { background: var(--ink); color: var(--muted); padding: 2rem 0; }
+    .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--white); }
+    .footer-logo em { font-style: italic; color: var(--accent); }
+    footer p { font-size: 0.78rem; letter-spacing: 0.05em; }
+
+    /* FADE IN AL SCROLL */
+    .fade-up { opacity: 0; transform: translateY(32px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+    .fade-up.delay-1 { transition-delay: 0.1s; }
+    .fade-up.delay-2 { transition-delay: 0.2s; }
+    .fade-up.delay-3 { transition-delay: 0.3s; }
+
+    /* BOTÓN FLOTANTE */
+    .fab {
+      position: fixed; bottom: 2rem; right: 2rem; z-index: 200;
+      display: flex; align-items: center; gap: 0.6rem;
+      background: var(--ink); color: var(--white);
+      padding: 0.75rem 1.4rem; border-radius: 999px;
+      font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+      box-shadow: 0 8px 24px rgba(26,23,20,0.25);
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+      opacity: 0; pointer-events: none;
     }
-    @keyframes slideUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
-    .login-logo { text-align:center; margin-bottom:2rem; }
-    .shield-icon { width:56px; height:56px; background:var(--red); margin:0 auto 1rem; clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); display:flex; align-items:center; justify-content:center; font-family:'Barlow Condensed',sans-serif; font-size:1.5rem; font-weight:900; color:white; }
-    .brand { font-family:'Barlow Condensed',sans-serif; font-size:2rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:var(--white); }
-    .brand span { color:var(--gold); }
-    .brand-sub { font-size:0.7rem; color:var(--muted); letter-spacing:0.2em; text-transform:uppercase; margin-top:4px; }
-    .divider { height:1px; background:var(--border); margin:1.5rem 0; }
-    .form-group { margin-bottom:1.25rem; }
-    .form-group label { display:block; font-size:0.7rem; font-weight:600; color:var(--muted); margin-bottom:0.5rem; letter-spacing:0.12em; text-transform:uppercase; }
-    .form-group input, .form-group select, .form-group textarea { width:100%; padding:0.75rem 1rem; background:var(--bg3); border:1px solid var(--border); color:var(--white); font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.2s; }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--red); }
-    .form-group input::placeholder, .form-group textarea::placeholder { color:var(--muted); }
-    .form-group textarea { resize:vertical; }
-    .btn-primary { width:100%; padding:0.9rem; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%); color:#0a0b0d; border:none; font-family:'Barlow Condensed',sans-serif; font-size:1rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; transition:opacity 0.2s, transform 0.2s; }
-    .btn-primary:active { transform: scale(.98); }
-    .btn-primary:hover { opacity:0.9; transform:translateY(-1px); }
-    .error-box { background:rgba(220,38,38,0.1); border:1px solid rgba(220,38,38,0.3); color:#fc8181; padding:0.75rem 1rem; font-size:0.85rem; margin-bottom:1rem; display:none; }
-
-    /* APP */
-    .app { display:none; min-height:100vh; flex-direction:column; }
-    .sidebar { position:fixed; top:0; left:0; bottom:0; width:260px; background: linear-gradient(180deg, #12141a 0%, #0e1018 100%); border-right:1px solid rgba(245,184,0,0.1); display:flex; flex-direction:column; z-index:50; }
-    .sidebar-logo { padding:1.5rem; border-bottom:1px solid rgba(245,184,0,0.1); display:flex; align-items:center; gap:1rem; background:rgba(245,184,0,0.03); }
-    .sidebar-shield { width:38px; height:38px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
-    .sidebar-brand { font-family:'Barlow Condensed',sans-serif; font-size:1.3rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--white); }
-    .sidebar-brand span { color:var(--gold); }
-    .sidebar-role { font-size:0.65rem; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; margin-top:1px; }
-    .sidebar-nav { flex:1; padding:1rem 0; overflow-y:auto; }
-    .nav-section { font-size:0.6rem; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); padding:1rem 1.5rem 0.4rem; }
-    .nav-item { display:flex; align-items:center; gap:0.75rem; padding:0.7rem 1.5rem; font-size:0.875rem; font-weight:500; color:var(--muted); transition:background 0.2s, color 0.2s, border-color 0.2s; cursor:pointer; border:none; background:none; width:100%; text-align:left; border-left:3px solid transparent; }
-    .nav-item:hover { background:rgba(245,184,0,0.05); color:var(--text); }
-    .nav-item.active { background:rgba(245,184,0,0.08); color:var(--gold); border-left-color:var(--gold); }
-    .nav-item svg { width:1rem; height:1rem; flex-shrink:0; }
-    .sidebar-footer { padding:1.25rem 1.5rem; border-top:1px solid var(--border); }
-    .user-info { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem; }
-    .user-avatar { width:36px; height:36px; background:var(--red); display:flex; align-items:center; justify-content:center; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.9rem; color:white; flex-shrink:0; }
-    .user-name { font-size:0.875rem; font-weight:500; color:var(--white); }
-    .user-role { font-size:0.7rem; color:var(--muted); margin-top:1px; }
-    .btn-logout { width:100%; padding:0.6rem; background:transparent; border:1px solid var(--border); color:var(--muted); font-size:0.78rem; font-weight:500; letter-spacing:0.05em; text-transform:uppercase; transition:all 0.2s; }
-    .btn-logout:hover { background:var(--red-light); color:#fc8181; border-color:rgba(220,38,38,0.3); }
-
-    .main { margin-left:260px; padding:2rem; min-height:100vh; }
-    .page { display:none; animation:fadeIn 0.3s ease; }
-    .page.active { display:block; }
-    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-
-    .page-header { margin-bottom:2rem; padding-bottom:1.5rem; border-bottom:1px solid var(--border); }
-    .page-eyebrow { font-size:0.65rem; font-weight:600; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:0.4rem; }
-    .page-header h1 { font-family:'Barlow Condensed',sans-serif; font-size:2rem; font-weight:700; letter-spacing:0.02em; text-transform:uppercase; color:var(--white); }
-    .page-header p { font-size:0.85rem; color:var(--muted); margin-top:0.25rem; }
-
-    .card { background:var(--bg2); border:1px solid var(--border); padding:1.5rem; margin-bottom:1rem; }
-    .card-accent { border-top:2px solid var(--gold); background: linear-gradient(145deg, var(--bg2), var(--bg3)); }
-    .card-label { font-size:0.65rem; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); margin-bottom:0.5rem; }
-    .card-value { font-family:'Barlow Condensed',sans-serif; font-size:2.25rem; font-weight:700; color:var(--white); }
-    .card-sub { font-size:0.78rem; color:var(--muted); margin-top:4px; }
-    .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1rem; }
-
-    .badge { display:inline-flex; align-items:center; gap:0.3rem; padding:0.2rem 0.6rem; font-size:0.65rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; }
-    .badge::before { content:''; width:5px; height:5px; border-radius:50%; flex-shrink:0; }
-    .badge-green { background:var(--green-light); color:var(--green); } .badge-green::before { background:var(--green); }
-    .badge-yellow { background:var(--yellow-light); color:var(--yellow); } .badge-yellow::before { background:var(--yellow); }
-    .badge-red { background:var(--red-light); color:#fc8181; } .badge-red::before { background:#fc8181; }
-    .badge-blue { background:rgba(59,130,246,0.1); color:#60a5fa; } .badge-blue::before { background:#60a5fa; }
-
-    table { width:100%; border-collapse:collapse; font-size:0.85rem; }
-    th { text-align:left; font-size:0.65rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); padding:0.75rem 1rem; border-bottom:1px solid var(--border); }
-    td { padding:0.875rem 1rem; border-bottom:1px solid var(--border); color:var(--text); }
-    tr:last-child td { border-bottom:none; }
-    tr:hover td { background:rgba(255,255,255,0.02); }
-
-    .doc-item { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.5rem; border-bottom:1px solid var(--border); transition:background 0.2s; }
-    .doc-item:last-child { border-bottom:none; }
-    .doc-item:hover { background:rgba(255,255,255,0.02); }
-    .doc-info { display:flex; align-items:center; gap:1rem; }
-    .doc-icon { width:40px; height:40px; background:var(--red-light); border:1px solid rgba(220,38,38,0.2); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
-    .doc-name { font-size:0.9rem; font-weight:500; color:var(--white); }
-    .doc-meta { font-size:0.75rem; color:var(--muted); margin-top:2px; }
-    .btn-sm { padding:0.4rem 0.9rem; border:1px solid var(--border); background:transparent; color:var(--muted); font-size:0.75rem; font-weight:500; letter-spacing:0.05em; text-transform:uppercase; transition:all 0.2s; margin-left:0.5rem; }
-    .btn-sm:hover { border-color:var(--red); color:var(--red); }
-    .btn-sm.primary { background:var(--red); border-color:var(--red); color:white; }
-    .btn-sm.primary:hover { background:var(--red-dark); }
-
-    .loading { text-align:center; padding:3rem; color:var(--muted); font-size:0.875rem; }
-    .empty { text-align:center; padding:3rem; color:var(--muted); font-size:0.875rem; border:1px dashed var(--border); }
-
-    .success-box { background:var(--green-light); border:1px solid rgba(34,197,94,0.2); color:var(--green); padding:0.75rem 1rem; font-size:0.875rem; margin-bottom:1rem; display:none; }
-    .card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(245,184,0,0.18);
-  box-shadow: 0 12px 32px rgba(0,0,0,0.28);
-}
-
-    /* ADMIN */
-    .admin-tabs {
-  display:grid !important;
-  grid-template-columns:1fr;
-  gap:.5rem;
-  overflow:visible;
-  margin:0 0 1rem 0;
-  padding:0;
-}
-
-    /* Mobile shell */
-    .mobile-header { display:none; align-items:center; justify-content:space-between; gap:1rem; padding:0.875rem 1.25rem; background:var(--bg2); border-bottom:1px solid rgba(245,184,0,0.1); position:sticky; top:0; z-index:40; }
-    .mobile-header-brand { display:flex; align-items:center; gap:0.75rem; min-width:0; }
-    .mobile-header-brand img { width:32px; height:32px; object-fit:contain; flex-shrink:0; }
-    .mobile-header-title { font-family:'Barlow Condensed',sans-serif; font-size:1.15rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--white); }
-    .mobile-header-title span { color:var(--gold); }
-    .mobile-header-user { font-size:0.75rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:10rem; }
-    .btn-logout-mobile { flex-shrink:0; min-height:2.75rem; padding:0 0.9rem; background:transparent; border:1px solid var(--border); color:var(--muted); font-size:0.72rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; transition:all 0.2s; }
-    .btn-logout-mobile:hover { background:var(--red-light); color:#fc8181; border-color:rgba(220,38,38,0.3); }
-
-    .bottom-nav {backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      display:none; position:fixed; left:0; right:0; bottom:0; z-index:50;
-      background:linear-gradient(180deg, #12141a 0%, #0e1018 100%);
-      border-top:1px solid rgba(245,184,0,0.12);
-      padding:0.35rem 0 calc(0.35rem + env(safe-area-inset-bottom, 0px));
-      box-shadow:0 -8px 32px rgba(0,0,0,0.35);
-    }
-    .bottom-nav-item {
-      flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.2rem;
-      min-height:3.5rem; padding:0.35rem 0.25rem; border:none; background:none;
-      color:var(--muted); font-size:0.62rem; font-weight:600; letter-spacing:0.04em;
-      text-transform:uppercase; transition:color 0.2s, background 0.2s; cursor:pointer;
-    }
-    .bottom-nav-item svg { width:1.25rem; height:1.25rem; flex-shrink:0; }
-    .bottom-nav-item span { max-width:4.75rem; text-align:center; line-height:1.15; }
-    .bottom-nav-item.active { color:var(--gold); background:rgba(245,184,0,0.06); }
-    .bottom-nav-item.admin-only { display:none; }
-
-    .form-card-narrow { max-width:600px; }
-    .doc-filters { display:flex; gap:0.5rem; flex-wrap:wrap; }
-
-    @media (max-width:900px) { .stats-grid { grid-template-columns:repeat(2,1fr); } }
-
-    @media (max-width:767px) {
-      .sidebar { display:none !important; }
-
-      .mobile-header { display:flex; }
-      .bottom-nav { display:flex; }
-
-      .main {
-        margin-left:0; width:100%; max-width:100%;
-        padding:1rem 1.25rem calc(5.75rem + env(safe-area-inset-bottom, 0px));
-        min-height:100vh;
-      }
-
-      .page-header { margin-bottom:1.25rem; padding-bottom:1rem; }
-      .page-header h1 { font-size:1.5rem; }
-      .stats-grid { grid-template-columns:1fr; gap:0.75rem; }
-      .card { padding:1.25rem; }
-      .form-card-narrow, .card[style*="max-width"] { max-width:none !important; width:100%; }
-
-      .btn-primary {
-        width:100%; min-height:3rem; padding:0.9rem 1rem;
-        font-size:1rem; letter-spacing:0.08em;
-      }
-      .btn-sm {
-        min-height:3rem; padding:0.75rem 1rem; font-size:0.8125rem;
-        margin-left:0;
-      }
-      .doc-filters .btn-sm { flex:1 1 calc(50% - 0.25rem); min-width:0; }
-      .doc-filters .btn-sm:first-child { margin-left:0; }
-
-      .form-group { margin-bottom:1.5rem; }
-      .form-group label { font-size:0.8rem; margin-bottom:0.625rem; }
-      .form-group input,
-      .form-group select {
-        min-height:3rem; padding:0.875rem 1rem; font-size:1rem;
-      }
-      .form-group textarea {
-        min-height:8rem; padding:0.875rem 1rem; font-size:1rem; line-height:1.5;
-      }
-      .form-group input[type="file"] { min-height:3rem; padding:0.625rem 1rem; }
-
-      .doc-item {
-        flex-direction:column; align-items:stretch; gap:0.875rem;
-        padding:1rem 1.25rem;
-      }
-      .doc-item .btn-sm { width:100%; }
-
-      .admin-tabs { overflow-x:auto; -webkit-overflow-scrolling:touch; flex-wrap:nowrap; }
-      .admin-tab { flex-shrink:0; min-height:2.75rem; padding:0.75rem 1rem; }
-
-      .admin-form-actions { flex-direction:column !important; }
-      .admin-form-actions .btn-sm { width:100%; flex:none !important; }
-
-      table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-
-      .login-wrap { padding:1rem; }
-      .login-card { padding:1.75rem 1.25rem; }
-      .login-wrap .form-group { margin-bottom:1.5rem; }
-      .login-wrap .form-group label { font-size:0.8rem; }
-      .login-wrap .form-group input { min-height:3rem; font-size:1rem; padding:0.875rem 1rem; }
-      .login-wrap .btn-primary { min-height:3rem; font-size:1rem; }
-    }
-
-    @media (min-width:768px) {
-      .mobile-header, .bottom-nav { display:none !important; }
-    }
-
-
-    /* MOBILE FIX FINAL - navegación tipo app y contenido cómodo */
-    @media (max-width:767px) {
-      html, body { width:100%; max-width:100%; overflow-x:hidden; }
-      body { -webkit-text-size-adjust:100%; }
-      .app { display:none; width:100%; min-height:100vh; }
-      .sidebar { display:none !important; visibility:hidden !important; width:0 !important; }
-      .mobile-header { display:flex !important; position:sticky; top:0; left:0; right:0; width:100%; z-index:60; padding:0.75rem 1rem; }
-      .mobile-header-title { font-size:1rem; }
-      .mobile-header-user { max-width:7.5rem; }
-      .btn-logout-mobile { min-height:44px; padding:0 0.75rem; }
-      .main {
-        margin-left:0 !important;
-        padding:1rem 1rem calc(6.25rem + env(safe-area-inset-bottom, 0px)) !important;
-        width:100% !important;
-        max-width:100% !important;
-        overflow-x:hidden;
-      }
-      .page-header { margin-bottom:1rem; padding-bottom:0.875rem; }
-      .page-header h1 { font-size:1.45rem; line-height:1.05; }
-      .page-header p { font-size:0.85rem; line-height:1.45; }
-      .card { width:100%; padding:1rem; margin-bottom:0.875rem; }
-      .card[style] { max-width:none !important; }
-      .stats-grid { grid-template-columns:1fr !important; gap:0.75rem; }
-      .card-value { font-size:1.9rem; }
-      .bottom-nav {
-        display:flex !important;
-        position:fixed !important;
-        left:0; right:0; bottom:0;
-        width:100%; z-index:1000;
-      }
-      .bottom-nav-item {
-        min-height:64px;
-        font-size:0.58rem;
-        padding:0.4rem 0.2rem;
-      }
-      .bottom-nav-item svg { width:1.35rem; height:1.35rem; }
-      .bottom-nav-item.active { color:var(--gold) !important; }
-      .doc-item { padding:1rem !important; flex-direction:column !important; align-items:stretch !important; gap:0.85rem; }
-      .doc-info { align-items:flex-start; gap:0.75rem; min-width:0; }
-      .doc-name { font-size:0.95rem; line-height:1.35; word-break:break-word; }
-      .doc-meta { font-size:0.78rem; line-height:1.35; }
-      .doc-item > div:last-child { display:grid; grid-template-columns:1fr; gap:0.5rem; width:100%; }
-      .btn-sm, .btn-primary, button[type="submit"] {
-        min-height:48px !important;
-        width:100%;
-        font-size:0.85rem;
-        padding:0.8rem 1rem !important;
-        margin-left:0 !important;
-      }
-      .doc-filters { padding:0.75rem !important; display:grid !important; grid-template-columns:1fr 1fr; gap:0.5rem !important; }
-      .doc-filters .btn-sm { width:100%; }
-      .form-group { margin-bottom:1.25rem; }
-      .form-group input, .form-group select, .form-group textarea {
-        min-height:48px !important;
-        font-size:16px !important;
-        padding:0.875rem 1rem !important;
-      }
-      .form-group textarea { min-height:130px !important; }
-      .admin-tabs { display:flex; overflow-x:auto; gap:0; margin-left:-1rem; margin-right:-1rem; padding-left:1rem; }
-      .admin-tab { min-height:48px; white-space:nowrap; }
-      table { min-width:100% !important; }
-      .login-card { max-width:100%; }
-      #pdfModal > div:first-child { padding:0.75rem 1rem !important; }
-      #pdfModalTitle { font-size:0.95rem !important; max-width:65%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    }@media (max-width:767px) {
-
-
-}
-
-.admin-tab {
-  width:100%;
-  min-height:52px;
-  border:1px solid var(--border);
-  background:var(--bg2);
-  border-radius:10px;
-  text-align:center;
-  font-size:.8rem;
-}
-
-.admin-tab.active {
-  background:var(--red);
-  color:white;
-  border-color:var(--red);
-}
-
-#empleadosList table {
-  min-width:100% !important;
-}
-
-#empleadosList thead {
-  display:none;
-}
-
-#empleadosList tr {
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:1rem;
-  margin-bottom:1rem;
-}
-
-#empleadosList td {
-  border:none;
-  padding:.5rem 0;
-  font-size:.92rem;
-  word-break:break-word;
-}
-
-#empleadosList td::before {
-  display:block;
-  margin-bottom:.2rem;
-  font-size:.68rem;
-  font-weight:700;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  color:var(--muted);
-}
-
-#empleadosList td:nth-child(1)::before { content:"Nombre"; }
-#empleadosList td:nth-child(2)::before { content:"Email"; }
-#empleadosList td:nth-child(3)::before { content:"Cargo"; }
-#empleadosList td:nth-child(4)::before { content:"Estado"; }
-
-}
-@media (max-width:767px) {
-#page-admin .admin-tab.active {
-  background:var(--red);
-  color:white;
-  border-color:var(--red);
-}
-
-#empleadosList table {
-  min-width:100% !important;
-}
-
-#empleadosList thead {
-  display:none;
-}
-
-#empleadosList tr {
-  display:block;
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:1rem;
-  margin-bottom:1rem;
-}
-
-#empleadosList td {
-  display:block;
-  width:100%;
-  border:none;
-  padding:.45rem 0;
-}
-
-#empleadosList td::before {
-  display:block;
-  font-size:.68rem;
-  color:var(--muted);
-  text-transform:uppercase;
-  margin-bottom:.15rem;
-}
-
-#empleadosList td:nth-child(1)::before { content:"Nombre"; }
-#empleadosList td:nth-child(2)::before { content:"Email"; }
-#empleadosList td:nth-child(3)::before { content:"Cargo"; }
-#empleadosList td:nth-child(4)::before { content:"Estado"; }
-
-}@media (max-width:767px) {
-
-#empleadosList table {
-  min-width:100% !important;
-}
-
-#empleadosList thead {
-  display:none;
-}
-
-#empleadosList tr {
-  display:block;
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:1rem;
-  margin-bottom:1rem;
-}
-
-#empleadosList td {
-  display:block;
-  width:100%;
-  border:none;
-  padding:.45rem 0;
-}
-
-#empleadosList td::before {
-  display:block;
-  font-size:.68rem;
-  color:var(--muted);
-  text-transform:uppercase;
-  margin-bottom:.15rem;
-}
-
-#empleadosList td:nth-child(1)::before { content:"Nombre"; }
-#empleadosList td:nth-child(2)::before { content:"Email"; }
-#empleadosList td:nth-child(3)::before { content:"Cargo"; }
-#empleadosList td:nth-child(4)::before { content:"Estado"; }
-
-}/* FIX DEFINITIVO ADMIN TABS */
-@media (min-width:768px) {
-  #page-admin .admin-tabs {
-    display:flex !important;
-    gap:0 !important;
-    border-bottom:1px solid var(--border) !important;
-    margin-bottom:1.5rem !important;
-    padding:0 !important;
-    overflow:visible !important;
-  }
-
-  #page-admin .admin-tab {
-    width:auto !important;
-    min-height:auto !important;
-    padding:0.75rem 1.5rem !important;
-    border:none !important;
-    border-radius:0 !important;
-    background:none !important;
-    color:var(--muted) !important;
-    border-bottom:2px solid transparent !important;
-  }
-
-  #page-admin .admin-tab.active {
-    color:var(--red) !important;
-    background:none !important;
-    border-bottom-color:var(--red) !important;
-  }
-
-  #empleadosList table {
-    display:table !important;
-    width:100% !important;
-    min-width:0 !important;
-  }
-
-  #empleadosList thead {
-    display:table-header-group !important;
-  }
-
-  #empleadosList tbody {
-    display:table-row-group !important;
-  }
-
-  #empleadosList tr {
-    display:table-row !important;
-    padding:0 !important;
-    margin:0 !important;
-    border:none !important;
-    border-radius:0 !important;
-  }
-
-  #empleadosList td {
-    display:table-cell !important;
-    padding:0.875rem 1rem !important;
-    border-bottom:1px solid var(--border) !important;
-  }
-
-  #empleadosList td::before {
-    content:none !important;
-  }
-}@media (max-width:767px) {
-
-#empleadosList table {
-  width:100%;
-  display:block;
-}
-
-#empleadosList thead {
-  display:none;
-}
-
-#empleadosList tbody {
-  display:block;
-}
-
-#empleadosList tr {
-  display:block;
-  margin-bottom:1rem;
-  padding:1rem;
-  border:1px solid var(--border);
-  border-radius:12px;
-  background:var(--bg2);
-}
-
-#empleadosList td {
-  display:block;
-  width:100%;
-  border:none;
-  padding:.45rem 0;
-}
-
-}
-  
-    /* MOBILE BOTTOM NAV */
+    .fab.show { opacity: 1; pointer-events: auto; }
+    .fab:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(26,23,20,0.35); }
+    .fab-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { transform: scale(1); opacity:1; } 50% { transform: scale(1.5); opacity:0.6; } }
+
+    /* HERO ANIMADO */
+    .hero-left > * { opacity: 0; transform: translateY(24px); animation: heroIn 0.8s ease forwards; }
+    .hero-left .hero-eyebrow { animation-delay: 0.1s; }
+    .hero-left h1 { animation-delay: 0.25s; }
+    .hero-left p { animation-delay: 0.4s; }
+    .hero-left .hero-btns { animation-delay: 0.55s; }
+    .hero-right img { animation: heroImgIn 1.2s ease forwards; }
+    @keyframes heroIn { to { opacity: 1; transform: translateY(0); } }
+    @keyframes heroImgIn { from { opacity: 0; transform: scale(1.04); } to { opacity: 1; transform: scale(1); } }
+
+    /* MOBILE */
     @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main { margin-left: 0; padding: 1rem 1rem 5rem; }
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      .admin-grid { grid-template-columns: 1fr; }
-      .bottom-nav {
-        display: flex !important;
-        position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
-        background: var(--bg2); border-top: 1px solid rgba(245,184,0,0.15);
-        padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
-      }
-      .bottom-nav-item {
-        flex: 1; display: flex; flex-direction: column; align-items: center;
-        gap: 3px; padding: 0.4rem; border: none; background: none;
-        color: var(--muted); font-size: 0.6rem; font-weight: 600;
-        letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer;
-        transition: color 0.2s;
-      }
-      .bottom-nav-item svg { width: 1.3rem; height: 1.3rem; }
-      .bottom-nav-item.active { color: var(--gold); }
-      .mobile-header {
-        display: flex !important;
-        position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-        background: var(--bg2); border-bottom: 1px solid rgba(245,184,0,0.1);
-        padding: 0.75rem 1rem; align-items: center; justify-content: space-between;
-      }
-      .main { padding-top: 4rem; }
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .hero-left { padding: 7rem 0 3rem; }
+      .hero-right { height: 60vw; }
+      .strip-sep { display: none; }
+      .products-grid { grid-template-columns: 1fr; }
+      .how-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .contact-grid { grid-template-columns: 1fr; }
+      .contact-img { height: 260px; }
+      .nav-links { display: none; position: absolute; top: 100%; left: -4%; right: -4%; flex-direction: column; background: var(--bg); padding: 1.5rem 5%; gap: 1.25rem; border-bottom: 1px solid var(--border); }
+      .nav-links.open { display: flex; }
+      .menu-toggle { display: block; }
+      .footer-inner { flex-direction: column; text-align: center; }
     }
-    @media (min-width: 769px) {
-      .bottom-nav { display: none; }
-      .mobile-header { display: none; }
-    }
-    .bottom-nav { display: none; }
-    .mobile-header { display: none; }
-</style>
+  </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div class="login-wrap" id="loginWrap">
-  <div class="login-card">
-    <div class="login-logo">
-      <img src="enerprologo.jpg" alt="ENERPRO" style="width:100px;height:auto;margin:0 auto 1rem;display:block;filter:drop-shadow(0 4px 12px rgba(220,38,38,0.3))">
-      <div class="brand">ENER<span>PRO</span></div>
-      <div class="brand-sub">Portal del Empleado · Acceso Privado</div>
+  <header>
+    <div class="container">
+      <nav>
+        <span class="logo">La Llar <em>del Dolç</em></span>
+        <button class="menu-toggle" type="button" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+        <ul class="nav-links">
+          <li><a href="#productos">Productos</a></li>
+          <li><a href="#como-funciona">Cómo funciona</a></li>
+          <li><a href="#contacto" class="nav-cta">Contacto</a></li>
+        </ul>
+      </nav>
     </div>
-    <div class="divider"></div>
-    <div class="error-box" id="loginError">Credenciales incorrectas. Inténtalo de nuevo.</div>
-    <div class="form-group">
-      <label>Email corporativo</label>
-      <input type="email" id="loginEmail" placeholder="usuario@enerpro.com">
-    </div>
-    <div class="form-group">
-      <label>Contraseña</label>
-      <input type="password" id="loginPassword" placeholder="••••••••">
-    </div>
-    <button class="btn-primary" id="btnLogin">Acceder al portal</button>
-  </div>
-</div>
-
-<!-- APP -->
-<div class="app" id="app">
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <div class="sidebar-shield"><img src="enerprologo.jpg" alt="ENERPRO" style="width:36px;height:36px;object-fit:contain;border-radius:2px"></div>
-      <div>
-        <div class="sidebar-brand">ENER<span>PRO</span></div>
-        <div class="sidebar-role" id="sidebarRole">Portal del Empleado</div>
-      </div>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="nav-section">Principal</div>
-      <button class="nav-item active" data-page="inicio">
-        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        Inicio
-      </button>
-      <div class="nav-section">Mi área</div>
-      <button class="nav-item" data-page="documentos">
-        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        Mis documentos
-      </button>
-      <button class="nav-item" data-page="solicitudes">
-        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-        Solicitudes
-      </button>
-      <button class="nav-item admin-only" data-page="admin" style="display:none">
-        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-        Administración
-      </button>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="user-info">
-        <div class="user-avatar" id="userAvatar">?</div>
-        <div>
-          <div class="user-name" id="userName">—</div>
-          <div class="user-role" id="userRoleLabel">Empleado</div>
-        </div>
-      </div>
-      <button class="btn-logout" id="btnLogout">Cerrar sesión</button>
-    </div>
-  </aside>
-
-  <header class="mobile-header" aria-label="Cabecera">
-    <div class="mobile-header-brand">
-      <img src="enerprologo.jpg" alt="ENERPRO">
-      <div>
-        <div class="mobile-header-title">ENER<span>PRO</span></div>
-        <div class="mobile-header-user" id="mobileUserName">Portal del empleado</div>
-      </div>
-    </div>
-    <button type="button" class="btn-logout-mobile" id="btnLogoutMobile">Salir</button>
   </header>
 
-  <main class="main">
+  <main>
 
-    <!-- INICIO -->
-    <div class="page active" id="page-inicio">
-      <div class="page-header">
-        <div class="page-eyebrow">Panel principal</div>
-        <h1 id="welcomeMsg">Bienvenido</h1>
-        <p id="welcomeSub">Cargando datos...</p>
-      </div>
-      <div class="stats-grid">
-        <div class="card card-accent">
-          <div class="card-label">Documentos disponibles</div>
-          <div class="card-value" id="statDocs">—</div>
-          <div class="card-sub">Nóminas y cuadrantes</div>
-        </div>
-        <div class="card">
-          <div class="card-label">Sin leer</div>
-          <div class="card-value" id="statUnread" style="color:var(--red)">—</div>
-          <div class="card-sub">Documentos nuevos</div>
-        </div>
-        <div class="card">
-          <div class="card-label">Estado</div>
-          <div class="card-value" style="font-size:1.2rem;margin-top:0.5rem"><span class="badge badge-green">Activo</span></div>
-          <div class="card-sub">Servicio en curso</div>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-left container" style="width:auto;padding-left:max(1.5rem, calc((100vw - 1120px)/2));padding-right:4rem;">
+        <div class="hero-eyebrow">Packs regalo personalizados</div>
+        <h1>Regala algo <em>verdaderamente</em> único</h1>
+        <p>Lotes y packs de regalo elaborados con mimo. Cada detalle pensado para que quien lo recibe lo recuerde.</p>
+        <div class="hero-btns">
+          <a href="#contacto" class="btn-dark">Hacer un pedido</a>
+          <a href="#productos" class="btn-outline">Ver packs</a>
         </div>
       </div>
-      <div class="card" style="padding:0;border-top:2px solid var(--red);margin-bottom:1rem">
-        <div style="padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)">
-          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Mi cuadrante del mes</div>
-          <span class="badge badge-red" id="cuadranteMes"></span>
-        </div>
-        <div id="cuadranteDestacado" style="padding:1.5rem"><div class="loading">Cargando...</div></div>
+      <div class="hero-right">
+        <img src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=900&q=85" alt="Pack regalo La Llar del Dolç">
       </div>
-      <div class="card" style="padding:0">
-        <div style="padding:1rem 1.5rem;font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Últimos documentos</div>
-        <div id="recentDocs"><div class="loading">Cargando...</div></div>
-      </div>
-    </div>
+    </section>
 
-    <!-- DOCUMENTOS -->
-    <div class="page" id="page-documentos">
-      <div class="page-header">
-        <div class="page-eyebrow">Mi área</div>
-        <h1>Mis documentos</h1>
-        <p>Nóminas, cuadrantes y documentación personal</p>
-      </div>
-      <div class="card" style="padding:0;margin-bottom:1rem">
-        <div class="doc-filters" style="padding:1rem 1.5rem;border-bottom:1px solid var(--border)">
-          <button class="btn-sm primary" onclick="filterDocs('todos')">Todos</button>
-          <button class="btn-sm" onclick="filterDocs('nomina')">Nóminas</button>
-          <button class="btn-sm" onclick="filterDocs('cuadrante')">Cuadrantes</button>
-          <button class="btn-sm" onclick="filterDocs('contrato')">Contratos</button>
-        </div>
-        <div id="docsList"><div class="loading">Cargando documentos...</div></div>
-      </div>
-    </div>
-
-    <!-- SOLICITUDES -->
-    <div class="page" id="page-solicitudes">
-      <div class="page-header">
-        <div class="page-eyebrow">Buzón</div>
-        <h1>Solicitudes</h1>
-        <p>Envía una solicitud al coordinador</p>
-      </div>
-      <div class="card form-card-narrow">
-        <div class="success-box" id="solicitudOk">✓ Solicitud enviada correctamente. El coordinador la revisará en breve.</div>
-        <div class="error-box" id="solicitudError">Error al enviar. Inténtalo de nuevo.</div>
-        <form id="solicitudForm" action="https://formspree.io/f/xgoqvejw" method="POST">
-          <div class="form-group">
-            <label>Tipo de solicitud</label>
-            <select name="tipo">
-              <option>Solicitud de vacaciones</option>
-              <option>Solicitud de permiso</option>
-              <option>Cambio de turno</option>
-              <option>Baja médica</option>
-              <option>Consulta general</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Fechas (si aplica)</label>
-            <input type="text" name="fechas" placeholder="Ej: 15 al 20 de junio">
-          </div>
-          <div class="form-group">
-            <label>Descripción</label>
-            <textarea name="motivo" rows="4" placeholder="Describe tu solicitud..."></textarea>
-          </div>
-          <input type="hidden" name="empleado" id="formEmpleado">
-          <input type="hidden" name="_subject" value="Nueva solicitud — Portal ENERPRO">
-          <button type="submit" class="btn-primary">Enviar solicitud</button>
-        </form>
-      </div>
-    </div>
-
-    <!-- ADMIN -->
-    <div class="page" id="page-admin">
-      <div class="page-header">
-        <div class="page-eyebrow">Administración</div>
-        <h1>Panel de control</h1>
-        <p>Gestión de empleados y documentos</p>
-      </div>
-      <div class="admin-tabs">
-        <button class="admin-tab active" onclick="switchTab('empleados', this)">Empleados</button>
-        <button class="admin-tab" onclick="switchTab('subir', this)">Subir documento</button>
-        <button class="admin-tab" onclick="switchTab('masivo', this)">Subida masiva ZIP</button>
-        <button class="admin-tab" onclick="switchTab('solicitudes-admin', this)">Solicitudes</button>
-      </div>
-
-      <div class="admin-tab-content active" id="tab-empleados">
-        <div class="card" style="padding:0">
-          <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem">
-            <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Empleados registrados</span>
-            <button class="btn-sm primary" onclick="showAddEmpleado()">+ Añadir empleado</button>
-          </div>
-          <div id="empleadosList"><div class="loading">Cargando...</div></div>
-        </div>
-        <div class="card" id="addEmpleadoForm" style="display:none;max-width:500px;margin-top:1rem">
-          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem">Nuevo empleado</div>
-          <div class="success-box" id="empleadoOk">✓ Empleado creado correctamente.</div>
-          <div class="error-box" id="empleadoError"></div>
-          <div class="form-group"><label>Nombre completo</label><input type="text" id="empNombre" placeholder="Carlos Martínez López"></div>
-          <div class="form-group"><label>Email corporativo</label><input type="email" id="empEmail" placeholder="cmartinez@enerpro.com"></div>
-          <div class="form-group"><label>DNI</label><input type="text" id="empDni" placeholder="12345678A"></div>
-          <div class="form-group"><label>Cargo</label>
-            <select id="empCargo">
-              <option>Vigilante de seguridad</option>
-              <option>Auxiliar de servicio</option>
-              <option>Coordinador</option>
-              <option>Administrativo</option>
-            </select>
-          </div>
-          <div class="form-group"><label>Contraseña inicial</label><input type="password" id="empPassword" placeholder="Mínimo 6 caracteres"></div>
-          <div class="admin-form-actions" style="display:flex;gap:0.75rem">
-            <button class="btn-sm primary" onclick="crearEmpleado()" style="flex:1;padding:0.65rem">Crear empleado</button>
-            <button class="btn-sm" onclick="hideAddEmpleado()" style="padding:0.65rem 1rem">Cancelar</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="admin-tab-content" id="tab-subir">
-        <div class="card" style="max-width:500px">
-          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem">Subir documento a empleado</div>
-          <div class="success-box" id="subirOk">✓ Documento subido y asignado correctamente.</div>
-          <div class="error-box" id="subirError"></div>
-          <div class="form-group"><label>Empleado</label>
-            <select id="subirEmpleado"><option value="">Selecciona empleado...</option></select>
-          </div>
-          <div class="form-group"><label>Tipo de documento</label>
-            <select id="subirTipo">
-              <option value="nomina">Nómina</option>
-              <option value="cuadrante">Cuadrante</option>
-              <option value="contrato">Contrato</option>
-              <option value="protocolo">Protocolo de seguridad</option>
-              <option value="otro">Otro</option>
-            </select>
-          </div>
-          <div class="form-group"><label>Nombre del documento</label><input type="text" id="subirNombre" placeholder="Ej: Nómina Mayo 2026"></div>
-          <div class="form-group"><label>Archivo PDF</label><input type="file" id="subirArchivo" accept=".pdf"></div>
-          <button class="btn-sm primary" onclick="subirDocumento()" style="width:100%;padding:0.75rem">Subir documento</button>
+    <!-- STRIP -->
+    <div class="strip">
+      <div class="container">
+        <div class="strip-inner">
+          <div class="strip-item fade-up"><div class="num">4</div><div class="label">Packs disponibles</div></div>
+          <div class="strip-sep"></div>
+          <div class="strip-item fade-up delay-1"><div class="num">100%</div><div class="label">Personalizable</div></div>
+          <div class="strip-sep"></div>
+          <div class="strip-item fade-up delay-2"><div class="num">✦</div><div class="label">Hecho con mimo</div></div>
+          <div class="strip-sep"></div>
+          <div class="strip-item fade-up delay-3"><div class="num">24h</div><div class="label">Respuesta garantizada</div></div>
         </div>
       </div>
     </div>
 
-    <!-- SUBIDA MASIVA -->
-    <div class="admin-tab-content" id="tab-masivo" style="display:none">
-      <div class="card" style="max-width:560px">
-        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem">Subida masiva por ZIP</div>
-        <p style="font-size:0.8rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.6">Sube un ZIP con los PDFs de cada empleado. Cada PDF debe llamarse con el <strong style="color:var(--text)">DNI del empleado</strong> (ej: <code style="color:var(--red)">12345678A.pdf</code>). El sistema los asignará automáticamente.</p>
-        <div class="success-box" id="masivoOk"></div>
-        <div class="error-box" id="masivoError"></div>
-        <div class="form-group">
-          <label>Tipo de documento</label>
-          <select id="masivoTipo">
-            <option value="nomina">Nómina</option>
-            <option value="cuadrante">Cuadrante</option>
-            <option value="contrato">Contrato</option>
-            <option value="otro">Otro</option>
-          </select>
+    <!-- PRODUCTS -->
+    <section class="products" id="productos">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <div class="section-eyebrow">Nuestros packs</div>
+            <h2 class="section-title">Ideas listas para regalar</h2>
+          </div>
+          <p class="section-sub">Elige uno de nuestros lotes o cuéntanos qué tienes en mente. Lo personalizamos para ti.</p>
         </div>
-        <div class="form-group">
-          <label>Nombre base del documento</label>
-          <input type="text" id="masivoNombre" placeholder="Ej: Nómina Mayo 2026">
-        </div>
-        <div class="form-group">
-          <label>Archivo ZIP</label>
-          <input type="file" id="masivoArchivo" accept=".zip">
-        </div>
-        <div id="masivoProgress" style="display:none;margin-bottom:1rem">
-          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem" id="masivoProgressText">Procesando...</div>
-          <div style="height:4px;background:var(--bg3)"><div id="masivoProgressBar" style="height:100%;background:var(--red);width:0%;transition:width 0.3s"></div></div>
-        </div>
-        <button class="btn-sm primary" onclick="subirMasivo()" style="width:100%;padding:0.75rem">Procesar y subir ZIP</button>
-      </div>
-    </div>
+        <div class="products-grid">
 
-    <div class="admin-tab-content" id="tab-solicitudes-admin" style="display:none">
-      <div class="card" style="padding:0">
-        <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Solicitudes de empleados</span>
-          <button class="btn-sm primary" onclick="cargarSolicitudesAdmin()">Actualizar</button>
+          <div class="product-card fade-up">
+            <div class="product-img">
+              <img src="https://images.unsplash.com/photo-1512909006721-3d6018887383?w=700&q=80" alt="Pack Bienvenida">
+            </div>
+            <div class="product-body">
+              <div class="product-tag">Pack 01</div>
+              <h3>Pack Bienvenida</h3>
+              <p>Taza artesanal personalizada, infusiones selectas y galletas caseras. Perfecto para estrenar hogar u oficina.</p>
+              <div class="product-footer">
+                <span class="product-price">32 €<small>aprox.</small></span>
+                <a href="#contacto" class="product-link">Solicitar</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card fade-up delay-1">
+            <div class="product-img">
+              <img src="https://images.unsplash.com/photo-1506368249639-73a05d6f6488?w=700&q=80" alt="Pack Gourmet">
+            </div>
+            <div class="product-body">
+              <div class="product-tag">Pack 02</div>
+              <h3>Pack Gourmet</h3>
+              <p>Quesos seleccionados, mermeladas artesanas, crackers y vino o mosto de la zona.</p>
+              <div class="product-footer">
+                <span class="product-price">58 €<small>aprox.</small></span>
+                <a href="#contacto" class="product-link">Solicitar</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card fade-up delay-2">
+            <div class="product-img">
+              <img src="https://images.unsplash.com/photo-1519415510236-718bdfcd89c8?w=700&q=80" alt="Pack Spa">
+            </div>
+            <div class="product-body">
+              <div class="product-tag">Pack 03</div>
+              <h3>Pack Spa</h3>
+              <p>Crema hidratante, sales de baño, vela aromática y toalla de algodón suave.</p>
+              <div class="product-footer">
+                <span class="product-price">45 €<small>aprox.</small></span>
+                <a href="#contacto" class="product-link">Solicitar</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card fade-up delay-3">
+            <div class="product-img">
+              <img src="https://images.unsplash.com/photo-1543157145-f78c636d023d?w=700&q=80" alt="Pack Dulce Hogar">
+            </div>
+            <div class="product-body">
+              <div class="product-tag">Pack 04</div>
+              <h3>Pack Dulce Hogar</h3>
+              <p>Velas, miel local, té aromático y detalle decorativo para un rincón acogedor.</p>
+              <div class="product-footer">
+                <span class="product-price">38 €<small>aprox.</small></span>
+                <a href="#contacto" class="product-link">Solicitar</a>
+              </div>
+            </div>
+          </div>
+
         </div>
-        <div id="solicitudesAdminList"><div class="loading">Cargando...</div></div>
       </div>
-    </div>
+    </section>
+
+    <!-- HOW -->
+    <section class="how" id="como-funciona">
+      <div class="container">
+        <div class="section-eyebrow">El proceso</div>
+        <h2 class="section-title">Tres pasos para tu regalo perfecto</h2>
+        <div class="how-grid">
+          <div class="how-item fade-up">
+            <div class="how-num">01</div>
+            <h3>Elige tu pack</h3>
+            <p>Selecciona uno de nuestros lotes o cuéntanos qué te gustaría incluir. No hay límites.</p>
+          </div>
+          <div class="how-item fade-up delay-1">
+            <div class="how-num">02</div>
+            <h3>Personaliza</h3>
+            <p>Añade una dedicatoria, elige colores o incluye productos extra según la ocasión y el destinatario.</p>
+          </div>
+          <div class="how-item fade-up delay-2">
+            <div class="how-num">03</div>
+            <h3>Recibe y regala</h3>
+            <p>Preparamos tu pedido con mimo y te lo enviamos listo para sorprender a quien más quieres.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="contact" id="contacto">
+      <div class="container">
+        <div class="contact-grid">
+          <div class="contact-img">
+            <img src="https://images.unsplash.com/photo-1607344645866-009c320b63e0?w=800&q=85" alt="Contacto La Llar del Dolç">
+          </div>
+          <div class="contact-text">
+            <div class="section-eyebrow">Contacto</div>
+            <h2>¿Tienes una idea especial?</h2>
+            <p>Escríbenos o llámanos. Te ayudamos a crear el pack perfecto para cada ocasión. Respondemos en menos de 24 horas.</p>
+            <div class="contact-links">
+              <div class="contact-item">
+                <span class="lbl">Email</span>
+                <a href="mailto:info@llaroldolc.com">info@llaroldolc.com</a>
+              </div>
+              <div class="contact-item">
+                <span class="lbl">Teléfono</span>
+                <a href="tel:+34612345678">612 345 678</a>
+              </div>
+            </div>
+            <a href="mailto:info@llaroldolc.com" class="btn-dark">Enviar un mensaje</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
-  <nav class="bottom-nav" aria-label="Navegación principal">
-    <button type="button" class="bottom-nav-item nav-item active" data-page="inicio" aria-label="Inicio">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      <span>Inicio</span>
-    </button>
-    <button type="button" class="bottom-nav-item nav-item" data-page="documentos" aria-label="Documentos">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      <span>Documentos</span>
-    </button>
-    <button type="button" class="bottom-nav-item nav-item" data-page="solicitudes" aria-label="Solicitudes">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      <span>Solicitudes</span>
-    </button>
-    <button type="button" class="bottom-nav-item nav-item admin-only" data-page="admin" aria-label="Administración" style="display:none">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-      <span>Admin</span>
-    </button>
-  </nav>
-</div>
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-logo">La Llar <em>del Dolç</em></div>
+        <p>© 2026 La Llar del Dolç — Regala momentos únicos</p>
+      </div>
+    </div>
+  </footer>
 
-<script>
-  const SUPABASE_URL = 'https://rmiaxqbmmnbnxbmlnuny.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtaWF4cWJtbW5ibnhibWxudW55Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMTkyMTAsImV4cCI6MjA5NDY5NTIxMH0.oT256vpF6dgop0CAdy9MOAyGyoW3ZK2NAncQVk2tonU';
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  <a href="#contacto" class="fab" id="fab">
+    <span class="fab-dot"></span>
+    Hacer pedido
+  </a>
 
-  var currentUser = null;
-  var currentEmpleado = null;
-  var allDocs = [];
-
-  // LOGIN
-  document.getElementById('btnLogin').addEventListener('click', doLogin);
-  document.getElementById('loginPassword').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
-
-  async function doLogin() {
-    var email = document.getElementById('loginEmail').value.trim();
-    var pass  = document.getElementById('loginPassword').value;
-    var err   = document.getElementById('loginError');
-    err.style.display = 'none';
-
-    var btn = document.getElementById('btnLogin');
-    btn.textContent = 'Accediendo...';
-    btn.disabled = true;
-
-    var { data, error } = await sb.auth.signInWithPassword({ email: email, password: pass });
-
-    btn.textContent = 'Acceder al portal';
-    btn.disabled = false;
-
-    if (error) { err.style.display = 'block'; return; }
-
-    currentUser = data.user;
-
-    // Buscar datos del empleado
-    var { data: emp } = await sb.from('empleados').select('*').eq('email', email).single();
-    currentEmpleado = emp;
-
-    var isAdmin = email.includes('admin') || (emp && emp.cargo === 'Coordinador');
-
-    document.getElementById('loginWrap').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    var displayName = emp ? emp.nombre : email;
-    document.getElementById('userName').textContent = displayName;
-    document.getElementById('userAvatar').textContent = emp ? emp.nombre.charAt(0).toUpperCase() : '?';
-    var mobileUser = document.getElementById('mobileUserName');
-    if (mobileUser) mobileUser.textContent = emp ? emp.nombre.split(' ')[0] : email.split('@')[0];
-    document.getElementById('welcomeMsg').textContent = 'Bienvenido, ' + (emp ? emp.nombre.split(' ')[0] : 'empleado');
-    document.getElementById('welcomeSub').textContent = emp ? emp.cargo + ' · Mayo 2026' : 'Mayo 2026';
-    document.getElementById('formEmpleado').value = emp ? emp.nombre : email;
-
-    if (isAdmin) {
-      document.getElementById('sidebarRole').textContent = 'Administrador';
-      document.getElementById('userRoleLabel').textContent = 'Administrador';
-      document.querySelectorAll('.admin-only').forEach(function(el){ el.style.display='flex'; });
-      cargarEmpleados();
-    }
-
-    cargarDocumentos();
-  }
-
-  // NAVEGACIÓN
-  function navigateToPage(page) {
-    if (!page) return;
-    document.querySelectorAll('.nav-item').forEach(function(b){
-      b.classList.toggle('active', b.getAttribute('data-page') === page);
+  <script>
+    const fab = document.getElementById('fab');
+    window.addEventListener('scroll', () => {
+      fab.classList.toggle('show', window.scrollY > 400);
     });
-    document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
-    var pageEl = document.getElementById('page-' + page);
-    if (pageEl) pageEl.classList.add('active');
-  }
-
-  document.querySelectorAll('.nav-item').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      navigateToPage(this.getAttribute('data-page'));
-    });
-  });
-
-  // LOGOUT
-  async function doLogout() {
-    await sb.auth.signOut();
-    currentUser = null; currentEmpleado = null; allDocs = [];
-    document.getElementById('app').style.display = 'none';
-    document.getElementById('loginWrap').style.display = 'flex';
-    document.getElementById('loginEmail').value = '';
-    document.getElementById('loginPassword').value = '';
-    document.querySelectorAll('.admin-only').forEach(function(el){ el.style.display='none'; });
-    navigateToPage('inicio');
-  }
-
-  document.getElementById('btnLogout').addEventListener('click', doLogout);
-  var btnLogoutMobile = document.getElementById('btnLogoutMobile');
-  if (btnLogoutMobile) btnLogoutMobile.addEventListener('click', doLogout);
-
-  // CARGAR DOCUMENTOS
-  async function cargarDocumentos() {
-    var query = sb.from('documentos').select('*').order('fecha', { ascending: false });
-    if (currentEmpleado) query = query.eq('empleado_id', currentEmpleado.id);
-
-    var { data, error } = await query;
-    if (error || !data) { allDocs = []; return; }
-    allDocs = data;
-
-    document.getElementById('statDocs').textContent = data.length;
-    document.getElementById('statUnread').textContent = data.filter(function(d){ return !d.leido; }).length;
-
-    renderDocs(data, 'recentDocs', 3);
-    renderDocs(data, 'docsList');
-
-    // Cuadrante destacado
-    var cuadrante = data.find(function(d){ return d.tipo === 'cuadrante'; });
-    var cuadranteDiv = document.getElementById('cuadranteDestacado');
-    var cuadranteMes = document.getElementById('cuadranteMes');
-    if (cuadrante) {
-      cuadranteMes.textContent = cuadrante.fecha || 'Actual';
-      cuadranteDiv.innerHTML =
-        '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">' +
-        '<div style="display:flex;align-items:center;gap:1rem">' +
-        '<div style="width:48px;height:48px;background:var(--red-light);border:1px solid rgba(220,38,38,0.3);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">📅</div>' +
-        '<div><div style="font-size:1rem;font-weight:600;color:var(--white)">' + cuadrante.nombre + '</div>' +
-        '<div style="font-size:0.8rem;color:var(--muted);margin-top:2px">' + cuadrante.fecha + ' · Cuadrante de servicio</div></div></div>' +
-        '<button class="btn-sm primary" style="padding:0.6rem 1.5rem;font-size:0.85rem" onclick="verDoc(\'' + cuadrante.url + '\', \'' + cuadrante.nombre + '\')">👁 Ver cuadrante</button>' +
-        '<button class="btn-sm" style="padding:0.6rem 1rem" onclick="descargarDoc(\'' + cuadrante.id + '\', \'' + cuadrante.url + '\', \'' + cuadrante.nombre + '\')">⬇ Descargar</button>' +
-        '</div>';
-    } else {
-      cuadranteMes.style.display = 'none';
-      cuadranteDiv.innerHTML = '<div style="color:var(--muted);font-size:0.875rem">No hay cuadrante disponible este mes.</div>';
-    }
-  }
-
-  function renderDocs(docs, containerId, limit) {
-    var container = document.getElementById(containerId);
-    if (!container) return;
-    var list = limit ? docs.slice(0, limit) : docs;
-    if (list.length === 0) {
-      container.innerHTML = '<div class="empty">No hay documentos disponibles</div>';
-      return;
-    }
-    container.innerHTML = list.map(function(doc) {
-      var icon = doc.tipo === 'nomina' ? '📄' : doc.tipo === 'cuadrante' ? '📅' : doc.tipo === 'contrato' ? '📋' : '📁';
-      var badge = doc.leido ? '' : '<span class="badge badge-red" style="margin-left:0.5rem">Nuevo</span>';
-      return '<div class="doc-item">' +
-        '<div class="doc-info"><div class="doc-icon">' + icon + '</div>' +
-        '<div><div class="doc-name">' + doc.nombre + badge + '</div>' +
-        '<div class="doc-meta">' + (doc.fecha || '') + ' · ' + doc.tipo + '</div></div></div>' +
-        '<div>' +
-        '<button class="btn-sm primary" onclick="descargarDoc(\'' + doc.id + '\', \'' + doc.url + '\', \'' + doc.nombre + '\')">Descargar</button>' +
-        '<button class="btn-sm" style="margin-left:0.5rem;border-color:#dc2626;color:#dc2626" onclick="eliminarDoc(\'' + doc.id + '\', \'' + doc.url + '\')">Eliminar</button>' +
-        '</div></div>';
-    }).join('');
-  }
-
-  function filterDocs(tipo) {
-    var filtered = tipo === 'todos' ? allDocs : allDocs.filter(function(d){ return d.tipo === tipo; });
-    renderDocs(filtered, 'docsList');
-  }
-
-  async function eliminarDoc(docId, url) {
-    if (!confirm('¿Eliminar este documento? Esta acción no se puede deshacer.')) return;
-    await sb.storage.from('documentos').remove([url]);
-    await sb.from('documentos').delete().eq('id', docId);
-    cargarDocumentos();
-  }
-
-  async function descargarDoc(docId, url, nombre) {
-    // Marcar como leído
-    await sb.from('documentos').update({ leido: true }).eq('id', docId);
-
-    // Descargar desde Storage
-    var { data, error } = await sb.storage.from('documentos').download(url);
-    if (error) { alert('Error al descargar el documento.'); return; }
-
-    var link = document.createElement('a');
-    link.href = URL.createObjectURL(data);
-    link.download = nombre + '.pdf';
-    link.click();
-
-    cargarDocumentos();
-  }
-
-  // ADMIN — EMPLEADOS
-  async function cargarEmpleados() {
-    var { data } = await sb.from('empleados').select('*').order('nombre');
-    if (!data) return;
-
-    // Llenar select de subir doc
-    var sel = document.getElementById('subirEmpleado');
-    sel.innerHTML = '<option value="">Selecciona empleado...</option>';
-    data.forEach(function(e){
-      sel.innerHTML += '<option value="' + e.id + '">' + e.nombre + ' — ' + e.cargo + '</option>';
-    });
-
-    // Tabla
-    var container = document.getElementById('empleadosList');
-    if (!data.length) { container.innerHTML = '<div class="empty">No hay empleados registrados</div>'; return; }
-    container.innerHTML = '<table><thead><tr><th>Nombre</th><th>Email</th><th>Cargo</th><th>Estado</th></tr></thead><tbody>' +
-      data.map(function(e){
-        return '<tr><td>' + e.nombre + '</td><td style="color:var(--muted)">' + e.email + '</td><td>' + e.cargo + '</td><td><span class="badge ' + (e.activo ? 'badge-green">Activo' : 'badge-red">Inactivo') + '</span></td></tr>';
-      }).join('') + '</tbody></table>';
-  }
-
-  function showAddEmpleado() { document.getElementById('addEmpleadoForm').style.display = 'block'; }
-  function hideAddEmpleado() { document.getElementById('addEmpleadoForm').style.display = 'none'; }
-
-  async function crearEmpleado() {
-    var nombre   = document.getElementById('empNombre').value.trim();
-    var email    = document.getElementById('empEmail').value.trim();
-    var dni      = document.getElementById('empDni').value.trim();
-    var cargo    = document.getElementById('empCargo').value;
-    var password = document.getElementById('empPassword').value;
-    var ok  = document.getElementById('empleadoOk');
-    var err = document.getElementById('empleadoError');
-    ok.style.display = 'none'; err.style.display = 'none';
-
-    if (!nombre || !email || !dni || !password) {
-      err.style.display = 'block'; err.textContent = 'Rellena todos los campos.'; return;
-    }
-
-    // Crear usuario en Supabase Auth
-    var { data: authData, error: authError } = await sb.auth.admin ? 
-      { data: null, error: { message: 'Usa la función de invitación' } } :
-      { data: null, error: null };
-
-    // Insertar en tabla empleados
-    var { error: dbError } = await sb.from('empleados').insert({
-      nombre: nombre, email: email, dni: dni, cargo: cargo, activo: true
-    });
-
-    if (dbError) {
-      err.style.display = 'block'; err.textContent = 'Error: ' + dbError.message; return;
-    }
-
-    ok.style.display = 'block';
-    document.getElementById('empNombre').value = '';
-    document.getElementById('empEmail').value = '';
-    document.getElementById('empDni').value = '';
-    document.getElementById('empPassword').value = '';
-    cargarEmpleados();
-  }
-
-  // ADMIN — SUBIR DOCUMENTO
-  async function subirDocumento() {
-    var empleadoId = document.getElementById('subirEmpleado').value;
-    var tipo       = document.getElementById('subirTipo').value;
-    var nombre     = document.getElementById('subirNombre').value.trim();
-    var archivo    = document.getElementById('subirArchivo').files[0];
-    var ok  = document.getElementById('subirOk');
-    var err = document.getElementById('subirError');
-    ok.style.display = 'none'; err.style.display = 'none';
-
-    if (!empleadoId || !nombre || !archivo) {
-      err.style.display = 'block'; err.textContent = 'Rellena todos los campos y selecciona un archivo.'; return;
-    }
-
-    var fileName = empleadoId + '/' + Date.now() + '_' + archivo.name;
-
-    // Subir a Storage
-    var { error: storageError } = await sb.storage.from('documentos').upload(fileName, archivo);
-    if (storageError) {
-      err.style.display = 'block'; err.textContent = 'Error al subir: ' + storageError.message; return;
-    }
-
-    // Guardar en BD
-    var { error: dbError } = await sb.from('documentos').insert({
-      empleado_id: empleadoId,
-      nombre: nombre,
-      tipo: tipo,
-      url: fileName,
-      fecha: new Date().toISOString().split('T')[0],
-      leido: false
-    });
-
-    if (dbError) {
-      err.style.display = 'block'; err.textContent = 'Error en BD: ' + dbError.message; return;
-    }
-
-    ok.style.display = 'block';
-    document.getElementById('subirNombre').value = '';
-    document.getElementById('subirArchivo').value = '';
-  }
-
-  // TABS ADMIN
-  function switchTab(tab, el) {
-    document.querySelectorAll('.admin-tab').forEach(function(t){ t.classList.remove('active'); });
-    document.querySelectorAll('.admin-tab-content').forEach(function(t){ t.style.display='none'; });
-    if (el) el.classList.add('active');
-    document.getElementById('tab-' + tab).style.display = 'block';
-    if (tab === 'subir' || tab === 'masivo') cargarEmpleados();
-  }
-
-  // SUBIDA MASIVA
-  async function subirMasivo() {
-    var tipo    = document.getElementById('masivoTipo').value;
-    var nombre  = document.getElementById('masivoNombre').value.trim();
-    var archivo = document.getElementById('masivoArchivo').files[0];
-    var ok      = document.getElementById('masivoOk');
-    var err     = document.getElementById('masivoError');
-    var progress = document.getElementById('masivoProgress');
-    var progressText = document.getElementById('masivoProgressText');
-    var progressBar  = document.getElementById('masivoProgressBar');
-    ok.style.display = 'none'; err.style.display = 'none';
-
-    if (!nombre || !archivo) {
-      err.style.display = 'block'; err.textContent = 'Rellena todos los campos y selecciona un ZIP.'; return;
-    }
-
-    // Cargar empleados para buscar por DNI
-    var { data: empleados } = await sb.from('empleados').select('*');
-    if (!empleados || !empleados.length) {
-      err.style.display = 'block'; err.textContent = 'No hay empleados en la base de datos.'; return;
-    }
-
-    var dniMap = {};
-    empleados.forEach(function(e){ dniMap[e.dni.toUpperCase()] = e; });
-
-    progress.style.display = 'block';
-
-    try {
-      var zip = await JSZip.loadAsync(archivo);
-      var files = Object.keys(zip.files).filter(function(f){ return !zip.files[f].dir && f.toLowerCase().endsWith('.pdf') && !f.startsWith('__MACOSX') && !f.startsWith('.'); });
-
-      if (!files.length) {
-        err.style.display = 'block'; err.textContent = 'El ZIP no contiene archivos PDF.';
-        progress.style.display = 'none'; return;
-      }
-
-      var ok_count = 0, fail_count = 0;
-
-      for (var i = 0; i < files.length; i++) {
-        var filename = files[i];
-        var dni = filename.replace(/\.pdf$/i, '').split('/').pop().toUpperCase();
-        var empleado = dniMap[dni];
-
-        progressText.textContent = 'Procesando ' + (i+1) + ' de ' + files.length + ': ' + filename;
-        progressBar.style.width = Math.round(((i+1)/files.length)*100) + '%';
-
-        if (!empleado) { fail_count++; continue; }
-
-        var blob = await zip.files[filename].async('blob');
-        var pdfFile = new File([blob], filename, { type: 'application/pdf' });
-        var storagePath = empleado.id + '/' + Date.now() + '_' + filename;
-
-        var { error: storageError } = await sb.storage.from('documentos').upload(storagePath, pdfFile);
-        if (storageError) { fail_count++; continue; }
-
-        await sb.from('documentos').insert({
-          empleado_id: empleado.id,
-          nombre: nombre,
-          tipo: tipo,
-          url: storagePath,
-          fecha: new Date().toISOString().split('T')[0],
-          leido: false
-        });
-        ok_count++;
-      }
-
-      progress.style.display = 'none';
-      ok.style.display = 'block';
-      ok.textContent = '✓ Proceso completado: ' + ok_count + ' documentos subidos correctamente.' + (fail_count ? ' ' + fail_count + ' no encontrados por DNI.' : '');
-      document.getElementById('masivoNombre').value = '';
-      document.getElementById('masivoArchivo').value = '';
-
-    } catch(e) {
-      progress.style.display = 'none';
-      err.style.display = 'block'; err.textContent = 'Error al procesar el ZIP: ' + e.message;
-    }
-  }
-
-
-  // SOLICITUDES
-  // SOLICITUDES
-document.getElementById('solicitudForm').addEventListener('submit', async function(e){
-  e.preventDefault();
-
-  var ok  = document.getElementById('solicitudOk');
-  var err = document.getElementById('solicitudError');
-  ok.style.display = 'none';
-  err.style.display = 'none';
-
-  if (!currentEmpleado) {
-    err.style.display = 'block';
-    err.textContent = 'No se ha podido identificar al empleado.';
-    return;
-  }
-
-  var tipo = this.querySelector('[name="tipo"]').value;
-  var fechas = this.querySelector('[name="fechas"]').value.trim();
-  var descripcion = this.querySelector('[name="motivo"]').value.trim();
-
-  var { error } = await sb.from('solicitudes').insert({
-    empleado_id: currentEmpleado.id,
-    tipo: tipo,
-    fechas: fechas,
-    descripcion: descripcion,
-    estado: 'pendiente'
-  });
-
-  if (error) {
-    err.style.display = 'block';
-    err.textContent = 'Error al enviar la solicitud: ' + error.message;
-    return;
-  }
-
-  ok.style.display = 'block';
-  ok.textContent = '✓ Solicitud enviada correctamente. Queda pendiente de revisión.';
-  this.reset();
-});
-
-  // Check sesión activa
-  sb.auth.onAuthStateChange(function(event, session) {
-    if (event === 'SIGNED_OUT') {
-      document.getElementById('app').style.display = 'none';
-      document.getElementById('loginWrap').style.display = 'flex';
-    }
-  });
-</script>
-<!-- MODAL PDF -->
-<div id="pdfModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;flex-direction:column">
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;background:var(--bg2);border-bottom:1px solid var(--border)">
-    <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--white)" id="pdfModalTitle">Documento</div>
-    <button onclick="cerrarVisor()" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.4rem 1rem;font-size:0.8rem;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer">✕ Cerrar</button>
-  </div>
-  <iframe id="pdfFrame" src="" style="flex:1;width:100%;border:none;background:white"></iframe>
-</div>
-
-<script>
-  async function verDoc(url, nombre) {
-    var { data, error } = await sb.storage.from('documentos').createSignedUrl(url, 3600);
-    if (error || !data) { alert('No se pudo cargar el documento.'); return; }
-    document.getElementById('pdfModalTitle').textContent = nombre;
-    document.getElementById('pdfFrame').src = data.signedUrl;
-    var modal = document.getElementById('pdfModal');
-    modal.style.display = 'flex';
-  }
-
-  function cerrarVisor() {
-    document.getElementById('pdfModal').style.display = 'none';
-    document.getElementById('pdfFrame').src = '';
-  }
-
-  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') cerrarVisor(); });
-</script>
-
-
-<!-- MOBILE HEADER -->
-<div class="mobile-header" id="mobileHeader">
-  <div style="display:flex;align-items:center;gap:0.6rem">
-    <img src="enerprologo.jpg" alt="ENERPRO" style="height:28px;width:auto">
-    <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--white)">ENER<span style="color:var(--gold)">PRO</span></div>
-  </div>
-  <div style="display:flex;align-items:center;gap:0.5rem">
-    <div style="font-size:0.75rem;color:var(--muted)" id="mobileUserName"></div>
-    <div id="mobileAvatar" style="width:30px;height:30px;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;color:white;border-radius:50%">?</div>
-  </div>
-</div>
-
-<!-- BOTTOM NAV -->
-<nav class="bottom-nav" id="bottomNav">
-  <button class="bottom-nav-item active" data-page="inicio" onclick="navTo('inicio', this)">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-    Inicio
-  </button>
-  <button class="bottom-nav-item" data-page="documentos" onclick="navTo('documentos', this)">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-    Docs
-  </button>
-  <button class="bottom-nav-item" data-page="solicitudes" onclick="navTo('solicitudes', this)">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-    Buzón
-  </button>
-  <button class="bottom-nav-item admin-only-mobile" data-page="admin" onclick="navTo('admin', this)" style="display:none">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-    Admin
-  </button>
-  <button class="bottom-nav-item" onclick="document.getElementById('btnLogout').click()">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-    Salir
-  </button>
-</nav>
-
-<script>
-  function navTo(page, el) {
-    document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(function(b){ b.classList.remove('active'); });
-    document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
-    document.querySelectorAll('[data-page="' + page + '"]').forEach(function(b){ b.classList.add('active'); });
-    document.getElementById('page-' + page).classList.add('active');
-  }
-</script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  </script>
 
 </body>
 </html>
