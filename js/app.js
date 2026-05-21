@@ -437,3 +437,41 @@ document.getElementById('solicitudForm').addEventListener('submit', async functi
     document.querySelectorAll('[data-page="' + page + '"]').forEach(function(b){ b.classList.add('active'); });
     document.getElementById('page-' + page).classList.add('active');
   }
+  async function cargarSolicitudesAdmin() {
+    var container = document.getElementById('solicitudesAdminList');
+    container.innerHTML = '<div class="loading">Cargando...</div>';
+  
+    var { data, error } = await sb
+      .from('solicitudes')
+      .select('*, empleados(nombre)')
+      .order('created_at', { ascending: false });
+  
+    if (error || !data || !data.length) {
+      container.innerHTML = '<div class="empty">No hay solicitudes</div>';
+      return;
+    }
+  
+    container.innerHTML = data.map(function(s) {
+      var badgeClass = s.estado === 'aprobada' ? 'badge-green' : s.estado === 'rechazada' ? 'badge-red' : 'badge-yellow';
+      return '<div class="doc-item">' +
+        '<div class="doc-info">' +
+        '<div class="doc-icon">📋</div>' +
+        '<div>' +
+        '<div class="doc-name">' + (s.empleados ? s.empleados.nombre : 'Empleado') + ' — ' + s.tipo + '</div>' +
+        '<div class="doc-meta">' + (s.fechas || '') + ' · ' + (s.motivo || '') + '</div>' +
+        '<div class="doc-meta">' + new Date(s.created_at).toLocaleDateString('es-ES') + '</div>' +
+        '</div></div>' +
+        '<div style="display:flex;gap:0.5rem;flex-wrap:wrap">' +
+        '<span class="badge ' + badgeClass + '">' + s.estado + '</span>' +
+        (s.estado === 'pendiente' ?
+          '<button class="btn-sm primary" onclick="gestionarSolicitud(\'' + s.id + '\', \'aprobada\')">Aprobar</button>' +
+          '<button class="btn-sm" style="border-color:#dc2626;color:#dc2626" onclick="gestionarSolicitud(\'' + s.id + '\', \'rechazada\')">Rechazar</button>'
+          : '') +
+        '</div></div>';
+    }).join('');
+  }
+  
+  async function gestionarSolicitud(id, nuevoEstado) {
+    await sb.from('solicitudes').update({ estado: nuevoEstado }).eq('id', id);
+    cargarSolicitudesAdmin();
+  }
