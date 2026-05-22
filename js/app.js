@@ -21,8 +21,10 @@ var _docBadgeCount = 0;
 var currentAdminTab = 'dashboard';
 var _solAdminData = [];
 var _vacAdminData = [];
-var _cuadAdminAnio = new Date().getFullYear();
-var _cuadAdminMes  = new Date().getMonth();
+var _cuadAdminAnio  = new Date().getFullYear();
+var _cuadAdminMes   = new Date().getMonth();
+var _cuadAdminCargo = 'todos';
+var _cuadAdminRaw   = { empleados: [], turnos: [] };
 var _dashChartSolCtx = null;
 var _dashChartVacCtx = null;
 
@@ -1160,6 +1162,10 @@ function navigateToPage(page) {
   document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
   var pageEl = document.getElementById('page-' + page);
   if (pageEl) pageEl.classList.add('active');
+  // Scroll to top on every page change
+  var mainEl = document.querySelector('.main');
+  if (mainEl) mainEl.scrollTop = 0;
+  window.scrollTo(0, 0);
   if (page === 'calendario') cargarCalendario();
   if (page === 'vacaciones') cargarVacaciones();
   if (page === 'solicitudes') cargarMisSolicitudes();
@@ -1194,9 +1200,12 @@ async function doLogout() {
   navigateToPage('inicio');
 }
 
-document.getElementById('btnLogout').addEventListener('click', doLogout);
+function confirmarLogout() {
+  if (confirm(t('sidebar.logout') + ' — ¿Seguro que quieres cerrar la sesión?')) doLogout();
+}
+document.getElementById('btnLogout').addEventListener('click', confirmarLogout);
 var btnLogoutMobile = document.getElementById('btnLogoutMobile');
-if (btnLogoutMobile) btnLogoutMobile.addEventListener('click', doLogout);
+if (btnLogoutMobile) btnLogoutMobile.addEventListener('click', confirmarLogout);
 
 // DOCUMENTOS
 async function cargarDocumentos() {
@@ -2748,68 +2757,106 @@ function cuadranteAdminNext() {
   if (_cuadAdminMes > 11) { _cuadAdminMes = 0; _cuadAdminAnio++; }
   cargarCuadranteAdmin();
 }
+function cuadranteAdminHoy() {
+  _cuadAdminAnio = new Date().getFullYear();
+  _cuadAdminMes  = new Date().getMonth();
+  cargarCuadranteAdmin();
+}
+function cuadranteFiltrarCargo(cargo, el) {
+  _cuadAdminCargo = cargo;
+  var btns = document.querySelectorAll('#cuadranteCargoFiltros .emp-filter');
+  btns.forEach(function(b) { b.classList.remove('primary'); });
+  if (el) el.classList.add('primary');
+  renderCuadranteAdmin();
+}
 
 async function cargarCuadranteAdmin() {
-  var grid = document.getElementById('cuadranteAdminGrid');
+  var grid  = document.getElementById('cuadranteAdminGrid');
   var label = document.getElementById('cuadranteAdminLabel');
   if (!grid) return;
 
-  var anio = _cuadAdminAnio;
-  var mes  = _cuadAdminMes;
-
-  if (label) label.textContent = getMes(mes) + ' ' + anio;
-
+  if (label) label.textContent = getMes(_cuadAdminMes) + ' ' + _cuadAdminAnio;
   grid.innerHTML = '<div class="loading" style="padding:2rem">' + t('g.cargando') + '</div>';
 
+  var anio      = _cuadAdminAnio;
+  var mes       = _cuadAdminMes;
   var primerDia = anio + '-' + String(mes + 1).padStart(2, '0') + '-01';
   var diasMes   = new Date(anio, mes + 1, 0).getDate();
   var ultimoDia = anio + '-' + String(mes + 1).padStart(2, '0') + '-' + String(diasMes).padStart(2, '0');
-  var hoy       = new Date().toISOString().split('T')[0];
 
   var [empRes, turRes] = await Promise.all([
-    sb.from('empleados').select('id, nombre').eq('activo', true).order('nombre'),
-    sb.from('turnos').select('empleado_id, fecha, tipo').gte('fecha', primerDia).lte('fecha', ultimoDia)
+    sb.from('empleados').select('id, nombre, cargo').eq('activo', true).order('nombre'),
+    sb.from('turnos').select('empleado_id, fecha, tipo, ubicacion, hora_inicio, hora_fin')
+      .gte('fecha', primerDia).lte('fecha', ultimoDia)
   ]);
 
-  var empleados = empRes.data || [];
-  var turnos    = turRes.data || [];
+  _cuadAdminRaw = { empleados: empRes.data || [], turnos: turRes.data || [] };
+  renderCuadranteAdmin();
+}
+
+function renderCuadranteAdmin() {
+  var grid  = document.getElementById('cuadranteAdminGrid');
+  var label = document.getElementById('cuadranteAdminLabel');
+  if (!grid) return;
+
+  if (label) label.textContent = getMes(_cuadAdminMes) + ' ' + _cuadAdminAnio;
+
+  var anio    = _cuadAdminAnio;
+  var mes     = _cuadAdminMes;
+  var diasMes = new Date(anio, mes + 1, 0).getDate();
+  var hoy     = new Date().toISOString().split('T')[0];
+
+  var empleados = _cuadAdminRaw.empleados.filter(function(e) {
+    return _cuadAdminCargo === 'todos' || e.cargo === _cuadAdminCargo;
+  });
+  var turnos = _cuadAdminRaw.turnos;
 
   if (!empleados.length) {
     grid.innerHTML = '<div class="empty" style="border:none;padding:2rem">' + t('cua.sin_turnos') + '</div>';
     return;
   }
 
-  // Build lookup: empId → { 'YYYY-MM-DD' → tipo }
+  // Build lookup: empId → { 'YYYY-MM-DD' → {tipo, ubicacion, hora_inicio, hora_fin} }
   var mapa = {};
   empleados.forEach(function(e) { mapa[e.id] = {}; });
   turnos.forEach(function(tur) {
-    if (mapa[tur.empleado_id]) mapa[tur.empleado_id][tur.fecha] = tur.tipo;
+    if (mapa[tur.empleado_id]) {
+      mapa[tur.empleado_id][tur.fecha] = {
+        tipo:       tur.tipo,
+        ubicacion:  tur.ubicacion  || '',
+        horaInicio: tur.hora_inicio ? tur.hora_inicio.slice(0,5) : '',
+        horaFin:    tur.hora_fin    ? tur.hora_fin.slice(0,5)    : ''
+      };
+    }
   });
 
-  // Abbreviations
   var abrev = { manana:'M', tarde:'T', noche:'N', guardia:'G', libre:'L' };
 
-  // Header row with day numbers
+  // Header
   var thead = '<thead><tr><th style="min-width:9rem;text-align:left;padding:0.35rem 0.75rem">' + t('cua.empleado') + '</th>';
   for (var d = 1; d <= diasMes; d++) {
     var fechaCol = anio + '-' + String(mes + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
     var esHoy    = fechaCol === hoy;
-    var diaSem   = new Date(fechaCol + 'T12:00:00').getDay(); // 0=dom,6=sab
+    var diaSem   = new Date(fechaCol + 'T12:00:00').getDay();
     var esFinDe  = (diaSem === 0 || diaSem === 6);
     thead += '<th class="' + (esHoy ? 'cua-hoy-col' : '') + '" style="min-width:2rem;' + (esFinDe ? 'color:rgba(245,184,0,0.6)' : '') + '">' + d + '</th>';
   }
   thead += '</tr></thead>';
 
-  // Body rows
+  // Body
   var tbody = '<tbody>';
   empleados.forEach(function(emp) {
-    tbody += '<tr><td title="' + emp.nombre + '">' + emp.nombre + '</td>';
+    tbody += '<tr><td title="' + emp.nombre + (emp.cargo ? ' · ' + emp.cargo : '') + '">' + emp.nombre + '</td>';
     for (var d2 = 1; d2 <= diasMes; d2++) {
       var fechaCel = anio + '-' + String(mes + 1).padStart(2, '0') + '-' + String(d2).padStart(2, '0');
-      var tipo     = mapa[emp.id][fechaCel];
+      var info     = mapa[emp.id] && mapa[emp.id][fechaCel];
       var esHoy2   = fechaCel === hoy;
-      if (tipo) {
-        tbody += '<td class="' + (esHoy2 ? 'cua-hoy-col' : '') + '"><div class="cua-cell"><span class="cua-pill t-' + tipo + '">' + (abrev[tipo] || tipo.charAt(0).toUpperCase()) + '</span></div></td>';
+      if (info) {
+        var tooltip = getTipoTurno(info.tipo);
+        if (info.horaInicio) tooltip += ' ' + info.horaInicio + (info.horaFin ? '–' + info.horaFin : '');
+        if (info.ubicacion)  tooltip += '\n' + info.ubicacion;
+        tbody += '<td class="' + (esHoy2 ? 'cua-hoy-col' : '') + '" title="' + tooltip.replace(/"/g, '&quot;') + '">' +
+          '<div class="cua-cell"><span class="cua-pill t-' + info.tipo + '">' + (abrev[info.tipo] || info.tipo.charAt(0).toUpperCase()) + '</span></div></td>';
       } else {
         tbody += '<td class="' + (esHoy2 ? 'cua-hoy-col' : '') + '" style="color:rgba(255,255,255,0.08)">·</td>';
       }
@@ -2820,9 +2867,8 @@ async function cargarCuadranteAdmin() {
 
   // Legend
   var legendItems = [
-    { tipo:'manana',  abr:'M' }, { tipo:'tarde',  abr:'T' },
-    { tipo:'noche',   abr:'N' }, { tipo:'guardia', abr:'G' },
-    { tipo:'libre',   abr:'L' }
+    { tipo:'manana', abr:'M' }, { tipo:'tarde', abr:'T' },
+    { tipo:'noche',  abr:'N' }, { tipo:'guardia', abr:'G' }, { tipo:'libre', abr:'L' }
   ];
   var legend = '<div style="display:flex;gap:0.75rem;flex-wrap:wrap;padding:0.75rem 1.25rem;border-top:1px solid var(--border)">';
   legendItems.forEach(function(li) {
@@ -2831,6 +2877,46 @@ async function cargarCuadranteAdmin() {
   legend += '</div>';
 
   grid.innerHTML = '<table class="cua-table">' + thead + tbody + '</table>' + legend;
+}
+
+function exportarCuadranteCSV() {
+  var anio    = _cuadAdminAnio;
+  var mes     = _cuadAdminMes;
+  var diasMes = new Date(anio, mes + 1, 0).getDate();
+  var empleados = _cuadAdminRaw.empleados.filter(function(e) {
+    return _cuadAdminCargo === 'todos' || e.cargo === _cuadAdminCargo;
+  });
+  if (!empleados.length) { mostrarToast(t('toast.sin_datos'), t('cua.sin_turnos')); return; }
+
+  var mapa = {};
+  empleados.forEach(function(e) { mapa[e.id] = {}; });
+  _cuadAdminRaw.turnos.forEach(function(tur) {
+    if (mapa[tur.empleado_id]) mapa[tur.empleado_id][tur.fecha] = tur.tipo;
+  });
+
+  var abrev = { manana:'M', tarde:'T', noche:'N', guardia:'G', libre:'L' };
+  var dias = [];
+  for (var d = 1; d <= diasMes; d++) dias.push(d);
+
+  var header = [t('cua.empleado')].concat(dias).join(';') + '\n';
+  var rows = empleados.map(function(emp) {
+    var celdas = dias.map(function(d) {
+      var fecha = anio + '-' + String(mes + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+      var tipo  = mapa[emp.id][fecha];
+      return tipo ? (abrev[tipo] || tipo.charAt(0).toUpperCase()) : '';
+    });
+    return [emp.nombre].concat(celdas).join(';');
+  }).join('\n');
+
+  var blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv;charset=utf-8;' });
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'cuadrante_' + getMes(mes) + '_' + anio + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // FIRMA DE DOCUMENTOS

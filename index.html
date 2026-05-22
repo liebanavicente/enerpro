@@ -978,7 +978,7 @@
   </aside>
 
   <header class="mobile-header" aria-label="Cabecera">
-    <div class="mobile-header-brand">
+    <div class="mobile-header-brand" onclick="navigateToPage('inicio')" style="cursor:pointer">
       <img src="enerprologo.jpg" alt="ENERPRO">
       <div>
         <div class="mobile-header-title">ENER<span>PRO</span></div>
@@ -1382,13 +1382,22 @@
 
       <!-- CUADRANTE VISUAL DEL MES -->
       <div class="card" style="margin-top:1.5rem;padding:0;border-top:2px solid var(--gold)">
-        <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem">
+        <div style="padding:0.875rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem">
           <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold)" data-i18n="cua.titulo">Cuadrante del mes</span>
-          <div style="display:flex;align-items:center;gap:0.5rem">
+          <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
             <button class="btn-sm" onclick="cuadranteAdminPrev()" style="padding:0.3rem 0.6rem;font-size:1rem;line-height:1">‹</button>
             <span id="cuadranteAdminLabel" style="font-size:0.85rem;font-weight:600;min-width:9rem;text-align:center"></span>
             <button class="btn-sm" onclick="cuadranteAdminNext()" style="padding:0.3rem 0.6rem;font-size:1rem;line-height:1">›</button>
+            <button class="btn-sm" onclick="cuadranteAdminHoy()" style="font-size:0.72rem">Hoy</button>
+            <button class="btn-sm gold" onclick="exportarCuadranteCSV()" style="font-size:0.72rem" data-i18n="cua.exportar">⬇ Exportar</button>
           </div>
+        </div>
+        <div style="padding:0.625rem 1.5rem;border-bottom:1px solid var(--border);display:flex;gap:0.4rem;flex-wrap:wrap" id="cuadranteCargoFiltros">
+          <button class="btn-sm emp-filter primary" onclick="cuadranteFiltrarCargo('todos',this)">Todos</button>
+          <button class="btn-sm emp-filter" onclick="cuadranteFiltrarCargo('Vigilante de seguridad',this)" data-i18n="emp.f_vig">Vigilantes</button>
+          <button class="btn-sm emp-filter" onclick="cuadranteFiltrarCargo('Auxiliar de servicio',this)" data-i18n="emp.f_aux">Auxiliares</button>
+          <button class="btn-sm emp-filter" onclick="cuadranteFiltrarCargo('Coordinador',this)" data-i18n="emp.f_coo">Coordinadores</button>
+          <button class="btn-sm emp-filter" onclick="cuadranteFiltrarCargo('Administrativo',this)" data-i18n="emp.f_adm">Administrativos</button>
         </div>
         <div id="cuadranteAdminGrid" style="overflow-x:auto;padding:0"><div class="loading" style="padding:2rem">Cargando...</div></div>
       </div>
