@@ -527,7 +527,8 @@ function switchTab(tab, el) {
   }
   if (tab === 'solicitudes-admin')  cargarSolicitudesAdmin();
   if (tab === 'vacaciones-admin')   cargarVacacionesAdmin();
-  if (tab === 'turnos-admin') cargarTurnosAdmin();
+  if (tab === 'turnos-admin') { cargarTurnosAdmin(); poblarMasivaEmpleados(); }
+  if (tab === 'resumen-vac')        cargarResumenVacaciones();
 }
 
 // ADMIN - EMPLEADOS
@@ -1570,6 +1571,207 @@ function suscribirDocumentosNuevos() {
     })
     .subscribe();
 }
+// ─── RESUMEN VACACIONAL ADMIN ────────────────────────────
+
+async function cargarResumenVacaciones() {
+  var lista = document.getElementById('resumenVacLista');
+  if (!lista) return;
+  lista.innerHTML = skelDocs(5);
+
+  var ano = new Date().getFullYear();
+  var anoEl = document.getElementById('resumenVacAno');
+  if (anoEl) anoEl.textContent = '· ' + ano;
+
+  var filtro = document.getElementById('resumenVacCargo') ? document.getElementById('resumenVacCargo').value : 'todos';
+
+  var empQ = sb.from('empleados').select('*').eq('activo', true).order('nombre');
+  if (filtro !== 'todos') empQ = empQ.eq('cargo', filtro);
+  var [empRes, vacRes] = await Promise.all([
+    empQ,
+    sb.from('vacaciones')
+      .select('empleado_id, tipo, fecha_inicio, fecha_fin, estado')
+      .eq('tipo', 'vacaciones').eq('estado', 'aprobada')
+      .gte('fecha_inicio', ano + '-01-01').lte('fecha_inicio', ano + '-12-31')
+  ]);
+
+  var empleados = empRes.data || [];
+  var vacaciones = vacRes.data || [];
+
+  var usadosMap = {};
+  vacaciones.forEach(function(v) {
+    usadosMap[v.empleado_id] = (usadosMap[v.empleado_id] || 0) + diasEntre(v.fecha_inicio, v.fecha_fin);
+  });
+
+  if (!empleados.length) {
+    lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>No hay empleados activos</div>';
+    return;
+  }
+
+  var rows = empleados.map(function(e, i) {
+    var total     = e.dias_vacaciones_anuales || 22;
+    var usados    = usadosMap[e.id] || 0;
+    var restantes = Math.max(0, total - usados);
+    var pct       = Math.min(100, Math.round((usados / total) * 100));
+    var colorBar  = pct >= 90 ? 'var(--red)' : pct >= 60 ? 'var(--yellow)' : 'var(--green)';
+    var colorRest = restantes === 0 ? 'var(--red)' : restantes <= 5 ? 'var(--yellow)' : 'var(--green)';
+    var inicial   = e.nombre.charAt(0).toUpperCase();
+    return '<tr style="animation:fadeIn 0.25s ease both;animation-delay:' + (i * 35) + 'ms">' +
+      '<td>' +
+        '<div style="display:flex;align-items:center;gap:0.75rem">' +
+          '<div style="width:32px;height:32px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;color:#fff;flex-shrink:0">' + inicial + '</div>' +
+          '<div><div style="font-weight:500;color:var(--white)">' + e.nombre + '</div>' +
+          '<div style="font-size:0.72rem;color:var(--muted)">' + e.cargo + '</div></div>' +
+        '</div>' +
+      '</td>' +
+      '<td style="text-align:center;color:var(--text2)">' + total + '</td>' +
+      '<td style="text-align:center">' +
+        '<div style="display:flex;flex-direction:column;align-items:center;gap:4px">' +
+          '<strong style="color:var(--white)">' + usados + '</strong>' +
+          '<div style="width:72px;height:4px;background:var(--surface3);border-radius:2px">' +
+            '<div style="width:' + pct + '%;height:100%;background:' + colorBar + ';border-radius:2px;transition:width 0.6s"></div>' +
+          '</div>' +
+        '</div>' +
+      '</td>' +
+      '<td style="text-align:center"><strong style="color:' + colorRest + '">' + restantes + '</strong></td>' +
+      '</tr>';
+  });
+
+  lista.innerHTML =
+    '<table style="font-size:0.85rem">' +
+      '<thead><tr>' +
+        '<th>Empleado</th>' +
+        '<th style="text-align:center">Días anuales</th>' +
+        '<th style="text-align:center">Usados</th>' +
+        '<th style="text-align:center">Restantes</th>' +
+      '</tr></thead>' +
+      '<tbody>' + rows.join('') + '</tbody>' +
+    '</table>';
+}
+
+function exportarResumenVacaciones() {
+  var lista = document.getElementById('resumenVacLista');
+  if (!lista) return;
+  var rows = lista.querySelectorAll('tbody tr');
+  if (!rows.length) { alert('No hay datos para exportar.'); return; }
+  var ano = new Date().getFullYear();
+  var filas = [['Nombre', 'Cargo', 'Días anuales', 'Días usados', 'Días restantes']];
+  rows.forEach(function(tr) {
+    var tds = tr.querySelectorAll('td');
+    var nombre   = tds[0] ? tds[0].querySelector('div > div > div:first-child').textContent.trim() : '';
+    var cargo    = tds[0] ? tds[0].querySelector('div > div > div:last-child').textContent.trim() : '';
+    var total    = tds[1] ? tds[1].textContent.trim() : '';
+    var usados   = tds[2] ? tds[2].querySelector('strong').textContent.trim() : '';
+    var rest     = tds[3] ? tds[3].querySelector('strong').textContent.trim() : '';
+    filas.push([nombre, cargo, total, usados, rest]);
+  });
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.aoa_to_sheet(filas);
+  ws['!cols'] = [{wch:32},{wch:26},{wch:14},{wch:13},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Vacaciones ' + ano);
+  XLSX.writeFile(wb, 'resumen_vacaciones_' + ano + '.xlsx');
+}
+
+// ─── TURNOS MASIVOS ───────────────────────────────────────
+
+function switchMasivaTab(mode) {
+  document.getElementById('masiva-fecha').style.display     = mode === 'fecha'     ? 'block' : 'none';
+  document.getElementById('masiva-empleados').style.display = mode === 'empleados' ? 'block' : 'none';
+  document.getElementById('masivaTabFecha').classList.toggle('active',     mode === 'fecha');
+  document.getElementById('masivaTabEmpleados').classList.toggle('active', mode === 'empleados');
+}
+
+function poblarMasivaEmpleados() {
+  var sel = document.getElementById('masivaEmpFecha');
+  var chk = document.getElementById('masivaEmpCheckList');
+  if (!sel || !chk || !allEmpleados.length) return;
+  sel.innerHTML = '<option value="">Selecciona empleado...</option>' +
+    allEmpleados.map(function(e){ return '<option value="' + e.id + '">' + e.nombre + ' — ' + e.cargo + '</option>'; }).join('');
+  chk.innerHTML = allEmpleados.map(function(e) {
+    return '<label style="display:flex;align-items:center;gap:0.625rem;padding:0.45rem 0.625rem;border-radius:var(--r-xs);cursor:pointer;transition:background 0.15s" onmouseover="this.style.background=\'var(--surface2)\'" onmouseout="this.style.background=\'\'">' +
+      '<input type="checkbox" class="masiva-emp-chk" value="' + e.id + '" style="width:auto;padding:0;border:none;background:none;min-height:auto;accent-color:var(--gold)">' +
+      '<span style="font-size:0.83rem;color:var(--text2)">' + e.nombre + ' <span style="color:var(--muted);font-size:0.75rem">· ' + e.cargo + '</span></span>' +
+      '</label>';
+  }).join('');
+}
+
+function seleccionarTodosEmp(val) {
+  document.querySelectorAll('.masiva-emp-chk').forEach(function(c){ c.checked = val; });
+}
+
+async function crearTurnosPorFecha() {
+  var empId  = document.getElementById('masivaEmpFecha').value;
+  var desde  = document.getElementById('masivaDesde').value;
+  var hasta  = document.getElementById('masivaHasta').value;
+  var tipo   = document.getElementById('masivaTipoFecha').value;
+  var ini    = document.getElementById('masivaHoraIni').value;
+  var fin    = document.getElementById('masivaHoraFin').value;
+  var ubic   = document.getElementById('masivaUbicFecha').value.trim();
+  var excFin = document.getElementById('masivaExcluirFinde').checked;
+  var ok     = document.getElementById('masivaFechaOk');
+  var err    = document.getElementById('masivaFechaErr');
+  var btn    = document.getElementById('masivaFechaBtn');
+  ok.style.display = 'none'; err.style.display = 'none';
+  if (!empId || !desde || !hasta) { err.style.display='block'; err.textContent='Selecciona empleado y rango de fechas.'; return; }
+  if (hasta < desde) { err.style.display='block'; err.textContent='La fecha fin debe ser posterior al inicio.'; return; }
+
+  var fechas = [];
+  var cur = new Date(desde + 'T12:00:00');
+  var end = new Date(hasta + 'T12:00:00');
+  while (cur <= end) {
+    var dow = cur.getDay(); // 0=dom, 6=sab
+    if (!excFin || (dow !== 0 && dow !== 6)) {
+      fechas.push(cur.toISOString().split('T')[0]);
+    }
+    cur.setDate(cur.getDate() + 1);
+  }
+  if (!fechas.length) { err.style.display='block'; err.textContent='No hay días hábiles en el rango seleccionado.'; return; }
+
+  btn.disabled = true; btn.textContent = 'Creando ' + fechas.length + ' turnos…';
+  var payload = fechas.map(function(f) {
+    var t = { empleado_id: empId, fecha: f, tipo: tipo };
+    if (ini)  t.hora_inicio = ini;
+    if (fin)  t.hora_fin    = fin;
+    if (ubic) t.ubicacion   = ubic;
+    return t;
+  });
+  var { error } = await sb.from('turnos').insert(payload);
+  btn.disabled = false; btn.textContent = 'Crear turnos en el rango';
+  if (error) { err.style.display='block'; err.textContent='Error: ' + error.message; return; }
+  ok.style.display='block'; ok.textContent='✓ ' + fechas.length + ' turnos creados correctamente.';
+  cargarTurnosAdmin();
+}
+
+async function crearTurnosPorEmpleados() {
+  var fecha  = document.getElementById('masivaFechaEmp').value;
+  var tipo   = document.getElementById('masivaTipoEmp').value;
+  var ini    = document.getElementById('masivaHoraIniEmp').value;
+  var fin    = document.getElementById('masivaHoraFinEmp').value;
+  var ubic   = document.getElementById('masivaUbicEmp').value.trim();
+  var ok     = document.getElementById('masivaEmpOk');
+  var err    = document.getElementById('masivaEmpErr');
+  var btn    = document.getElementById('masivaEmpBtn');
+  ok.style.display = 'none'; err.style.display = 'none';
+
+  var selIds = Array.from(document.querySelectorAll('.masiva-emp-chk:checked')).map(function(c){ return c.value; });
+  if (!fecha)          { err.style.display='block'; err.textContent='Selecciona una fecha.'; return; }
+  if (!selIds.length)  { err.style.display='block'; err.textContent='Selecciona al menos un empleado.'; return; }
+
+  btn.disabled = true; btn.textContent = 'Creando ' + selIds.length + ' turnos…';
+  var payload = selIds.map(function(id) {
+    var t = { empleado_id: id, fecha: fecha, tipo: tipo };
+    if (ini)  t.hora_inicio = ini;
+    if (fin)  t.hora_fin    = fin;
+    if (ubic) t.ubicacion   = ubic;
+    return t;
+  });
+  var { error } = await sb.from('turnos').insert(payload);
+  btn.disabled = false; btn.textContent = 'Crear turnos para seleccionados';
+  if (error) { err.style.display='block'; err.textContent='Error: ' + error.message; return; }
+  ok.style.display='block'; ok.textContent='✓ ' + selIds.length + ' turnos creados para el ' + fecha + '.';
+  seleccionarTodosEmp(false);
+  cargarTurnosAdmin();
+}
+
 // ─── NOTIFICACIONES REALTIME PARA EL ADMIN ───────────────
 
 function suscribirSolicitudesAdmin() {

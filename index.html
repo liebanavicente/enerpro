@@ -955,6 +955,7 @@
         <button class="admin-tab" onclick="switchTab('turnos-admin', this)">Turnos</button>
         <button class="admin-tab" onclick="switchTab('importar', this)">Importar Excel</button>
         <button class="admin-tab" onclick="switchTab('vacaciones-admin', this)">Vacaciones</button>
+        <button class="admin-tab" onclick="switchTab('resumen-vac', this)">📋 Resumen vacacional</button>
       </div>
 
       <!-- TAB DASHBOARD -->
@@ -1135,6 +1136,70 @@
           <div id="turnosAdminList"><div class="loading">Cargando...</div></div>
         </div>
       </div>
+
+      <!-- ASIGNACIÓN MASIVA -->
+      <div class="card" style="margin-top:1.5rem;border-top:2px solid var(--gold)">
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem">Asignación masiva de turnos</div>
+        <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.25rem">
+          <button id="masivaTabFecha" class="admin-tab active" style="font-size:0.78rem" onclick="switchMasivaTab('fecha')">📅 Rango de fechas</button>
+          <button id="masivaTabEmpleados" class="admin-tab" style="font-size:0.78rem" onclick="switchMasivaTab('empleados')">👥 Varios empleados</button>
+        </div>
+
+        <!-- Modo A: un empleado, rango de fechas -->
+        <div id="masiva-fecha">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem">
+            <div class="form-group" style="margin:0"><label>Empleado</label>
+              <select id="masivaEmpFecha"><option value="">Selecciona empleado...</option></select>
+            </div>
+            <div class="form-group" style="margin:0"><label>Tipo de turno</label>
+              <select id="masivaTipoFecha">
+                <option value="manana">Mañana</option><option value="tarde">Tarde</option>
+                <option value="noche">Noche</option><option value="guardia">Guardia</option>
+                <option value="libre">Libre / Descanso</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0"><label>Desde</label><input type="date" id="masivaDesde"></div>
+            <div class="form-group" style="margin:0"><label>Hasta</label><input type="date" id="masivaHasta"></div>
+            <div class="form-group" style="margin:0"><label>Hora inicio</label><input type="time" id="masivaHoraIni"></div>
+            <div class="form-group" style="margin:0"><label>Hora fin</label><input type="time" id="masivaHoraFin"></div>
+          </div>
+          <div class="form-group"><label>Ubicación (opcional)</label><input type="text" id="masivaUbicFecha" placeholder="Ej: Centro Comercial Norte"></div>
+          <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;color:var(--text2);cursor:pointer;margin-bottom:1rem">
+            <input type="checkbox" id="masivaExcluirFinde" checked style="width:auto;padding:0;border:none;background:none;min-height:auto"> Excluir sábados y domingos
+          </label>
+          <div class="success-box" id="masivaFechaOk"></div>
+          <div class="error-box"   id="masivaFechaErr"></div>
+          <button class="btn-sm primary" id="masivaFechaBtn" onclick="crearTurnosPorFecha()" style="padding:0.65rem 1.5rem">Crear turnos en el rango</button>
+        </div>
+
+        <!-- Modo B: varios empleados, una fecha -->
+        <div id="masiva-empleados" style="display:none">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem">
+            <div class="form-group" style="margin:0"><label>Fecha</label><input type="date" id="masivaFechaEmp"></div>
+            <div class="form-group" style="margin:0"><label>Tipo de turno</label>
+              <select id="masivaTipoEmp">
+                <option value="manana">Mañana</option><option value="tarde">Tarde</option>
+                <option value="noche">Noche</option><option value="guardia">Guardia</option>
+                <option value="libre">Libre / Descanso</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0"><label>Hora inicio</label><input type="time" id="masivaHoraIniEmp"></div>
+            <div class="form-group" style="margin:0"><label>Hora fin</label><input type="time" id="masivaHoraFinEmp"></div>
+          </div>
+          <div class="form-group"><label>Ubicación (opcional)</label><input type="text" id="masivaUbicEmp" placeholder="Ej: Centro Comercial Norte"></div>
+          <div style="margin-bottom:1rem">
+            <div style="font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.625rem">Empleados</div>
+            <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem">
+              <button class="btn-sm" onclick="seleccionarTodosEmp(true)" style="font-size:0.7rem">Seleccionar todos</button>
+              <button class="btn-sm" onclick="seleccionarTodosEmp(false)" style="font-size:0.7rem">Deseleccionar todos</button>
+            </div>
+            <div id="masivaEmpCheckList" style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r-sm);padding:0.5rem"></div>
+          </div>
+          <div class="success-box" id="masivaEmpOk"></div>
+          <div class="error-box"   id="masivaEmpErr"></div>
+          <button class="btn-sm primary" id="masivaEmpBtn" onclick="crearTurnosPorEmpleados()" style="padding:0.65rem 1.5rem">Crear turnos para seleccionados</button>
+        </div>
+      </div>
     </div>
 
     <div class="admin-tab-content" id="tab-vacaciones-admin" style="display:none">
@@ -1153,6 +1218,30 @@
           </div>
         </div>
         <div id="vacAdminLista"><div class="loading">Cargando...</div></div>
+      </div>
+    </div>
+
+    <!-- TAB RESUMEN VACACIONAL -->
+    <div class="admin-tab-content" id="tab-resumen-vac" style="display:none">
+      <div class="card" style="padding:0">
+        <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem">
+          <div>
+            <span class="card-label" style="margin:0">Resumen vacacional</span>
+            <span id="resumenVacAno" style="font-size:0.72rem;color:var(--muted);margin-left:0.5rem"></span>
+          </div>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+            <select id="resumenVacCargo" class="btn-sm" style="padding:0 0.75rem;height:36px;border-radius:var(--r-xs);background:var(--surface2);color:var(--text2)" onchange="cargarResumenVacaciones()">
+              <option value="todos">Todos los cargos</option>
+              <option value="Vigilante de seguridad">Vigilantes</option>
+              <option value="Auxiliar de servicio">Auxiliares</option>
+              <option value="Coordinador">Coordinadores</option>
+              <option value="Administrativo">Administrativos</option>
+            </select>
+            <button class="btn-sm" style="border-color:rgba(245,184,0,0.4);color:var(--gold)" onclick="exportarResumenVacaciones()">⬇ Exportar Excel</button>
+            <button class="btn-sm" onclick="cargarResumenVacaciones()">↺ Actualizar</button>
+          </div>
+        </div>
+        <div id="resumenVacLista"><div class="loading">Cargando...</div></div>
       </div>
     </div>
 
