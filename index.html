@@ -593,7 +593,26 @@
     #page-admin .admin-tabs { gap:0; }
     #tab-turnos-admin > div,
     #tab-importar > div { grid-template-columns:1fr !important; }
+    #dashChartsRow { grid-template-columns:1fr !important; }
+    .cua-table td:first-child { min-width:6rem; max-width:8rem; }
   }
+
+  /* ─── CUADRANTE ADMIN ──────────────────────────────────── */
+  .cua-table { border-collapse:collapse; width:100%; font-size:0.72rem; }
+  .cua-table th, .cua-table td { border:1px solid var(--border); padding:0; text-align:center; white-space:nowrap; }
+  .cua-table th { background:var(--surface2); color:var(--muted); font-weight:600; padding:0.35rem 0.2rem; font-size:0.68rem; }
+  .cua-table td:first-child { text-align:left; padding:0.35rem 0.75rem; min-width:9rem; max-width:12rem; overflow:hidden; text-overflow:ellipsis; position:sticky; left:0; background:var(--surface-s); z-index:1; color:var(--text2); font-size:0.75rem; }
+  .cua-table tr:hover td { background:rgba(255,255,255,0.02); }
+  .cua-table tr:hover td:first-child { background:var(--surface2); }
+  .cua-cell { display:flex; align-items:center; justify-content:center; padding:0.3rem 0.1rem; }
+  .cua-pill { font-size:0.62rem; font-weight:800; padding:0.15rem 0.32rem; border-radius:4px; letter-spacing:0.03em; text-transform:uppercase; }
+  .cua-empty { color:rgba(255,255,255,0.1); font-size:0.7rem; }
+  .cua-hoy th.cua-hoy-col { background:rgba(245,184,0,0.12); color:var(--gold); }
+  .cua-table td.cua-hoy-col { background:rgba(245,184,0,0.06); }
+
+  /* ─── DASHBOARD CHARTS ──────────────────────────────────── */
+  .chart-wrap { position:relative; }
+  .chart-wrap canvas { display:block; width:100% !important; }
 
   /* Legacy aliases */
   :root { --bg2: var(--surface-s); --bg3: var(--surface-s2); }
@@ -1108,6 +1127,27 @@
             <div id="dashSolicitudes"><div class="loading">Cargando...</div></div>
           </div>
         </div>
+        <!-- GRÁFICAS -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:1.25rem" id="dashChartsRow">
+          <div class="card" style="padding:0">
+            <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border)">
+              <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)" data-i18n="grf.sol_titulo">Solicitudes · últimos 6 meses</span>
+            </div>
+            <div class="chart-wrap" style="padding:1.25rem 1.5rem 1rem">
+              <canvas id="chartSolicitudes" height="160"></canvas>
+              <div id="chartSolEmpty" style="display:none;text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem" data-i18n="grf.sol_empty">Sin datos de solicitudes</div>
+            </div>
+          </div>
+          <div class="card" style="padding:0">
+            <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0.5rem">
+              <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)" data-i18n-prefix="grf.vac_titulo" id="dashChartVacLabel">Vacaciones usadas por empleado</span>
+            </div>
+            <div class="chart-wrap" style="padding:1.25rem 1.5rem 1rem">
+              <canvas id="chartVacaciones" height="160"></canvas>
+              <div id="chartVacEmpty" style="display:none;text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem" data-i18n="grf.vac_empty">Sin datos de vacaciones</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="admin-tab-content" id="tab-empleados">
@@ -1338,6 +1378,19 @@
           <div class="error-box"   id="masivaEmpErr"></div>
           <button class="btn-sm primary" id="masivaEmpBtn" onclick="crearTurnosPorEmpleados()" style="padding:0.65rem 1.5rem" data-i18n="am.btn_emp">Crear turnos para seleccionados</button>
         </div>
+      </div>
+
+      <!-- CUADRANTE VISUAL DEL MES -->
+      <div class="card" style="margin-top:1.5rem;padding:0;border-top:2px solid var(--gold)">
+        <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem">
+          <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold)" data-i18n="cua.titulo">Cuadrante del mes</span>
+          <div style="display:flex;align-items:center;gap:0.5rem">
+            <button class="btn-sm" onclick="cuadranteAdminPrev()" style="padding:0.3rem 0.6rem;font-size:1rem;line-height:1">‹</button>
+            <span id="cuadranteAdminLabel" style="font-size:0.85rem;font-weight:600;min-width:9rem;text-align:center"></span>
+            <button class="btn-sm" onclick="cuadranteAdminNext()" style="padding:0.3rem 0.6rem;font-size:1rem;line-height:1">›</button>
+          </div>
+        </div>
+        <div id="cuadranteAdminGrid" style="overflow-x:auto;padding:0"><div class="loading" style="padding:2rem">Cargando...</div></div>
       </div>
     </div>
 

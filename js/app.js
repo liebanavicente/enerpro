@@ -21,6 +21,10 @@ var _docBadgeCount = 0;
 var currentAdminTab = 'dashboard';
 var _solAdminData = [];
 var _vacAdminData = [];
+var _cuadAdminAnio = new Date().getFullYear();
+var _cuadAdminMes  = new Date().getMonth();
+var _dashChartSolCtx = null;
+var _dashChartVacCtx = null;
 
 // ─── I18N ─────────────────────────────────────────────────
 
@@ -337,6 +341,16 @@ var I18N = {
     'ta.actualizar':     '↺ Actualizar',
     'ta.ok':             '✓ Turno asignado correctamente.',
     'ta.empty':          'No hay turnos próximos',
+    // Cuadrante mensual admin
+    'cua.titulo':        'Cuadrante del mes',
+    'cua.sin_turnos':    'Sin turnos asignados',
+    'cua.empleado':      'Empleado',
+    'cua.exportar':      '⬇ Exportar',
+    // Dashboard charts
+    'grf.sol_titulo':    'Solicitudes · últimos 6 meses',
+    'grf.vac_titulo':    'Vacaciones usadas por empleado · ',
+    'grf.sol_empty':     'Sin datos de solicitudes',
+    'grf.vac_empty':     'Sin datos de vacaciones',
     // Masiva
     'am.titulo':         'Asignación masiva de turnos',
     'am.tab_fecha':      '📅 Rango de fechas',
@@ -748,6 +762,16 @@ var I18N = {
     'ta.actualizar':     '↺ Actualitzar',
     'ta.ok':             '✓ Torn assignat correctament.',
     'ta.empty':          'No hi ha torns propers',
+    // Cuadrante mensual admin
+    'cua.titulo':        'Quadrant del mes',
+    'cua.sin_turnos':    'Sense torns assignats',
+    'cua.empleado':      'Empleat',
+    'cua.exportar':      '⬇ Exportar',
+    // Dashboard charts
+    'grf.sol_titulo':    'Sol·licituds · darrers 6 mesos',
+    'grf.vac_titulo':    'Vacances usades per empleat · ',
+    'grf.sol_empty':     'Sense dades de sol·licituds',
+    'grf.vac_empty':     'Sense dades de vacances',
     // Masiva
     'am.titulo':         'Assignació massiva de torns',
     'am.tab_fecha':      '📅 Rang de dates',
@@ -1473,7 +1497,8 @@ async function confirmarSolicitud(id, estado) {
   var comentario = cmt ? cmt.value.trim() : '';
   var payload = { estado: estado };
   if (comentario) payload.comentario = comentario;
-  await sb.from('solicitudes').update(payload).eq('id', id);
+  var { data: solData } = await sb.from('solicitudes').update(payload).eq('id', id).select('empleado_id, tipo').single();
+  if (solData) notificarEmail('solicitud_' + estado, solData.empleado_id, { tipo: solData.tipo, comentario: comentario });
   cargarSolicitudesAdmin();
   if (document.getElementById('dashStats')) cargarDashboard();
   cargarBadgeAdmin();
@@ -1496,7 +1521,7 @@ function switchTab(tab, el) {
   }
   if (tab === 'solicitudes-admin')  cargarSolicitudesAdmin();
   if (tab === 'vacaciones-admin')   cargarVacacionesAdmin();
-  if (tab === 'turnos-admin') { cargarTurnosAdmin(); poblarMasivaEmpleados(); }
+  if (tab === 'turnos-admin') { cargarTurnosAdmin(); poblarMasivaEmpleados(); cargarCuadranteAdmin(); }
   if (tab === 'resumen-vac')        cargarResumenVacaciones();
   if (tab === 'docs-admin')         cargarDocumentosAdmin();
 }
@@ -1983,7 +2008,8 @@ async function confirmarVacacion(id, estado) {
   var comentario = cmt ? cmt.value.trim() : '';
   var payload = { estado: estado };
   if (comentario) payload.comentario = comentario;
-  await sb.from('vacaciones').update(payload).eq('id', id);
+  var { data: vacData } = await sb.from('vacaciones').update(payload).eq('id', id).select('empleado_id, tipo, fecha_inicio, fecha_fin').single();
+  if (vacData) notificarEmail('vacacion_' + estado, vacData.empleado_id, { tipo: vacData.tipo, desde: vacData.fecha_inicio, hasta: vacData.fecha_fin, comentario: comentario });
   cargarVacacionesAdmin();
   if (document.getElementById('dashStats')) cargarDashboard();
   cargarBadgeAdmin();
@@ -2490,6 +2516,156 @@ async function cargarDashboard() {
       }).join('');
     }
   }
+  // Charts (non-blocking)
+  cargarDashboardCharts();
+}
+
+// ─── DASHBOARD CHARTS ─────────────────────────────────────
+
+function dibujarBarChart(canvasId, labels, values, color, maxVal) {
+  var canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.offsetWidth || 400;
+  var H = parseInt(canvas.getAttribute('height')) || 160;
+  canvas.width  = W;
+  canvas.height = H;
+  ctx.clearRect(0, 0, W, H);
+
+  if (!values.length) return;
+
+  var n       = values.length;
+  var padLeft = 36;
+  var padRight= 12;
+  var padTop  = 10;
+  var padBot  = 32;
+  var chartW  = W - padLeft - padRight;
+  var chartH  = H - padTop - padBot;
+  var mx      = maxVal || Math.max.apply(null, values) || 1;
+  var barW    = Math.floor(chartW / n * 0.55);
+  var gap     = chartW / n;
+
+  // Horizontal guide lines (3)
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth   = 1;
+  [0.25, 0.5, 0.75, 1].forEach(function(pct) {
+    var y = padTop + chartH - chartH * pct;
+    ctx.beginPath(); ctx.moveTo(padLeft, y); ctx.lineTo(W - padRight, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.22)';
+    ctx.font = '10px system-ui,sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(Math.round(mx * pct), padLeft - 4, y + 3.5);
+  });
+
+  // Bars
+  values.forEach(function(val, i) {
+    var bx  = padLeft + gap * i + (gap - barW) / 2;
+    var bh  = Math.max(2, chartH * (val / mx));
+    var by  = padTop + chartH - bh;
+
+    // Bar gradient
+    var grad = ctx.createLinearGradient(0, by, 0, by + bh);
+    grad.addColorStop(0, color);
+    grad.addColorStop(1, color.replace(')', ',0.45)').replace('rgb', 'rgba'));
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(bx, by, barW, bh, [3, 3, 0, 0]) : ctx.rect(bx, by, barW, bh);
+    ctx.fill();
+
+    // Value label on top
+    if (val > 0) {
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.font = 'bold 10px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(val, bx + barW / 2, by - 3);
+    }
+
+    // X label
+    ctx.fillStyle = 'rgba(255,255,255,0.38)';
+    ctx.font = '10px system-ui,sans-serif';
+    ctx.textAlign = 'center';
+    var lbl = labels[i] || '';
+    if (lbl.length > 6) lbl = lbl.slice(0, 6);
+    ctx.fillText(lbl, bx + barW / 2, H - 6);
+  });
+}
+
+async function cargarDashboardCharts() {
+  var anioActual = new Date().getFullYear();
+  var mesActual  = new Date().getMonth(); // 0-based
+
+  // Chart 1: solicitudes por mes, últimos 6 meses
+  var mesesLabels = [];
+  var mesesDesde  = [];
+  for (var i = 5; i >= 0; i--) {
+    var m = mesActual - i;
+    var a = anioActual;
+    while (m < 0) { m += 12; a--; }
+    mesesLabels.push(getMesCorto(m));
+    mesesDesde.push({ anio: a, mes: m });
+  }
+
+  var solPromesas = mesesDesde.map(function(md) {
+    var desde = md.anio + '-' + String(md.mes + 1).padStart(2, '0') + '-01';
+    var hasta = new Date(md.anio, md.mes + 1, 0);
+    var hastaStr = md.anio + '-' + String(md.mes + 1).padStart(2, '0') + '-' + String(hasta.getDate()).padStart(2, '0');
+    return sb.from('solicitudes').select('*', { count:'exact', head:true })
+      .gte('created_at', desde + 'T00:00:00')
+      .lte('created_at', hastaStr + 'T23:59:59');
+  });
+
+  var solResults = await Promise.all(solPromesas);
+  var solValues  = solResults.map(function(r) { return r.count || 0; });
+  var solTotal   = solValues.reduce(function(a, b) { return a + b; }, 0);
+
+  var solEmpty = document.getElementById('chartSolEmpty');
+  var solCanvas = document.getElementById('chartSolicitudes');
+  if (solTotal === 0) {
+    if (solEmpty)  solEmpty.style.display  = 'block';
+    if (solCanvas) solCanvas.style.display = 'none';
+  } else {
+    if (solEmpty)  solEmpty.style.display  = 'none';
+    if (solCanvas) solCanvas.style.display = 'block';
+    dibujarBarChart('chartSolicitudes', mesesLabels, solValues, 'rgb(245,184,0)', null);
+  }
+
+  // Update label for vacaciones chart
+  var vacLabelEl = document.getElementById('dashChartVacLabel');
+  if (vacLabelEl) vacLabelEl.textContent = t('grf.vac_titulo') + anioActual;
+
+  // Chart 2: días de vacaciones aprobadas por empleado (año actual)
+  var { data: vacData } = await sb.from('vacaciones')
+    .select('empleado_id, fecha_inicio, fecha_fin, empleados(nombre)')
+    .eq('estado', 'aprobada')
+    .gte('fecha_inicio', anioActual + '-01-01')
+    .lte('fecha_inicio', anioActual + '-12-31');
+
+  var empDias = {};
+  var empNombres = {};
+  (vacData || []).forEach(function(v) {
+    if (!v.fecha_inicio || !v.fecha_fin) return;
+    var d1 = new Date(v.fecha_inicio + 'T12:00:00');
+    var d2 = new Date(v.fecha_fin    + 'T12:00:00');
+    var dias = Math.round((d2 - d1) / 86400000) + 1;
+    var eid  = v.empleado_id;
+    empDias[eid]    = (empDias[eid] || 0) + dias;
+    empNombres[eid] = v.empleados ? v.empleados.nombre.split(' ')[0] : '?';
+  });
+
+  var empIds     = Object.keys(empDias).sort(function(a, b) { return empDias[b] - empDias[a]; }).slice(0, 12);
+  var vacLabels  = empIds.map(function(id) { return empNombres[id]; });
+  var vacValues  = empIds.map(function(id) { return empDias[id]; });
+
+  var vacEmpty  = document.getElementById('chartVacEmpty');
+  var vacCanvas = document.getElementById('chartVacaciones');
+  if (!vacValues.length) {
+    if (vacEmpty)  vacEmpty.style.display  = 'block';
+    if (vacCanvas) vacCanvas.style.display = 'none';
+  } else {
+    if (vacEmpty)  vacEmpty.style.display  = 'none';
+    if (vacCanvas) vacCanvas.style.display = 'block';
+    dibujarBarChart('chartVacaciones', vacLabels, vacValues, 'rgb(96,165,250)', null);
+  }
 }
 
 // ─── TURNOS ADMIN ─────────────────────────────────────────
@@ -2550,12 +2726,111 @@ async function crearTurno() {
   document.getElementById('turnoUbicacion').value = '';
   document.getElementById('turnoNotas').value = '';
   cargarTurnosAdmin();
+  cargarCuadranteAdmin();
 }
 
 async function eliminarTurno(id) {
   if (!confirm('¿Eliminar este turno?')) return;
   await sb.from('turnos').delete().eq('id', id);
   cargarTurnosAdmin();
+  cargarCuadranteAdmin();
+}
+
+// ─── CUADRANTE VISUAL MENSUAL (ADMIN) ─────────────────────
+
+function cuadranteAdminPrev() {
+  _cuadAdminMes--;
+  if (_cuadAdminMes < 0) { _cuadAdminMes = 11; _cuadAdminAnio--; }
+  cargarCuadranteAdmin();
+}
+function cuadranteAdminNext() {
+  _cuadAdminMes++;
+  if (_cuadAdminMes > 11) { _cuadAdminMes = 0; _cuadAdminAnio++; }
+  cargarCuadranteAdmin();
+}
+
+async function cargarCuadranteAdmin() {
+  var grid = document.getElementById('cuadranteAdminGrid');
+  var label = document.getElementById('cuadranteAdminLabel');
+  if (!grid) return;
+
+  var anio = _cuadAdminAnio;
+  var mes  = _cuadAdminMes;
+
+  if (label) label.textContent = getMes(mes) + ' ' + anio;
+
+  grid.innerHTML = '<div class="loading" style="padding:2rem">' + t('g.cargando') + '</div>';
+
+  var primerDia = anio + '-' + String(mes + 1).padStart(2, '0') + '-01';
+  var diasMes   = new Date(anio, mes + 1, 0).getDate();
+  var ultimoDia = anio + '-' + String(mes + 1).padStart(2, '0') + '-' + String(diasMes).padStart(2, '0');
+  var hoy       = new Date().toISOString().split('T')[0];
+
+  var [empRes, turRes] = await Promise.all([
+    sb.from('empleados').select('id, nombre').eq('activo', true).order('nombre'),
+    sb.from('turnos').select('empleado_id, fecha, tipo').gte('fecha', primerDia).lte('fecha', ultimoDia)
+  ]);
+
+  var empleados = empRes.data || [];
+  var turnos    = turRes.data || [];
+
+  if (!empleados.length) {
+    grid.innerHTML = '<div class="empty" style="border:none;padding:2rem">' + t('cua.sin_turnos') + '</div>';
+    return;
+  }
+
+  // Build lookup: empId → { 'YYYY-MM-DD' → tipo }
+  var mapa = {};
+  empleados.forEach(function(e) { mapa[e.id] = {}; });
+  turnos.forEach(function(tur) {
+    if (mapa[tur.empleado_id]) mapa[tur.empleado_id][tur.fecha] = tur.tipo;
+  });
+
+  // Abbreviations
+  var abrev = { manana:'M', tarde:'T', noche:'N', guardia:'G', libre:'L' };
+
+  // Header row with day numbers
+  var thead = '<thead><tr><th style="min-width:9rem;text-align:left;padding:0.35rem 0.75rem">' + t('cua.empleado') + '</th>';
+  for (var d = 1; d <= diasMes; d++) {
+    var fechaCol = anio + '-' + String(mes + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    var esHoy    = fechaCol === hoy;
+    var diaSem   = new Date(fechaCol + 'T12:00:00').getDay(); // 0=dom,6=sab
+    var esFinDe  = (diaSem === 0 || diaSem === 6);
+    thead += '<th class="' + (esHoy ? 'cua-hoy-col' : '') + '" style="min-width:2rem;' + (esFinDe ? 'color:rgba(245,184,0,0.6)' : '') + '">' + d + '</th>';
+  }
+  thead += '</tr></thead>';
+
+  // Body rows
+  var tbody = '<tbody>';
+  empleados.forEach(function(emp) {
+    tbody += '<tr><td title="' + emp.nombre + '">' + emp.nombre + '</td>';
+    for (var d2 = 1; d2 <= diasMes; d2++) {
+      var fechaCel = anio + '-' + String(mes + 1).padStart(2, '0') + '-' + String(d2).padStart(2, '0');
+      var tipo     = mapa[emp.id][fechaCel];
+      var esHoy2   = fechaCel === hoy;
+      if (tipo) {
+        tbody += '<td class="' + (esHoy2 ? 'cua-hoy-col' : '') + '"><div class="cua-cell"><span class="cua-pill t-' + tipo + '">' + (abrev[tipo] || tipo.charAt(0).toUpperCase()) + '</span></div></td>';
+      } else {
+        tbody += '<td class="' + (esHoy2 ? 'cua-hoy-col' : '') + '" style="color:rgba(255,255,255,0.08)">·</td>';
+      }
+    }
+    tbody += '</tr>';
+  });
+  tbody += '</tbody>';
+
+  // Legend
+  var legendItems = [
+    { tipo:'manana',  abr:'M' }, { tipo:'tarde',  abr:'T' },
+    { tipo:'noche',   abr:'N' }, { tipo:'guardia', abr:'G' },
+    { tipo:'libre',   abr:'L' }
+  ];
+  var legend = '<div style="display:flex;gap:0.75rem;flex-wrap:wrap;padding:0.75rem 1.25rem;border-top:1px solid var(--border)">';
+  legendItems.forEach(function(li) {
+    legend += '<span class="cua-pill t-' + li.tipo + '" style="font-size:0.68rem">' + li.abr + ' ' + getTipoTurno(li.tipo) + '</span>';
+  });
+  legend += '</div>';
+
+  grid.innerHTML = '<table class="cua-table">' + thead + tbody + '</table>' + legend;
 }
 
 // FIRMA DE DOCUMENTOS
@@ -2876,6 +3151,7 @@ async function crearTurnosPorFecha() {
   if (error) { err.style.display='block'; err.textContent='Error: ' + error.message; return; }
   ok.style.display='block'; ok.textContent='✓ ' + fechas.length + ' turnos creados correctamente.';
   cargarTurnosAdmin();
+  cargarCuadranteAdmin();
 }
 
 async function crearTurnosPorEmpleados() {
@@ -2907,6 +3183,19 @@ async function crearTurnosPorEmpleados() {
   ok.style.display='block'; ok.textContent='✓ ' + selIds.length + ' turnos creados para el ' + fecha + '.';
   seleccionarTodosEmp(false);
   cargarTurnosAdmin();
+  cargarCuadranteAdmin();
+}
+
+// ─── EMAIL NOTIFICATIONS SCAFFOLD ────────────────────────
+// Calls the 'notificar-email' Supabase Edge Function.
+// Deploy the function at supabase/functions/notificar-email/index.ts
+// and configure RESEND_API_KEY + FROM_EMAIL in Supabase secrets.
+// This call is fire-and-forget: failures are silent so UX is unaffected.
+function notificarEmail(tipo, empleadoId, extra) {
+  if (!empleadoId) return;
+  sb.functions.invoke('notificar-email', {
+    body: { tipo: tipo, empleado_id: empleadoId, extra: extra || {} }
+  }).catch(function() {});
 }
 
 // ─── NOTIFICACIONES REALTIME PARA EL ADMIN ───────────────
