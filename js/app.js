@@ -112,6 +112,7 @@ function navigateToPage(page) {
   if (pageEl) pageEl.classList.add('active');
   if (page === 'calendario') cargarCalendario();
   if (page === 'vacaciones') cargarVacaciones();
+  if (page === 'solicitudes') cargarMisSolicitudes();
 }
 
 document.querySelectorAll('.nav-item').forEach(function(btn){
@@ -308,7 +309,38 @@ if (solicitudForm) {
     }
     if (ok) { ok.style.display = 'block'; ok.textContent = '✓ Solicitud enviada correctamente.'; }
     this.reset();
+    cargarMisSolicitudes();
   });
+}
+
+// MIS SOLICITUDES (empleado)
+async function cargarMisSolicitudes() {
+  var container = document.getElementById('misSolicitudesList');
+  if (!container || !currentEmpleado) return;
+  container.innerHTML = '<div class="loading">Cargando...</div>';
+  var { data } = await sb.from('solicitudes').select('*')
+    .eq('empleado_id', currentEmpleado.id)
+    .order('created_at', { ascending: false });
+  if (!data || !data.length) {
+    container.innerHTML = '<div class="empty" style="border:none;padding:2rem">Aún no has enviado solicitudes</div>';
+    return;
+  }
+  var TIPO_SOL = {
+    'Solicitud de vacaciones':'Vacaciones', 'Solicitud de permiso':'Permiso',
+    'Cambio de turno':'Cambio turno', 'Baja médica':'Baja médica', 'Consulta general':'Consulta'
+  };
+  container.innerHTML = data.map(function(s) {
+    var bc    = s.estado === 'aprobada' ? 'badge-green' : s.estado === 'rechazada' ? 'badge-red' : 'badge-yellow';
+    var fecha = new Date(s.created_at).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' });
+    var tipoLbl = TIPO_SOL[s.tipo] || s.tipo;
+    return '<div class="vac-item">' +
+      '<span class="badge badge-blue vac-tipo" style="min-width:6rem;justify-content:center">' + tipoLbl + '</span>' +
+      '<span class="vac-fechas">' + (s.fechas || '—') +
+        (s.motivo ? '<br><span style="font-size:0.72rem;color:var(--muted)">' + s.motivo + '</span>' : '') + '</span>' +
+      '<span class="vac-dias" style="min-width:5.5rem;font-size:0.75rem;color:var(--muted)">' + fecha + '</span>' +
+      '<span class="badge ' + bc + '">' + s.estado + '</span>' +
+      '</div>';
+  }).join('');
 }
 
 // SOLICITUDES - ADMIN
@@ -569,6 +601,29 @@ async function cargarVacaciones() {
   lista.innerHTML = '<div class="loading">Cargando...</div>';
   var { data } = await sb.from('vacaciones').select('*')
     .eq('empleado_id', currentEmpleado.id).order('fecha_inicio', { ascending: false });
+
+  // Contador de días
+  var anoActual = new Date().getFullYear();
+  var total     = currentEmpleado.dias_vacaciones_anuales || 22;
+  var usados    = 0;
+  if (data) {
+    data.forEach(function(v) {
+      if (v.estado === 'aprobada' && v.tipo === 'vacaciones') {
+        var desdeAno = new Date(v.fecha_inicio + 'T12:00:00').getFullYear();
+        if (desdeAno === anoActual) usados += diasEntre(v.fecha_inicio, v.fecha_fin);
+      }
+    });
+  }
+  var restantes = Math.max(0, total - usados);
+  var resumen = document.getElementById('vacResumen');
+  if (resumen) {
+    document.getElementById('vacTotal').textContent     = total;
+    document.getElementById('vacUsados').textContent    = usados;
+    document.getElementById('vacRestantes').textContent = restantes;
+    document.getElementById('vacAno').textContent       = anoActual;
+    resumen.style.display = 'block';
+  }
+
   if (!data || !data.length) { lista.innerHTML = '<div class="empty" style="border:none;padding:2rem">No tienes solicitudes</div>'; return; }
   lista.innerHTML = data.map(function(v) {
     var desde  = new Date(v.fecha_inicio+'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'});

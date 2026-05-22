@@ -763,6 +763,13 @@
           <button type="submit" class="btn-primary">Enviar solicitud</button>
         </form>
       </div>
+      <div class="card form-card-narrow" style="padding:0;margin-top:1rem">
+        <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Mis solicitudes</span>
+          <button class="btn-sm" onclick="cargarMisSolicitudes()">↺</button>
+        </div>
+        <div id="misSolicitudesList"><div class="loading">Cargando...</div></div>
+      </div>
     </div>
 
     <!-- ADMIN -->
@@ -1002,6 +1009,28 @@
         <h1>Vacaciones y permisos</h1>
         <p>Solicita días libres y consulta el estado de tus peticiones</p>
       </div>
+
+      <!-- CONTADOR DÍAS -->
+      <div id="vacResumen" style="display:none;margin-bottom:1.25rem">
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="card card-accent" style="margin:0">
+            <div class="card-label">Días anuales</div>
+            <div class="card-value" id="vacTotal">—</div>
+            <div class="card-sub">Año <span id="vacAno">2026</span></div>
+          </div>
+          <div class="card" style="margin:0">
+            <div class="card-label">Días usados</div>
+            <div class="card-value" id="vacUsados" style="color:var(--yellow)">—</div>
+            <div class="card-sub">Vacaciones aprobadas</div>
+          </div>
+          <div class="card" style="margin:0">
+            <div class="card-label">Días restantes</div>
+            <div class="card-value" id="vacRestantes" style="color:var(--green)">—</div>
+            <div class="card-sub">Disponibles</div>
+          </div>
+        </div>
+      </div>
+
       <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:1.5rem;align-items:start">
 
         <!-- Formulario solicitud -->
