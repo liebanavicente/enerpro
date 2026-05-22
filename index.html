@@ -1220,6 +1220,12 @@
           <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)" data-i18n="sa.titulo">Solicitudes de empleados</span>
           <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
             <input id="solAdminBuscador" type="search" placeholder="Buscar empleado…" oninput="filtrarSolicitudesAdmin()" style="height:34px;padding:0 0.75rem;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-xs);color:var(--text);font-size:0.8rem;font-family:inherit;outline:none;width:170px">
+            <select id="solAdminFiltro" class="btn-sm" style="padding:0 0.75rem;height:34px;border-radius:var(--r-xs);background:var(--surface2);color:var(--text2)" onchange="cargarSolicitudesAdmin()">
+              <option value="todas" data-i18n="sa.f_todas">Todas</option>
+              <option value="pendiente" data-i18n="sa.f_pend">Pendientes</option>
+              <option value="aprobada" data-i18n="sa.f_apr">Aprobadas</option>
+              <option value="rechazada" data-i18n="sa.f_rech">Rechazadas</option>
+            </select>
             <button class="btn-sm gold" onclick="exportarSolicitudesExcel()" data-i18n="sa.exportar">⬇ Exportar Excel</button>
             <button class="btn-sm primary" onclick="cargarSolicitudesAdmin()" data-i18n="sa.actualizar">Actualizar</button>
           </div>

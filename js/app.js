@@ -307,6 +307,10 @@ var I18N = {
     'masi.proc':         'Procesando...',
     // Solicitudes admin
     'sa.titulo':         'Solicitudes de empleados',
+    'sa.f_todas':        'Todas',
+    'sa.f_pend':         'Pendientes',
+    'sa.f_apr':          'Aprobadas',
+    'sa.f_rech':         'Rechazadas',
     'sa.exportar':       '⬇ Exportar Excel',
     'sa.actualizar':     'Actualizar',
     'sa.empty':          'No hay solicitudes',
@@ -714,6 +718,10 @@ var I18N = {
     'masi.proc':         'Processant...',
     // Solicitudes admin
     'sa.titulo':         "Sol·licituds d'empleats",
+    'sa.f_todas':        'Totes',
+    'sa.f_pend':         'Pendents',
+    'sa.f_apr':          'Aprovades',
+    'sa.f_rech':         'Rebutjades',
     'sa.exportar':       '⬇ Exportar Excel',
     'sa.actualizar':     'Actualitzar',
     'sa.empty':          'No hi ha sol·licituds',
@@ -1393,7 +1401,10 @@ async function cargarSolicitudesAdmin() {
   var container = document.getElementById('solicitudesAdminList');
   if (!container) return;
   container.innerHTML = skelDocs(4);
-  var { data, error } = await sb.from('solicitudes').select('*, empleados(nombre)').order('created_at', { ascending: false });
+  var filtro = (document.getElementById('solAdminFiltro') || {}).value || 'todas';
+  var q = sb.from('solicitudes').select('*, empleados(nombre)').order('created_at', { ascending: false });
+  if (filtro !== 'todas') q = q.eq('estado', filtro);
+  var { data, error } = await q;
   _solAdminData = data || [];
   if (error || !_solAdminData.length) {
     container.innerHTML = '<div class="empty"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>' + t('sa.empty') + '</div>';
