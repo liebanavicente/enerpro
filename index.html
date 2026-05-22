@@ -814,9 +814,19 @@
 
       <div class="admin-tab-content" id="tab-empleados">
         <div class="card" style="padding:0">
-          <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem">
+          <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem">
             <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Empleados registrados</span>
-            <button class="btn-sm primary" onclick="showAddEmpleado()">+ Añadir empleado</button>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+              <button class="btn-sm" onclick="exportarEmpleadosExcel()" style="border-color:rgba(245,184,0,0.4);color:var(--gold)">⬇ Exportar Excel</button>
+              <button class="btn-sm primary" onclick="showAddEmpleado()">+ Añadir empleado</button>
+            </div>
+          </div>
+          <div class="doc-filters" style="padding:0.75rem 1.5rem;border-bottom:1px solid var(--border)">
+            <button class="btn-sm emp-filter primary" onclick="filtrarEmpleados('todos',this)">Todos</button>
+            <button class="btn-sm emp-filter" onclick="filtrarEmpleados('Vigilante de seguridad',this)">Vigilantes</button>
+            <button class="btn-sm emp-filter" onclick="filtrarEmpleados('Auxiliar de servicio',this)">Auxiliares</button>
+            <button class="btn-sm emp-filter" onclick="filtrarEmpleados('Coordinador',this)">Coordinadores</button>
+            <button class="btn-sm emp-filter" onclick="filtrarEmpleados('Administrativo',this)">Administrativos</button>
           </div>
           <div id="empleadosList"><div class="loading">Cargando...</div></div>
         </div>

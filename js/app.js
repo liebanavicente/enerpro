@@ -8,6 +8,8 @@ var currentUser = null;
 var currentEmpleado = null;
 var currentIsAdmin = false;
 var allDocs = [];
+var allEmpleados = [];
+var filtroCargoActivo = 'todos';
 var realtimeChannel = null;
 var solicitudesChannel = null;
 var vacacionesChannel  = null;
@@ -424,6 +426,7 @@ function switchTab(tab, el) {
 async function cargarEmpleados() {
   var { data } = await sb.from('empleados').select('*').order('nombre');
   if (!data) return;
+  allEmpleados = data;
   ['subirEmpleado','turnoEmpleado'].forEach(function(selId) {
     var sel = document.getElementById(selId);
     if (sel) {
@@ -431,14 +434,46 @@ async function cargarEmpleados() {
       data.forEach(function(e){ sel.innerHTML += '<option value="' + e.id + '">' + e.nombre + ' — ' + e.cargo + '</option>'; });
     }
   });
+  filtrarEmpleados(filtroCargoActivo);
+}
+
+function filtrarEmpleados(cargo, btn) {
+  filtroCargoActivo = cargo;
+  document.querySelectorAll('.emp-filter').forEach(function(b){ b.classList.remove('primary'); });
+  if (btn) btn.classList.add('primary');
+  else {
+    var activo = document.querySelector('.emp-filter[onclick*="\'' + cargo + '\'"]');
+    if (activo) activo.classList.add('primary');
+  }
+  var datos = cargo === 'todos' ? allEmpleados : allEmpleados.filter(function(e){ return e.cargo === cargo; });
+  renderEmpleadosTabla(datos);
+}
+
+function renderEmpleadosTabla(data) {
   var container = document.getElementById('empleadosList');
   if (!container) return;
-  if (!data.length) { container.innerHTML = '<div class="empty">No hay empleados</div>'; return; }
+  if (!data.length) { container.innerHTML = '<div class="empty">No hay empleados con ese filtro</div>'; return; }
   container.innerHTML = '<table><thead><tr><th>Nombre</th><th>Email</th><th>Cargo</th><th>Estado</th></tr></thead><tbody>' +
     data.map(function(e){
       return '<tr><td>' + e.nombre + '</td><td style="color:var(--muted)">' + e.email + '</td><td>' + e.cargo + '</td>' +
         '<td><span class="badge ' + (e.activo ? 'badge-green">Activo' : 'badge-red">Inactivo') + '</span></td></tr>';
     }).join('') + '</tbody></table>';
+}
+
+function exportarEmpleadosExcel() {
+  if (!allEmpleados.length) { alert('No hay empleados para exportar.'); return; }
+  var datos = filtroCargoActivo === 'todos'
+    ? allEmpleados
+    : allEmpleados.filter(function(e){ return e.cargo === filtroCargoActivo; });
+  var filas = [['Nombre', 'Email', 'DNI', 'Cargo', 'Estado', 'Días vacaciones']];
+  datos.forEach(function(e) {
+    filas.push([e.nombre, e.email, e.dni || '', e.cargo, e.activo ? 'Activo' : 'Inactivo', e.dias_vacaciones_anuales || 22]);
+  });
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.aoa_to_sheet(filas);
+  ws['!cols'] = [{wch:30},{wch:35},{wch:12},{wch:25},{wch:10},{wch:16}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Empleados');
+  XLSX.writeFile(wb, 'empleados_enerpro_' + new Date().toISOString().split('T')[0] + '.xlsx');
 }
 
 function showAddEmpleado() { document.getElementById('addEmpleadoForm').style.display = 'block'; }
