@@ -847,11 +847,15 @@ function aplicarIdioma() {
     el.placeholder = t(el.getAttribute('data-i18n-ph'));
   });
   document.documentElement.lang = _lang;
-  // Resaltar botón de idioma activo
-  var btnEs = document.getElementById('langBtnEs');
-  var btnCa = document.getElementById('langBtnCa');
-  if (btnEs) btnEs.classList.toggle('primary', _lang === 'es');
-  if (btnCa) btnCa.classList.toggle('primary', _lang === 'ca');
+  // Resaltar botón de idioma activo (sidebar + login)
+  ['langBtnEs','loginLangEs'].forEach(function(id) {
+    var b = document.getElementById(id);
+    if (b) b.classList.toggle('primary', _lang === 'es');
+  });
+  ['langBtnCa','loginLangCa'].forEach(function(id) {
+    var b = document.getElementById(id);
+    if (b) b.classList.toggle('primary', _lang === 'ca');
+  });
   var mobileToggle = document.getElementById('langToggleMobile');
   if (mobileToggle) mobileToggle.textContent = _lang.toUpperCase();
   // Re-renderizar contenido dinámico si el usuario está logueado
