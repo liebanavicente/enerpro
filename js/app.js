@@ -13,6 +13,8 @@ var filtroCargoActivo = 'todos';
 var realtimeChannel = null;
 var solicitudesChannel = null;
 var vacacionesChannel  = null;
+var adminSolicitudesChannel = null;
+var adminVacacionesChannel  = null;
 
 // LOGIN
 document.getElementById('btnLogin').addEventListener('click', doLogin);
@@ -54,7 +56,9 @@ function iniciarApp() {
   var mobileUser = document.getElementById('mobileUserName');
   if (mobileUser) mobileUser.textContent = emp ? emp.nombre.split(' ')[0] : email.split('@')[0];
   document.getElementById('welcomeMsg').textContent = 'Bienvenido, ' + (emp ? emp.nombre.split(' ')[0] : 'empleado');
-  document.getElementById('welcomeSub').textContent = emp ? emp.cargo + ' · Mayo 2026' : 'Mayo 2026';
+  var mesFmt = new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+  var mesLabel = mesFmt.charAt(0).toUpperCase() + mesFmt.slice(1);
+  document.getElementById('welcomeSub').textContent = emp ? emp.cargo + ' · ' + mesLabel : mesLabel;
   var formEmp = document.getElementById('formEmpleado');
   if (formEmp) formEmp.value = emp ? emp.nombre : email;
   if (isAdmin) {
@@ -69,6 +73,10 @@ function iniciarApp() {
   suscribirDocumentosNuevos();
   suscribirSolicitudesEmpleado();
   suscribirVacacionesEmpleado();
+  if (isAdmin) {
+    suscribirSolicitudesAdmin();
+    suscribirVacacionesAdmin();
+  }
 }
 
 async function confirmarCambioPassword() {
@@ -126,9 +134,11 @@ function navTo(page) { navigateToPage(page); }
 
 // LOGOUT
 async function doLogout() {
-  if (realtimeChannel)    { sb.removeChannel(realtimeChannel);    realtimeChannel    = null; }
-  if (solicitudesChannel) { sb.removeChannel(solicitudesChannel); solicitudesChannel = null; }
-  if (vacacionesChannel)  { sb.removeChannel(vacacionesChannel);  vacacionesChannel  = null; }
+  if (realtimeChannel)         { sb.removeChannel(realtimeChannel);         realtimeChannel         = null; }
+  if (solicitudesChannel)      { sb.removeChannel(solicitudesChannel);      solicitudesChannel      = null; }
+  if (vacacionesChannel)       { sb.removeChannel(vacacionesChannel);       vacacionesChannel       = null; }
+  if (adminSolicitudesChannel) { sb.removeChannel(adminSolicitudesChannel); adminSolicitudesChannel = null; }
+  if (adminVacacionesChannel)  { sb.removeChannel(adminVacacionesChannel);  adminVacacionesChannel  = null; }
   await sb.auth.signOut();
   currentUser = null; currentEmpleado = null; currentIsAdmin = false; allDocs = [];
   document.getElementById('app').style.display = 'none';
@@ -221,7 +231,7 @@ function renderDocs(docs, containerId, limit) {
       '<button class="btn-sm primary" onclick="verDoc(\'' + safeUrl + '\', \'' + safeName + '\')">👁 Ver</button>' +
       '<button class="btn-sm" onclick="descargarDoc(\'' + doc.id + '\', \'' + safeUrl + '\', \'' + safeName + '\')">⬇ Descargar</button>' +
       btnFirma +
-      '<button class="btn-sm" style="border-color:#dc2626;color:#dc2626" onclick="eliminarDoc(\'' + doc.id + '\', \'' + safeUrl + '\')">✕</button>' +
+      (currentIsAdmin ? '<button class="btn-sm" style="border-color:#dc2626;color:#dc2626" onclick="eliminarDoc(\'' + doc.id + '\', \'' + safeUrl + '\')">✕</button>' : '') +
       '</div></div>';
   }).join('');
 }
@@ -849,11 +859,34 @@ async function confirmarImportacion() {
   ok.style.display = 'none'; err.style.display = 'none';
   prog.style.display = 'block';
 
+  // Preserve admin session before bulk signUp calls
+  var { data: sessionData } = await sb.auth.getSession();
+  var adminSession = sessionData && sessionData.session;
+
   var okCount = 0, failCount = 0;
   for (var i = 0; i < importarData.length; i++) {
     progText.textContent = 'Importando ' + (i+1) + ' de ' + importarData.length + '…';
     progBar.style.width = Math.round(((i+1) / importarData.length) * 100) + '%';
-    var { error } = await sb.from('empleados').insert({ ...importarData[i], activo: true });
+
+    // Generate a random temporary password; employee must change it on first login
+    var tempPass = Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 6).toUpperCase() + '!1';
+    var { error: authErr } = await sb.auth.signUp({ email: importarData[i].email, password: tempPass });
+
+    // Restore admin session if signUp replaced it
+    if (adminSession) {
+      var { data: cur } = await sb.auth.getSession();
+      if (!cur.session || cur.session.access_token !== adminSession.access_token) {
+        await sb.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token });
+      }
+    }
+
+    // Proceed with DB insert even if Auth account already existed
+    if (authErr) {
+      var m = authErr.message.toLowerCase();
+      if (!m.includes('already registered') && !m.includes('already been registered')) { failCount++; continue; }
+    }
+
+    var { error } = await sb.from('empleados').insert({ ...importarData[i], activo: true, debe_cambiar_password: true });
     if (error) { failCount++; } else { okCount++; }
   }
   prog.style.display = 'none';
@@ -1099,10 +1132,7 @@ async function cargarDashboard() {
             '<div><div class="doc-name" style="font-size:0.85rem">' + nombre + '</div>' +
             '<div class="doc-meta">' + s.tipo + ' · ' + fecha + '</div></div>' +
           '</div>' +
-          '<div style="display:flex;gap:0.4rem">' +
-            '<button class="btn-sm primary" onclick="gestionarSolicitud(\'' + s.id + '\',\'aprobada\');cargarDashboard()">✓</button>' +
-            '<button class="btn-sm" style="color:var(--red);border-color:rgba(220,38,38,0.3)" onclick="gestionarSolicitud(\'' + s.id + '\',\'rechazada\');cargarDashboard()">✕</button>' +
-          '</div>' +
+          '<button class="btn-sm" onclick="switchTab(\'solicitudes-admin\',document.querySelector(\'[onclick*=\\\"solicitudes-admin\\\"]\'))">Gestionar →</button>' +
         '</div>';
       }).join('');
     }
@@ -1282,4 +1312,49 @@ function suscribirDocumentosNuevos() {
     })
     .subscribe();
 }
-/* Fri May 22 14:49:42 CEST 2026 */
+// ─── NOTIFICACIONES REALTIME PARA EL ADMIN ───────────────
+
+function suscribirSolicitudesAdmin() {
+  if (adminSolicitudesChannel) { sb.removeChannel(adminSolicitudesChannel); }
+  adminSolicitudesChannel = sb.channel('admin-solicitudes-insert')
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'solicitudes'
+    }, async function(payload) {
+      var s = payload.new;
+      var nombre = '—';
+      if (s.empleado_id) {
+        var { data: emp } = await sb.from('empleados').select('nombre').eq('id', s.empleado_id).single();
+        if (emp) nombre = emp.nombre;
+      }
+      var tipo = s.tipo || 'Solicitud';
+      mostrarToast('📋 Nueva solicitud', nombre + ' · ' + tipo);
+      if (Notification.permission === 'granted') {
+        new Notification('ENERPRO — Nueva solicitud', { body: nombre + ': ' + tipo, icon: 'enerprologo.jpg' });
+      }
+      if (document.getElementById('dashStats')) cargarDashboard();
+    })
+    .subscribe();
+}
+
+function suscribirVacacionesAdmin() {
+  if (adminVacacionesChannel) { sb.removeChannel(adminVacacionesChannel); }
+  adminVacacionesChannel = sb.channel('admin-vacaciones-insert')
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'vacaciones'
+    }, async function(payload) {
+      var v = payload.new;
+      var nombre = '—';
+      if (v.empleado_id) {
+        var { data: emp } = await sb.from('empleados').select('nombre').eq('id', v.empleado_id).single();
+        if (emp) nombre = emp.nombre;
+      }
+      var tipo   = VAC_TIPO_LABEL[v.tipo] || v.tipo || 'Vacaciones';
+      var fechas = (v.fecha_inicio || '') + ' → ' + (v.fecha_fin || '');
+      mostrarToast('🏖️ Nueva solicitud de vacaciones', nombre + ' · ' + tipo + ' · ' + fechas);
+      if (Notification.permission === 'granted') {
+        new Notification('ENERPRO — Vacaciones', { body: nombre + ': ' + tipo + ' (' + fechas + ')', icon: 'enerprologo.jpg' });
+      }
+      if (document.getElementById('dashStats')) cargarDashboard();
+    })
+    .subscribe();
+}
