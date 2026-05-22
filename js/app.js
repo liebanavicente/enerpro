@@ -391,7 +391,7 @@ document.getElementById('solicitudForm').addEventListener('submit', async functi
     empleado_id: currentEmpleado.id,
     tipo: tipo,
     fechas: fechas,
-    descripcion: descripcion,
+    motivo: descripcion,
     estado: 'pendiente'
   });
 
