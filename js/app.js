@@ -7,6 +7,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 var currentUser = null;
 var currentEmpleado = null;
 var allDocs = [];
+var realtimeChannel = null;
 
 // LOGIN
 document.getElementById('btnLogin').addEventListener('click', doLogin);
@@ -43,6 +44,8 @@ async function doLogin() {
     cargarEmpleados();
   }
   cargarDocumentos();
+  pedirPermisoNotificaciones();
+  suscribirDocumentosNuevos();
 }
 
 // NAVEGACIÓN
@@ -64,6 +67,7 @@ function navTo(page) { navigateToPage(page); }
 
 // LOGOUT
 async function doLogout() {
+  if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
   await sb.auth.signOut();
   currentUser = null; currentEmpleado = null; allDocs = [];
   document.getElementById('app').style.display = 'none';
@@ -365,4 +369,50 @@ sb.auth.onAuthStateChange(function(event, session) {
     document.getElementById('loginWrap').style.display = 'flex';
   }
 });
+
+// NOTIFICACIONES
+async function pedirPermisoNotificaciones() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    await Notification.requestPermission();
+  }
+}
+
+function mostrarToast(titulo, cuerpo) {
+  var toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML =
+    '<div class="toast-icon">📄</div>' +
+    '<div><div class="toast-title">' + titulo + '</div>' +
+    '<div class="toast-body">' + cuerpo + '</div></div>';
+  document.body.appendChild(toast);
+  setTimeout(function() {
+    toast.classList.add('hide');
+    setTimeout(function() { toast.remove(); }, 350);
+  }, 5000);
+}
+
+function suscribirDocumentosNuevos() {
+  if (!currentEmpleado) return;
+  if (realtimeChannel) { sb.removeChannel(realtimeChannel); }
+  realtimeChannel = sb.channel('docs-' + currentEmpleado.id)
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'documentos',
+      filter: 'empleado_id=eq.' + currentEmpleado.id
+    }, function(payload) {
+      var nombre = payload.new.nombre || 'Nuevo documento';
+      var tipo   = payload.new.tipo   || '';
+      mostrarToast('Nuevo documento recibido', nombre + (tipo ? ' · ' + tipo : ''));
+      if (Notification.permission === 'granted') {
+        new Notification('ENERPRO — Nuevo documento', {
+          body: nombre + (tipo ? ' (' + tipo + ')' : ''),
+          icon: 'enerprologo.jpg'
+        });
+      }
+      cargarDocumentos();
+    })
+    .subscribe();
+}
 /* Fri May 22 14:49:42 CEST 2026 */
