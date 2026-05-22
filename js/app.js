@@ -60,6 +60,7 @@ function iniciarApp() {
     document.getElementById('userRoleLabel').textContent = 'Administrador';
     document.querySelectorAll('.admin-only, .admin-only-mobile').forEach(function(el){ el.style.display='flex'; });
     cargarEmpleados();
+    cargarDashboard();
   }
   cargarDocumentos();
   pedirPermisoNotificaciones();
@@ -383,6 +384,7 @@ function switchTab(tab, el) {
   if (el) el.classList.add('active');
   var tabEl = document.getElementById('tab-' + tab);
   if (tabEl) tabEl.style.display = 'block';
+  if (tab === 'dashboard') cargarDashboard();
   if (tab === 'subir' || tab === 'masivo' || tab === 'turnos-admin' || tab === 'importar') cargarEmpleados();
   if (tab === 'solicitudes-admin')  cargarSolicitudesAdmin();
   if (tab === 'vacaciones-admin')   cargarVacacionesAdmin();
@@ -913,6 +915,105 @@ function prevMes() {
 function nextMes() {
   if (calMonth === 11) { calMonth = 0; calYear++; } else { calMonth++; }
   cargarCalendario();
+}
+
+// ─── DASHBOARD COORDINADOR ────────────────────────────────
+
+async function cargarDashboard() {
+  var statsEl      = document.getElementById('dashStats');
+  var sinFirmarEl  = document.getElementById('dashSinFirmar');
+  var solicEl      = document.getElementById('dashSolicitudes');
+  if (!statsEl) return;
+
+  statsEl.innerHTML = '<div class="loading" style="grid-column:1/-1">Cargando...</div>';
+
+  var [empRes, solRes, vacRes, cuadRes, solListRes] = await Promise.all([
+    sb.from('empleados').select('*', { count:'exact', head:true }).eq('activo', true),
+    sb.from('solicitudes').select('*', { count:'exact', head:true }).eq('estado', 'pendiente'),
+    sb.from('vacaciones').select('*', { count:'exact', head:true }).eq('estado', 'pendiente'),
+    sb.from('documentos').select('firmado, empleados(nombre, cargo)').eq('tipo', 'cuadrante'),
+    sb.from('solicitudes').select('*, empleados(nombre)').eq('estado', 'pendiente').order('created_at').limit(15)
+  ]);
+
+  var totalEmp  = empRes.count  || 0;
+  var totalSol  = solRes.count  || 0;
+  var totalVac  = vacRes.count  || 0;
+  var cuadrantes = cuadRes.data || [];
+  var firmados   = cuadrantes.filter(function(d){ return d.firmado; }).length;
+  var sinFirmar  = cuadrantes.filter(function(d){ return !d.firmado; });
+  var pct        = cuadrantes.length ? Math.round((firmados / cuadrantes.length) * 100) : 0;
+
+  // Cards de stats
+  statsEl.innerHTML =
+    '<div class="card card-accent" style="margin:0">' +
+      '<div class="card-label">Empleados activos</div>' +
+      '<div class="card-value">' + totalEmp + '</div>' +
+      '<div class="card-sub">En plantilla</div>' +
+    '</div>' +
+    '<div class="card" style="margin:0;cursor:pointer" onclick="switchTab(\'solicitudes-admin\', document.querySelector(\'[onclick*=\\\"solicitudes-admin\\\"]\'))">' +
+      '<div class="card-label">Solicitudes pendientes</div>' +
+      '<div class="card-value" style="color:' + (totalSol > 0 ? 'var(--yellow)' : 'var(--green)') + '">' + totalSol + '</div>' +
+      '<div class="card-sub">Requieren revisión</div>' +
+    '</div>' +
+    '<div class="card" style="margin:0;cursor:pointer" onclick="switchTab(\'vacaciones-admin\', document.querySelector(\'[onclick*=\\\"vacaciones-admin\\\"]\'))">' +
+      '<div class="card-label">Vacaciones pendientes</div>' +
+      '<div class="card-value" style="color:' + (totalVac > 0 ? 'var(--yellow)' : 'var(--green)') + '">' + totalVac + '</div>' +
+      '<div class="card-sub">Requieren revisión</div>' +
+    '</div>' +
+    '<div class="card" style="margin:0">' +
+      '<div class="card-label">Cuadrantes firmados</div>' +
+      '<div class="card-value" style="color:var(--green)">' + firmados + '<span style="font-size:1rem;color:var(--muted)"> / ' + cuadrantes.length + '</span></div>' +
+      '<div class="card-sub" style="display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem">' +
+        '<div style="flex:1;height:4px;background:var(--surface3);border-radius:2px">' +
+          '<div style="width:' + pct + '%;height:100%;background:var(--green);border-radius:2px;transition:width 0.5s"></div>' +
+        '</div>' +
+        '<span>' + pct + '%</span>' +
+      '</div>' +
+    '</div>';
+
+  // Lista sin firmar
+  if (sinFirmarEl) {
+    if (!sinFirmar.length) {
+      sinFirmarEl.innerHTML = '<div class="empty" style="border:none;padding:2rem;color:var(--green)">✓ Todos han firmado su cuadrante</div>';
+    } else {
+      sinFirmarEl.innerHTML = sinFirmar.map(function(d) {
+        var nombre = d.empleados ? d.empleados.nombre : '—';
+        var cargo  = d.empleados ? d.empleados.cargo  : '';
+        return '<div class="doc-item" style="padding:0.75rem 1.25rem">' +
+          '<div class="doc-info">' +
+            '<div class="doc-icon" style="width:34px;height:34px;font-size:0.9rem">⏳</div>' +
+            '<div><div class="doc-name" style="font-size:0.85rem">' + nombre + '</div>' +
+            '<div class="doc-meta">' + cargo + '</div></div>' +
+          '</div>' +
+          '<span class="badge badge-yellow">Pendiente</span>' +
+        '</div>';
+      }).join('');
+    }
+  }
+
+  // Solicitudes pendientes en dashboard
+  if (solicEl) {
+    var sols = solListRes.data || [];
+    if (!sols.length) {
+      solicEl.innerHTML = '<div class="empty" style="border:none;padding:2rem;color:var(--green)">✓ Sin solicitudes pendientes</div>';
+    } else {
+      solicEl.innerHTML = sols.map(function(s) {
+        var nombre = s.empleados ? s.empleados.nombre : '—';
+        var fecha  = new Date(s.created_at).toLocaleDateString('es-ES', { day:'numeric', month:'short' });
+        return '<div class="doc-item" style="padding:0.75rem 1.25rem">' +
+          '<div class="doc-info">' +
+            '<div class="doc-icon" style="width:34px;height:34px;font-size:0.9rem">📋</div>' +
+            '<div><div class="doc-name" style="font-size:0.85rem">' + nombre + '</div>' +
+            '<div class="doc-meta">' + s.tipo + ' · ' + fecha + '</div></div>' +
+          '</div>' +
+          '<div style="display:flex;gap:0.4rem">' +
+            '<button class="btn-sm primary" onclick="gestionarSolicitud(\'' + s.id + '\',\'aprobada\');cargarDashboard()">✓</button>' +
+            '<button class="btn-sm" style="color:var(--red);border-color:rgba(220,38,38,0.3)" onclick="gestionarSolicitud(\'' + s.id + '\',\'rechazada\');cargarDashboard()">✕</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+  }
 }
 
 // ─── TURNOS ADMIN ─────────────────────────────────────────

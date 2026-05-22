@@ -780,7 +780,8 @@
         <p>Gestión de empleados y documentos</p>
       </div>
       <div class="admin-tabs">
-        <button class="admin-tab active" onclick="switchTab('empleados', this)">Empleados</button>
+        <button class="admin-tab active" onclick="switchTab('dashboard', this)">📊 Dashboard</button>
+        <button class="admin-tab" onclick="switchTab('empleados', this)">Empleados</button>
         <button class="admin-tab" onclick="switchTab('subir', this)">Subir documento</button>
         <button class="admin-tab" onclick="switchTab('masivo', this)">Subida masiva ZIP</button>
         <button class="admin-tab" onclick="switchTab('solicitudes-admin', this)">Solicitudes</button>
@@ -789,7 +790,29 @@
         <button class="admin-tab" onclick="switchTab('vacaciones-admin', this)">Vacaciones</button>
       </div>
 
-      <div class="admin-tab-content active" id="tab-empleados">
+      <!-- TAB DASHBOARD -->
+      <div class="admin-tab-content active" id="tab-dashboard">
+        <div id="dashStats" class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.25rem">
+          <div class="loading" style="grid-column:1/-1">Cargando estadísticas...</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;align-items:start">
+          <div class="card" style="padding:0">
+            <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Sin firmar cuadrante</span>
+              <button class="btn-sm" onclick="cargarDashboard()">↺ Actualizar</button>
+            </div>
+            <div id="dashSinFirmar"><div class="loading">Cargando...</div></div>
+          </div>
+          <div class="card" style="padding:0">
+            <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border)">
+              <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Solicitudes pendientes</span>
+            </div>
+            <div id="dashSolicitudes"><div class="loading">Cargando...</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-tab-content" id="tab-empleados">
         <div class="card" style="padding:0">
           <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem">
             <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Empleados registrados</span>
