@@ -1426,8 +1426,11 @@ function filtrarSolicitudesAdmin() {
     container.innerHTML = '<div class="empty"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>' + t('sa.empty') + '</div>';
     return;
   }
+  var contador = (data.length < _solAdminData.length)
+    ? '<div style="padding:0.5rem 1.5rem;font-size:0.72rem;color:var(--muted);border-bottom:1px solid var(--border)">' + data.length + ' de ' + _solAdminData.length + ' solicitudes</div>'
+    : '';
   var delay = 0;
-  container.innerHTML = data.map(function(s) {
+  container.innerHTML = contador + data.map(function(s) {
     var eb = getEstadoBadge(s.estado);
     var cmt = s.comentario ? '<div class="doc-meta" style="color:var(--gold);margin-top:3px">💬 ' + s.comentario + '</div>' : '';
     var nombre = s.empleados ? s.empleados.nombre : 'Empleado';
@@ -1933,8 +1936,11 @@ function filtrarVacacionesAdmin() {
     lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' + t('va.empty') + '</div>';
     return;
   }
+  var contador = (data.length < _vacAdminData.length)
+    ? '<div style="padding:0.5rem 1.5rem;font-size:0.72rem;color:var(--muted);border-bottom:1px solid var(--border)">' + data.length + ' de ' + _vacAdminData.length + ' solicitudes</div>'
+    : '';
   var delay = 0;
-  lista.innerHTML = data.map(function(v) {
+  lista.innerHTML = contador + data.map(function(v) {
     var nombre = v.empleados ? v.empleados.nombre : '—';
     var desde  = new Date(v.fecha_inicio+'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short'});
     var hasta  = new Date(v.fecha_fin  +'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'});
