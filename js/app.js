@@ -421,9 +421,17 @@ async function cargarMisSolicitudes() {
   };
   var delay = 0;
   container.innerHTML = data.map(function(s) {
-    var bc    = s.estado === 'aprobada' ? 'badge-green' : s.estado === 'rechazada' ? 'badge-red' : 'badge-yellow';
-    var fecha = new Date(s.created_at).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' });
+    var bc = s.estado === 'aprobada' ? 'badge-green'
+           : s.estado === 'rechazada' ? 'badge-red'
+           : s.estado === 'cancelada' ? 'badge-grey'
+           : 'badge-yellow';
+    var fecha   = new Date(s.created_at).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' });
     var tipoLbl = TIPO_SOL[s.tipo] || s.tipo;
+    var btnCancelar = s.estado === 'pendiente'
+      ? '<button class="btn-sm" onclick="cancelarSolicitud(\'' + s.id + '\')" ' +
+        'style="margin-left:0.5rem;color:var(--muted);border-color:rgba(255,255,255,0.1);font-size:0.68rem" ' +
+        'title="Cancelar solicitud">✕ Cancelar</button>'
+      : '';
     var d = delay; delay += 50;
     return '<div class="vac-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<span class="badge badge-blue vac-tipo" style="min-width:6rem;justify-content:center">' + tipoLbl + '</span>' +
@@ -432,6 +440,7 @@ async function cargarMisSolicitudes() {
         (s.comentario ? '<br><span style="font-size:0.72rem;color:var(--gold)">💬 ' + s.comentario + '</span>' : '') + '</span>' +
       '<span class="vac-dias" style="min-width:5.5rem;font-size:0.75rem;color:var(--muted)">' + fecha + '</span>' +
       '<span class="badge ' + bc + '">' + s.estado + '</span>' +
+      btnCancelar +
       '</div>';
   }).join('');
 }
@@ -448,7 +457,10 @@ async function cargarSolicitudesAdmin() {
   }
   var delay = 0;
   container.innerHTML = data.map(function(s) {
-    var bc = s.estado === 'aprobada' ? 'badge-green' : s.estado === 'rechazada' ? 'badge-red' : 'badge-yellow';
+    var bc = s.estado === 'aprobada' ? 'badge-green'
+           : s.estado === 'rechazada' ? 'badge-red'
+           : s.estado === 'cancelada' ? 'badge-grey'
+           : 'badge-yellow';
     var cmt = s.comentario ? '<div class="doc-meta" style="color:var(--gold);margin-top:3px">💬 ' + s.comentario + '</div>' : '';
     var d = delay; delay += 45;
     return '<div class="doc-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
@@ -902,7 +914,15 @@ async function cargarVacaciones() {
     var desde  = new Date(v.fecha_inicio+'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'});
     var hasta  = new Date(v.fecha_fin  +'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'});
     var dias   = diasEntre(v.fecha_inicio, v.fecha_fin);
-    var est    = v.estado === 'aprobada' ? 'badge-green' : v.estado === 'rechazada' ? 'badge-red' : 'badge-yellow';
+    var est = v.estado === 'aprobada' ? 'badge-green'
+            : v.estado === 'rechazada' ? 'badge-red'
+            : v.estado === 'cancelada' ? 'badge-grey'
+            : 'badge-yellow';
+    var btnCancelar = v.estado === 'pendiente'
+      ? '<button class="btn-sm" onclick="cancelarVacacion(\'' + v.id + '\')" ' +
+        'style="margin-left:0.25rem;color:var(--muted);border-color:rgba(255,255,255,0.1);font-size:0.68rem" ' +
+        'title="Cancelar solicitud">✕ Cancelar</button>'
+      : '';
     var d = delay; delay += 50;
     return '<div class="vac-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<span class="badge ' + (VAC_TIPO_CLASS[v.tipo]||'badge-blue') + ' vac-tipo">' + (VAC_TIPO_LABEL[v.tipo]||v.tipo) + '</span>' +
@@ -911,6 +931,7 @@ async function cargarVacaciones() {
         (v.comentario ? '<br><span style="font-size:0.72rem;color:var(--gold)">💬 ' + v.comentario + '</span>' : '') + '</span>' +
       '<span class="vac-dias">' + dias + ' d.</span>' +
       '<span class="badge ' + est + '">' + v.estado + '</span>' +
+      btnCancelar +
       '</div>';
   }).join('');
 }
@@ -930,7 +951,10 @@ async function cargarVacacionesAdmin() {
     var desde  = new Date(v.fecha_inicio+'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short'});
     var hasta  = new Date(v.fecha_fin  +'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'});
     var dias   = diasEntre(v.fecha_inicio, v.fecha_fin);
-    var est    = v.estado === 'aprobada' ? 'badge-green' : v.estado === 'rechazada' ? 'badge-red' : 'badge-yellow';
+    var est = v.estado === 'aprobada' ? 'badge-green'
+            : v.estado === 'rechazada' ? 'badge-red'
+            : v.estado === 'cancelada' ? 'badge-grey'
+            : 'badge-yellow';
     var d = delay; delay += 45;
     return '<div class="doc-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<div class="doc-info"><div class="doc-icon">🏖️</div>' +
@@ -976,6 +1000,24 @@ async function confirmarVacacion(id, estado) {
 async function gestionarVacacion(id, estado) {
   await sb.from('vacaciones').update({ estado }).eq('id', id);
   cargarVacacionesAdmin();
+}
+
+// ─── CANCELAR SOLICITUDES / VACACIONES (EMPLEADO) ────────
+
+async function cancelarSolicitud(id) {
+  if (!confirm('¿Cancelar esta solicitud?\nSi ya la revisó el coordinador, contacta con él directamente.')) return;
+  var { error } = await sb.from('solicitudes').update({ estado: 'cancelada' }).eq('id', id);
+  if (error) { mostrarToast('❌ Error', error.message); return; }
+  mostrarToast('✓ Solicitud cancelada', 'La solicitud ha sido cancelada.');
+  cargarMisSolicitudes();
+}
+
+async function cancelarVacacion(id) {
+  if (!confirm('¿Cancelar esta solicitud de vacaciones?')) return;
+  var { error } = await sb.from('vacaciones').update({ estado: 'cancelada' }).eq('id', id);
+  if (error) { mostrarToast('❌ Error', error.message); return; }
+  mostrarToast('✓ Vacaciones canceladas', 'La solicitud ha sido cancelada.');
+  cargarVacaciones();
 }
 
 // ─── IMPORTAR EXCEL ──────────────────────────────────────
