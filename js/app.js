@@ -57,6 +57,7 @@ function navigateToPage(page) {
   document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
   var pageEl = document.getElementById('page-' + page);
   if (pageEl) pageEl.classList.add('active');
+  if (page === 'calendario') cargarCalendario();
 }
 
 document.querySelectorAll('.nav-item').forEach(function(btn){
@@ -239,19 +240,22 @@ function switchTab(tab, el) {
   if (el) el.classList.add('active');
   var tabEl = document.getElementById('tab-' + tab);
   if (tabEl) tabEl.style.display = 'block';
-  if (tab === 'subir' || tab === 'masivo') cargarEmpleados();
+  if (tab === 'subir' || tab === 'masivo' || tab === 'turnos-admin') cargarEmpleados();
   if (tab === 'solicitudes-admin') cargarSolicitudesAdmin();
+  if (tab === 'turnos-admin') cargarTurnosAdmin();
 }
 
 // ADMIN - EMPLEADOS
 async function cargarEmpleados() {
   var { data } = await sb.from('empleados').select('*').order('nombre');
   if (!data) return;
-  var sel = document.getElementById('subirEmpleado');
-  if (sel) {
-    sel.innerHTML = '<option value="">Selecciona empleado...</option>';
-    data.forEach(function(e){ sel.innerHTML += '<option value="' + e.id + '">' + e.nombre + ' — ' + e.cargo + '</option>'; });
-  }
+  ['subirEmpleado','turnoEmpleado'].forEach(function(selId) {
+    var sel = document.getElementById(selId);
+    if (sel) {
+      sel.innerHTML = '<option value="">Selecciona empleado...</option>';
+      data.forEach(function(e){ sel.innerHTML += '<option value="' + e.id + '">' + e.nombre + ' — ' + e.cargo + '</option>'; });
+    }
+  });
   var container = document.getElementById('empleadosList');
   if (!container) return;
   if (!data.length) { container.innerHTML = '<div class="empty">No hay empleados</div>'; return; }
@@ -369,6 +373,189 @@ sb.auth.onAuthStateChange(function(event, session) {
     document.getElementById('loginWrap').style.display = 'flex';
   }
 });
+
+// ─── CALENDARIO ──────────────────────────────────────────
+
+var calYear  = new Date().getFullYear();
+var calMonth = new Date().getMonth();
+
+var MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+             'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var TIPO_LABEL = { manana:'Mañana', tarde:'Tarde', noche:'Noche', guardia:'Guardia', libre:'Libre', turno:'Turno' };
+
+async function cargarCalendario() {
+  var primerDia = calYear + '-' + String(calMonth + 1).padStart(2,'0') + '-01';
+  var ultimoDia = new Date(calYear, calMonth + 1, 0);
+  var ultimoDiaStr = calYear + '-' + String(calMonth + 1).padStart(2,'0') + '-' + String(ultimoDia.getDate()).padStart(2,'0');
+
+  var q = sb.from('turnos').select('*').gte('fecha', primerDia).lte('fecha', ultimoDiaStr).order('fecha');
+  if (currentEmpleado) q = q.eq('empleado_id', currentEmpleado.id);
+  var { data } = await q;
+  renderCalendario(data || []);
+}
+
+function renderCalendario(turnos) {
+  document.getElementById('calMesLabel').textContent = MESES[calMonth] + ' ' + calYear;
+
+  var grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+
+  // Cabecera días
+  ['L','M','X','J','V','S','D'].forEach(function(d) {
+    var h = document.createElement('div');
+    h.className = 'cal-day-hdr';
+    h.textContent = d;
+    grid.appendChild(h);
+  });
+
+  // Mapa fecha → turnos
+  var mapa = {};
+  turnos.forEach(function(t) {
+    if (!mapa[t.fecha]) mapa[t.fecha] = [];
+    mapa[t.fecha].push(t);
+  });
+
+  var primerDiaSemana = new Date(calYear, calMonth, 1).getDay();
+  var offset = primerDiaSemana === 0 ? 6 : primerDiaSemana - 1;
+  var diasMes = new Date(calYear, calMonth + 1, 0).getDate();
+  var diasMesAnt = new Date(calYear, calMonth, 0).getDate();
+  var hoy = new Date();
+  var totalCeldas = Math.ceil((offset + diasMes) / 7) * 7;
+
+  for (var i = 0; i < totalCeldas; i++) {
+    var cell = document.createElement('div');
+    cell.className = 'cal-day';
+    var num, dateStr, esOtroMes = false;
+
+    if (i < offset) {
+      num = diasMesAnt - offset + i + 1;
+      esOtroMes = true;
+      dateStr = new Date(calYear, calMonth - 1, num).toISOString().split('T')[0];
+    } else if (i >= offset + diasMes) {
+      num = i - offset - diasMes + 1;
+      esOtroMes = true;
+      dateStr = new Date(calYear, calMonth + 1, num).toISOString().split('T')[0];
+    } else {
+      num = i - offset + 1;
+      dateStr = calYear + '-' + String(calMonth + 1).padStart(2,'0') + '-' + String(num).padStart(2,'0');
+    }
+
+    if (esOtroMes) cell.classList.add('other-m');
+    if (!esOtroMes && hoy.getFullYear() === calYear && hoy.getMonth() === calMonth && hoy.getDate() === num) {
+      cell.classList.add('today');
+    }
+
+    var numEl = document.createElement('div');
+    numEl.className = 'cal-day-num';
+    numEl.textContent = num;
+    cell.appendChild(numEl);
+
+    if (mapa[dateStr]) {
+      cell.classList.add('has-shift');
+      mapa[dateStr].forEach(function(t) {
+        var pill = document.createElement('div');
+        pill.className = 'cal-pill t-' + t.tipo;
+        var txt = TIPO_LABEL[t.tipo] || t.tipo;
+        if (t.hora_inicio) txt = t.hora_inicio.slice(0,5) + (t.hora_fin ? '–' + t.hora_fin.slice(0,5) : '');
+        pill.textContent = txt;
+        cell.appendChild(pill);
+      });
+    }
+    grid.appendChild(cell);
+  }
+
+  // Resumen lista de turnos del mes
+  var resumen = document.getElementById('calResumen');
+  if (!turnos.length) {
+    resumen.innerHTML = '<div class="empty">No hay turnos asignados este mes</div>';
+    return;
+  }
+  resumen.innerHTML = '<div class="card" style="padding:0"><div style="padding:0.875rem 1.25rem;border-bottom:1px solid var(--border);font-size:0.65rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)">Detalle del mes</div>' +
+    turnos.map(function(t) {
+      var fecha = new Date(t.fecha + 'T12:00:00');
+      var fechaStr = fecha.toLocaleDateString('es-ES', { weekday:'short', day:'numeric', month:'short' });
+      var horas = t.hora_inicio ? t.hora_inicio.slice(0,5) + (t.hora_fin ? ' – ' + t.hora_fin.slice(0,5) : '') : '—';
+      return '<div class="cal-resumen-item">' +
+        '<span class="cal-pill t-' + t.tipo + '" style="min-width:4.5rem;text-align:center">' + (TIPO_LABEL[t.tipo] || t.tipo) + '</span>' +
+        '<span class="cal-resumen-fecha">' + fechaStr + '</span>' +
+        '<span class="cal-resumen-horas">' + horas + '</span>' +
+        '<span class="cal-resumen-lugar">' + (t.ubicacion || '') + '</span>' +
+        '</div>';
+    }).join('') + '</div>';
+}
+
+function prevMes() {
+  if (calMonth === 0) { calMonth = 11; calYear--; } else { calMonth--; }
+  cargarCalendario();
+}
+function nextMes() {
+  if (calMonth === 11) { calMonth = 0; calYear++; } else { calMonth++; }
+  cargarCalendario();
+}
+
+// ─── TURNOS ADMIN ─────────────────────────────────────────
+
+async function cargarTurnosAdmin() {
+  var container = document.getElementById('turnosAdminList');
+  if (!container) return;
+  container.innerHTML = '<div class="loading">Cargando...</div>';
+  var hoy = new Date().toISOString().split('T')[0];
+  var { data } = await sb.from('turnos').select('*, empleados(nombre)')
+    .gte('fecha', hoy).order('fecha').order('hora_inicio').limit(30);
+  if (!data || !data.length) {
+    container.innerHTML = '<div class="empty" style="border:none;padding:2rem">No hay turnos próximos</div>';
+    return;
+  }
+  container.innerHTML = data.map(function(t) {
+    var horas = t.hora_inicio ? t.hora_inicio.slice(0,5) + (t.hora_fin ? '–' + t.hora_fin.slice(0,5) : '') : '—';
+    var fecha = new Date(t.fecha + 'T12:00:00').toLocaleDateString('es-ES', { weekday:'short', day:'numeric', month:'short' });
+    return '<div class="doc-item">' +
+      '<div class="doc-info">' +
+      '<div class="doc-icon" style="font-size:1.1rem">📅</div>' +
+      '<div><div class="doc-name">' + (t.empleados ? t.empleados.nombre : '—') + '</div>' +
+      '<div class="doc-meta">' + fecha + ' · ' + horas + (t.ubicacion ? ' · ' + t.ubicacion : '') + '</div></div></div>' +
+      '<div style="display:flex;align-items:center;gap:0.5rem">' +
+      '<span class="cal-pill t-' + t.tipo + '">' + (TIPO_LABEL[t.tipo] || t.tipo) + '</span>' +
+      '<button class="btn-sm" onclick="eliminarTurno(\'' + t.id + '\')" style="color:var(--red);border-color:rgba(220,38,38,0.3)">✕</button>' +
+      '</div></div>';
+  }).join('');
+}
+
+async function crearTurno() {
+  var empId  = document.getElementById('turnoEmpleado').value;
+  var fecha  = document.getElementById('turnoFecha').value;
+  var tipo   = document.getElementById('turnoTipo').value;
+  var inicio = document.getElementById('turnoInicio').value;
+  var fin    = document.getElementById('turnoFin').value;
+  var ubic   = document.getElementById('turnoUbicacion').value.trim();
+  var notas  = document.getElementById('turnoNotas').value.trim();
+  var ok  = document.getElementById('turnoOk');
+  var err = document.getElementById('turnoError');
+  ok.style.display = 'none'; err.style.display = 'none';
+  if (!empId || !fecha) {
+    err.style.display = 'block'; err.textContent = 'Selecciona empleado y fecha.'; return;
+  }
+  var payload = { empleado_id: empId, fecha: fecha, tipo: tipo };
+  if (inicio) payload.hora_inicio = inicio;
+  if (fin)    payload.hora_fin    = fin;
+  if (ubic)   payload.ubicacion   = ubic;
+  if (notas)  payload.notas       = notas;
+  var { error } = await sb.from('turnos').insert(payload);
+  if (error) { err.style.display = 'block'; err.textContent = 'Error: ' + error.message; return; }
+  ok.style.display = 'block';
+  document.getElementById('turnoFecha').value = '';
+  document.getElementById('turnoInicio').value = '';
+  document.getElementById('turnoFin').value = '';
+  document.getElementById('turnoUbicacion').value = '';
+  document.getElementById('turnoNotas').value = '';
+  cargarTurnosAdmin();
+}
+
+async function eliminarTurno(id) {
+  if (!confirm('¿Eliminar este turno?')) return;
+  await sb.from('turnos').delete().eq('id', id);
+  cargarTurnosAdmin();
+}
 
 // NOTIFICACIONES
 async function pedirPermisoNotificaciones() {
