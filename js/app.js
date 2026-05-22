@@ -586,21 +586,81 @@ function renderEmpleadosTabla(data) {
     return;
   }
   var q = filtroBuscadorActivo;
-  var countHtml = data.length < allEmpleados.length
-    ? '<span style="font-size:0.72rem;color:var(--muted);font-weight:400"> · ' + data.length + ' resultado' + (data.length !== 1 ? 's' : '') + '</span>'
-    : '';
+  var hasFilter = data.length < allEmpleados.length;
   container.innerHTML =
-    (countHtml ? '<div style="padding:0.5rem 1.5rem;font-size:0.7rem;color:var(--muted);border-bottom:1px solid var(--border)">' + data.length + ' empleado' + (data.length !== 1 ? 's' : '') + ' encontrado' + (data.length !== 1 ? 's' : '') + '</div>' : '') +
-    '<table><thead><tr><th>Nombre</th><th>Email</th><th>Cargo</th><th>Estado</th></tr></thead><tbody>' +
+    (hasFilter ? '<div style="padding:0.5rem 1.5rem;font-size:0.72rem;color:var(--muted);border-bottom:1px solid var(--border)">' + data.length + ' empleado' + (data.length !== 1 ? 's' : '') + ' encontrado' + (data.length !== 1 ? 's' : '') + '</div>' : '') +
+    '<table><thead><tr><th>Nombre</th><th>Email</th><th>Cargo</th><th>Estado</th><th></th></tr></thead><tbody>' +
     data.map(function(e, i) {
       return '<tr style="animation:fadeIn 0.25s ease both;animation-delay:' + (i * 35) + 'ms">' +
         '<td><strong style="color:var(--white)">' + highlightMatch(e.nombre, q) + '</strong></td>' +
         '<td style="color:var(--text2)">' + highlightMatch(e.email, q) + '</td>' +
         '<td>' + e.cargo + '</td>' +
         '<td><span class="badge ' + (e.activo ? 'badge-green">Activo' : 'badge-red">Inactivo') + '</span></td>' +
+        '<td><button class="btn-sm" onclick="abrirEditEmp(\'' + e.id + '\')" style="margin-left:0">✏ Editar</button></td>' +
         '</tr>';
     }).join('') + '</tbody></table>';
 }
+
+// ─── EDITAR EMPLEADO ──────────────────────────────────────
+
+function abrirEditEmp(id) {
+  var emp = allEmpleados.find(function(e){ return e.id === id; });
+  if (!emp) return;
+  document.getElementById('editEmpId').value      = emp.id;
+  document.getElementById('editEmpTitle').textContent = emp.nombre;
+  document.getElementById('editEmpNombre').value  = emp.nombre  || '';
+  document.getElementById('editEmpEmail').value   = emp.email   || '';
+  document.getElementById('editEmpDni').value     = emp.dni     || '';
+  document.getElementById('editEmpDias').value    = emp.dias_vacaciones_anuales || 22;
+  document.getElementById('editEmpActivo').value  = emp.activo ? 'true' : 'false';
+  var cargoSel = document.getElementById('editEmpCargo');
+  for (var i = 0; i < cargoSel.options.length; i++) {
+    cargoSel.options[i].selected = cargoSel.options[i].value === emp.cargo;
+  }
+  document.getElementById('editEmpOk').style.display    = 'none';
+  document.getElementById('editEmpError').style.display = 'none';
+  var modal = document.getElementById('editEmpModal');
+  modal.style.display = 'flex';
+  setTimeout(function(){ document.getElementById('editEmpNombre').focus(); }, 80);
+}
+
+function cerrarEditEmp() {
+  document.getElementById('editEmpModal').style.display = 'none';
+}
+
+async function guardarEmpleado() {
+  var id      = document.getElementById('editEmpId').value;
+  var nombre  = document.getElementById('editEmpNombre').value.trim();
+  var email   = document.getElementById('editEmpEmail').value.trim();
+  var dni     = document.getElementById('editEmpDni').value.trim();
+  var cargo   = document.getElementById('editEmpCargo').value;
+  var dias    = parseInt(document.getElementById('editEmpDias').value) || 22;
+  var activo  = document.getElementById('editEmpActivo').value === 'true';
+  var ok      = document.getElementById('editEmpOk');
+  var err     = document.getElementById('editEmpError');
+  var btn     = document.getElementById('editEmpBtn');
+  ok.style.display = 'none'; err.style.display = 'none';
+  if (!nombre || !email || !dni) {
+    err.style.display = 'block'; err.textContent = 'Nombre, email y DNI son obligatorios.'; return;
+  }
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  var { error } = await sb.from('empleados').update({
+    nombre: nombre, email: email, dni: dni, cargo: cargo,
+    dias_vacaciones_anuales: dias, activo: activo
+  }).eq('id', id);
+  btn.disabled = false; btn.textContent = 'Guardar cambios';
+  if (error) { err.style.display = 'block'; err.textContent = 'Error: ' + error.message; return; }
+  ok.style.display = 'block'; ok.textContent = '✓ Datos actualizados correctamente.';
+  cargarEmpleados();
+  setTimeout(cerrarEditEmp, 1200);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('editEmpModal').style.display === 'flex') cerrarEditEmp();
+});
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.id === 'editEmpModal') cerrarEditEmp();
+});
 
 function exportarEmpleadosExcel() {
   if (!allEmpleados.length) { alert('No hay empleados para exportar.'); return; }

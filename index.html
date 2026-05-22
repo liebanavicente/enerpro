@@ -445,6 +445,8 @@
     #empleadosList td:nth-child(2)::before { content: "Email"; }
     #empleadosList td:nth-child(3)::before { content: "Cargo"; }
     #empleadosList td:nth-child(4)::before { content: "Estado"; }
+    #empleadosList td:nth-child(5)::before { content: ""; }
+    #empleadosList td:nth-child(5) { padding-top: 0.5rem; }
   }
 
   /* ─── CALENDARIO ─────────────────────────────────────── */
@@ -1347,6 +1349,52 @@
       <input type="password" id="cpConfirma" placeholder="Repite la contraseña" autocomplete="new-password">
     </div>
     <button class="btn-primary" id="cpBtn" onclick="confirmarCambioPassword()">Cambiar contraseña y acceder</button>
+  </div>
+</div>
+
+<!-- MODAL EDITAR EMPLEADO -->
+<div id="editEmpModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:1rem;animation:fadeIn 0.2s ease">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-top:2px solid var(--gold);border-radius:var(--r);width:100%;max-width:480px;box-shadow:0 32px 80px rgba(0,0,0,0.7);animation:fadeUp 0.28s cubic-bezier(0.22,1,0.36,1)">
+    <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);margin-bottom:2px">Administración</div>
+        <div style="font-size:1rem;font-weight:600;color:var(--white)" id="editEmpTitle">Editar empleado</div>
+      </div>
+      <button onclick="cerrarEditEmp()" style="background:none;border:none;color:var(--muted);font-size:1.25rem;cursor:pointer;line-height:1;padding:0.25rem">✕</button>
+    </div>
+    <div style="padding:1.5rem">
+      <div class="success-box" id="editEmpOk"></div>
+      <div class="error-box"   id="editEmpError"></div>
+      <input type="hidden" id="editEmpId">
+      <div class="form-group"><label>Nombre completo</label><input type="text" id="editEmpNombre" placeholder="Nombre completo"></div>
+      <div class="form-group"><label>Email corporativo</label><input type="email" id="editEmpEmail" placeholder="email@enerpro.com"></div>
+      <div class="form-group"><label>DNI</label><input type="text" id="editEmpDni" placeholder="12345678A"></div>
+      <div class="form-group"><label>Cargo</label>
+        <select id="editEmpCargo">
+          <option>Vigilante de seguridad</option>
+          <option>Auxiliar de servicio</option>
+          <option>Coordinador</option>
+          <option>Administrativo</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+        <div class="form-group" style="margin-bottom:0">
+          <label>Días vacaciones / año</label>
+          <input type="number" id="editEmpDias" min="0" max="60" placeholder="22">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Estado</label>
+          <select id="editEmpActivo">
+            <option value="true">Activo</option>
+            <option value="false">Inactivo / Baja</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.75rem;margin-top:1.5rem">
+        <button class="btn-sm primary" id="editEmpBtn" onclick="guardarEmpleado()" style="flex:1;padding:0.7rem;font-size:0.85rem">Guardar cambios</button>
+        <button class="btn-sm" onclick="cerrarEditEmp()" style="padding:0.7rem 1.25rem">Cancelar</button>
+      </div>
+    </div>
   </div>
 </div>
 
