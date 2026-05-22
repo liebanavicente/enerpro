@@ -1389,14 +1389,6 @@ document.getElementById('solicitudForm').addEventListener('submit', async functi
   </button>
 </nav>
 
-<script>
-  function navTo(page, el) {
-    document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(function(b){ b.classList.remove('active'); });
-    document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
-    document.querySelectorAll('[data-page="' + page + '"]').forEach(function(b){ b.classList.add('active'); });
-    document.getElementById('page-' + page).classList.add('active');
-  }
-</script>
-
+<script src="js/app.js"></script>
 </body>
 </html>
