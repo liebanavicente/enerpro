@@ -124,8 +124,6 @@ function iniciarApp() {
   var mesFmt = new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
   var mesLabel = mesFmt.charAt(0).toUpperCase() + mesFmt.slice(1);
   document.getElementById('welcomeSub').textContent = emp ? emp.cargo + ' · ' + mesLabel : mesLabel;
-  var formEmp = document.getElementById('formEmpleado');
-  if (formEmp) formEmp.value = emp ? emp.nombre : email;
   if (isAdmin) {
     document.getElementById('sidebarRole').textContent = 'Administrador';
     document.getElementById('userRoleLabel').textContent = 'Administrador';
@@ -195,8 +193,6 @@ document.querySelectorAll('.nav-item').forEach(function(btn){
   btn.addEventListener('click', function(){ navigateToPage(this.getAttribute('data-page')); });
 });
 
-function navTo(page) { navigateToPage(page); }
-
 // LOGOUT
 async function doLogout() {
   if (realtimeChannel)         { sb.removeChannel(realtimeChannel);         realtimeChannel         = null; }
@@ -255,8 +251,7 @@ async function cargarDocumentos() {
         : '';
       cFirmaHtml = '<span class="badge badge-green">✓ Firmado' + (cFecha ? ' el ' + cFecha : '') + '</span>';
     } else {
-      cFirmaHtml = '<button class="btn-sm" style="border-color:rgba(245,184,0,0.45);color:var(--gold)" ' +
-        'onclick="firmarDoc(\'' + cuadrante.id + '\', \'' + cSafeName + '\')">✍ Confirmar lectura</button>';
+      cFirmaHtml = '<button class="btn-sm gold" onclick="firmarDoc(\'' + cuadrante.id + '\', \'' + cSafeName + '\')">✍ Confirmar lectura</button>';
     }
     if (cuadranteDiv) cuadranteDiv.innerHTML =
       '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">' +
@@ -297,8 +292,7 @@ function renderDocs(docs, containerId, limit) {
         : '';
       badgeFirma = '<span class="badge badge-green" style="margin-left:0.5rem">✓ Firmado' + (fFecha ? ' ' + fFecha : '') + '</span>';
     } else {
-      btnFirma = '<button class="btn-sm" style="border-color:rgba(245,184,0,0.45);color:var(--gold)" ' +
-        'onclick="firmarDoc(\'' + doc.id + '\', \'' + safeName + '\')">✍ Firmar</button>';
+      btnFirma = '<button class="btn-sm gold" onclick="firmarDoc(\'' + doc.id + '\', \'' + safeName + '\')">✍ Firmar</button>';
     }
     var d = delay;
     delay += 50;
@@ -316,6 +310,9 @@ function renderDocs(docs, containerId, limit) {
 }
 
 function filterDocs(tipo) {
+  document.querySelectorAll('.doc-filter').forEach(function(b){ b.classList.remove('primary'); });
+  var active = document.querySelector('.doc-filter[data-filter="' + tipo + '"]');
+  if (active) active.classList.add('primary');
   var filtered = tipo === 'todos' ? allDocs : allDocs.filter(function(d){ return d.tipo === tipo; });
   renderDocs(filtered, 'docsList');
 }
@@ -330,7 +327,7 @@ async function eliminarDoc(docId, url) {
 async function descargarDoc(docId, url, nombre) {
   await sb.from('documentos').update({ leido: true }).eq('id', docId);
   var { data, error } = await sb.storage.from('documentos').download(url);
-  if (error) { alert('Error al descargar.'); return; }
+  if (error) { mostrarToast('❌ Error al descargar', 'No se pudo descargar el documento.'); return; }
   var link = document.createElement('a');
   link.href = URL.createObjectURL(data);
   link.download = nombre + '.pdf';
@@ -399,7 +396,7 @@ if (solicitudForm) {
       if (err) { err.style.display = 'block'; err.textContent = 'Error: ' + error.message; }
       return;
     }
-    if (ok) { ok.style.display = 'block'; ok.textContent = '✓ Solicitud enviada correctamente.'; }
+    if (ok) { ok.style.display = 'block'; ok.textContent = '✓ Solicitud enviada. El coordinador la revisará en breve.'; }
     this.reset();
     cargarMisSolicitudes();
   });
@@ -506,11 +503,6 @@ async function confirmarSolicitud(id, estado) {
   await sb.from('solicitudes').update(payload).eq('id', id);
   cargarSolicitudesAdmin();
   if (document.getElementById('dashStats')) cargarDashboard();
-}
-
-async function gestionarSolicitud(id, estado) {
-  await sb.from('solicitudes').update({ estado: estado }).eq('id', id);
-  cargarSolicitudesAdmin();
 }
 
 // TABS ADMIN
@@ -678,8 +670,16 @@ document.addEventListener('click', function(e) {
   if (e.target && e.target.id === 'editEmpModal') cerrarEditEmp();
 });
 
+function _descargarXlsx(filas, nombreHoja, anchos, nombreArchivo) {
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.aoa_to_sheet(filas);
+  if (anchos) ws['!cols'] = anchos;
+  XLSX.utils.book_append_sheet(wb, ws, nombreHoja);
+  XLSX.writeFile(wb, nombreArchivo + '.xlsx');
+}
+
 function exportarEmpleadosExcel() {
-  if (!allEmpleados.length) { alert('No hay empleados para exportar.'); return; }
+  if (!allEmpleados.length) { mostrarToast('ℹ️ Sin datos', 'No hay empleados para exportar.'); return; }
   var datos = filtroCargoActivo === 'todos'
     ? allEmpleados
     : allEmpleados.filter(function(e){ return e.cargo === filtroCargoActivo; });
@@ -687,11 +687,7 @@ function exportarEmpleadosExcel() {
   datos.forEach(function(e) {
     filas.push([e.nombre, e.email, e.dni || '', e.cargo, e.activo ? 'Activo' : 'Inactivo', e.dias_vacaciones_anuales || 22]);
   });
-  var wb = XLSX.utils.book_new();
-  var ws = XLSX.utils.aoa_to_sheet(filas);
-  ws['!cols'] = [{wch:30},{wch:35},{wch:12},{wch:25},{wch:10},{wch:16}];
-  XLSX.utils.book_append_sheet(wb, ws, 'Empleados');
-  XLSX.writeFile(wb, 'empleados_enerpro_' + new Date().toISOString().split('T')[0] + '.xlsx');
+  _descargarXlsx(filas, 'Empleados', [{wch:30},{wch:35},{wch:12},{wch:25},{wch:10},{wch:16}], 'empleados_enerpro_' + new Date().toISOString().split('T')[0]);
 }
 
 function showAddEmpleado() { document.getElementById('addEmpleadoForm').style.display = 'block'; }
@@ -735,7 +731,7 @@ async function crearEmpleado() {
 
   // Insertar en tabla empleados
   var { error: dbError } = await sb.from('empleados').insert({ nombre:nombre, email:email, dni:dni, cargo:cargo, activo:true, debe_cambiar_password:true });
-  if (dbError) { err.style.display='block'; err.textContent='Error en BD: '+dbError.message; return; }
+  if (dbError) { err.style.display='block'; err.textContent='Error al guardar: '+dbError.message; return; }
 
   ok.style.display='block'; ok.textContent='✓ Empleado creado correctamente.' + authMsg;
   document.getElementById('empNombre').value='';
@@ -762,7 +758,7 @@ async function subirDocumento() {
     empleado_id:empleadoId, nombre:nombre, tipo:tipo, url:fileName,
     fecha:new Date().toISOString().split('T')[0], leido:false
   });
-  if (dbError) { err.style.display='block'; err.textContent='Error en BD: '+dbError.message; return; }
+  if (dbError) { err.style.display='block'; err.textContent='Error al guardar: '+dbError.message; return; }
   ok.style.display='block'; ok.textContent='✓ Documento subido correctamente.';
   document.getElementById('subirNombre').value='';
   document.getElementById('subirArchivo').value='';
@@ -903,7 +899,6 @@ async function cargarVacaciones() {
   if (resumen) {
     document.getElementById('vacAno').textContent = anoActual;
     resumen.style.display = 'block';
-    // numbers animated after data loads (see below)
   }
 
   if (!data || !data.length) { lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>No tienes solicitudes de vacaciones</div>'; return; }
@@ -999,11 +994,6 @@ async function confirmarVacacion(id, estado) {
   await sb.from('vacaciones').update(payload).eq('id', id);
   cargarVacacionesAdmin();
   if (document.getElementById('dashStats')) cargarDashboard();
-}
-
-async function gestionarVacacion(id, estado) {
-  await sb.from('vacaciones').update({ estado }).eq('id', id);
-  cargarVacacionesAdmin();
 }
 
 // ─── CANCELAR SOLICITUDES / VACACIONES (EMPLEADO) ────────
@@ -1450,7 +1440,7 @@ async function crearTurno() {
   if (notas)  payload.notas       = notas;
   var { error } = await sb.from('turnos').insert(payload);
   if (error) { err.style.display = 'block'; err.textContent = 'Error: ' + error.message; return; }
-  ok.style.display = 'block';
+  ok.style.display = 'block'; ok.textContent = '✓ Turno asignado correctamente.';
   document.getElementById('turnoFecha').value = '';
   document.getElementById('turnoInicio').value = '';
   document.getElementById('turnoFin').value = '';
@@ -1473,7 +1463,7 @@ async function firmarDoc(docId, nombre) {
     fecha_firma: new Date().toISOString(),
     leido: true
   }).eq('id', docId);
-  if (error) { alert('Error al registrar la firma: ' + error.message); return; }
+  if (error) { mostrarToast('❌ Error', 'No se pudo registrar la firma.'); return; }
   cargarDocumentos();
   mostrarToast('✍ Lectura confirmada', nombre);
 }
@@ -1655,7 +1645,7 @@ function exportarResumenVacaciones() {
   var lista = document.getElementById('resumenVacLista');
   if (!lista) return;
   var rows = lista.querySelectorAll('tbody tr');
-  if (!rows.length) { alert('No hay datos para exportar.'); return; }
+  if (!rows.length) { mostrarToast('ℹ️ Sin datos', 'No hay datos para exportar.'); return; }
   var ano = new Date().getFullYear();
   var filas = [['Nombre', 'Cargo', 'Días anuales', 'Días usados', 'Días restantes']];
   rows.forEach(function(tr) {
@@ -1667,11 +1657,7 @@ function exportarResumenVacaciones() {
     var rest     = tds[3] ? tds[3].querySelector('strong').textContent.trim() : '';
     filas.push([nombre, cargo, total, usados, rest]);
   });
-  var wb = XLSX.utils.book_new();
-  var ws = XLSX.utils.aoa_to_sheet(filas);
-  ws['!cols'] = [{wch:32},{wch:26},{wch:14},{wch:13},{wch:14}];
-  XLSX.utils.book_append_sheet(wb, ws, 'Vacaciones ' + ano);
-  XLSX.writeFile(wb, 'resumen_vacaciones_' + ano + '.xlsx');
+  _descargarXlsx(filas, 'Vacaciones ' + ano, [{wch:32},{wch:26},{wch:14},{wch:13},{wch:14}], 'resumen_vacaciones_' + ano);
 }
 
 // ─── TURNOS MASIVOS ───────────────────────────────────────
@@ -1721,7 +1707,7 @@ async function crearTurnosPorFecha() {
   var cur = new Date(desde + 'T12:00:00');
   var end = new Date(hasta + 'T12:00:00');
   while (cur <= end) {
-    var dow = cur.getDay(); // 0=dom, 6=sab
+    var dow = cur.getDay();
     if (!excFin || (dow !== 0 && dow !== 6)) {
       fechas.push(cur.toISOString().split('T')[0]);
     }
@@ -2011,11 +1997,7 @@ async function exportarSolicitudesExcel() {
       new Date(s.created_at).toLocaleDateString('es-ES')
     ]);
   });
-  var wb = XLSX.utils.book_new();
-  var ws = XLSX.utils.aoa_to_sheet(filas);
-  ws['!cols'] = [{wch:28},{wch:22},{wch:18},{wch:40},{wch:12},{wch:30},{wch:16}];
-  XLSX.utils.book_append_sheet(wb, ws, 'Solicitudes');
-  XLSX.writeFile(wb, 'solicitudes_enerpro_' + new Date().toISOString().split('T')[0] + '.xlsx');
+  _descargarXlsx(filas, 'Solicitudes', [{wch:28},{wch:22},{wch:18},{wch:40},{wch:12},{wch:30},{wch:16}], 'solicitudes_enerpro_' + new Date().toISOString().split('T')[0]);
 }
 
 // ─── EXPORTAR VACACIONES A EXCEL ─────────────────────────
@@ -2033,9 +2015,5 @@ async function exportarVacacionesExcel() {
     var dias   = diasEntre(v.fecha_inicio, v.fecha_fin);
     filas.push([nombre, tipo, v.fecha_inicio, v.fecha_fin, dias, v.estado, v.comentario || '', v.notas || '']);
   });
-  var wb = XLSX.utils.book_new();
-  var ws = XLSX.utils.aoa_to_sheet(filas);
-  ws['!cols'] = [{wch:28},{wch:16},{wch:12},{wch:12},{wch:8},{wch:12},{wch:30},{wch:30}];
-  XLSX.utils.book_append_sheet(wb, ws, 'Vacaciones');
-  XLSX.writeFile(wb, 'vacaciones_enerpro_' + new Date().toISOString().split('T')[0] + '.xlsx');
+  _descargarXlsx(filas, 'Vacaciones', [{wch:28},{wch:16},{wch:12},{wch:12},{wch:8},{wch:12},{wch:30},{wch:30}], 'vacaciones_enerpro_' + new Date().toISOString().split('T')[0]);
 }

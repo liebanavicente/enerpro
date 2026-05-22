@@ -185,6 +185,8 @@
   .btn-sm:hover         { background: rgba(255,255,255,0.09); color: var(--white); border-color: rgba(255,255,255,0.18); }
   .btn-sm.primary       { background: var(--red); border-color: var(--red); color: #fff; box-shadow: 0 2px 14px rgba(229,57,53,0.3); }
   .btn-sm.primary:hover { background: var(--red-dark); border-color: var(--red-dark); box-shadow: 0 4px 22px rgba(229,57,53,0.44); }
+  .btn-sm.gold          { border-color: rgba(245,184,0,0.42); color: var(--gold); }
+  .btn-sm.gold:hover    { background: rgba(245,184,0,0.09); border-color: rgba(245,184,0,0.65); color: var(--gold); }
   .btn-sm:active        { transform: scale(0.96); }
 
   .btn-logout {
@@ -995,10 +997,10 @@
       </div>
       <div class="card" style="padding:0;margin-bottom:1rem">
         <div class="doc-filters" style="padding:1rem 1.5rem;border-bottom:1px solid var(--border)">
-          <button class="btn-sm primary" onclick="filterDocs('todos')">Todos</button>
-          <button class="btn-sm" onclick="filterDocs('nomina')">Nóminas</button>
-          <button class="btn-sm" onclick="filterDocs('cuadrante')">Cuadrantes</button>
-          <button class="btn-sm" onclick="filterDocs('contrato')">Contratos</button>
+          <button class="btn-sm doc-filter primary" data-filter="todos" onclick="filterDocs('todos')">Todos</button>
+          <button class="btn-sm doc-filter" data-filter="nomina" onclick="filterDocs('nomina')">Nóminas</button>
+          <button class="btn-sm doc-filter" data-filter="cuadrante" onclick="filterDocs('cuadrante')">Cuadrantes</button>
+          <button class="btn-sm doc-filter" data-filter="contrato" onclick="filterDocs('contrato')">Contratos</button>
         </div>
         <div id="docsList"><div class="loading">Cargando documentos...</div></div>
       </div>
@@ -1014,7 +1016,7 @@
       <div class="card form-card-narrow">
         <div class="success-box" id="solicitudOk">✓ Solicitud enviada correctamente. El coordinador la revisará en breve.</div>
         <div class="error-box" id="solicitudError">Error al enviar. Inténtalo de nuevo.</div>
-        <form id="solicitudForm" action="https://formspree.io/f/xgoqvejw" method="POST">
+        <form id="solicitudForm">
           <div class="form-group">
             <label>Tipo de solicitud</label>
             <select name="tipo">
@@ -1033,8 +1035,6 @@
             <label>Descripción</label>
             <textarea name="motivo" rows="4" placeholder="Describe tu solicitud..."></textarea>
           </div>
-          <input type="hidden" name="empleado" id="formEmpleado">
-          <input type="hidden" name="_subject" value="Nueva solicitud — Portal ENERPRO">
           <button type="submit" class="btn-primary">Enviar solicitud</button>
         </form>
       </div>
@@ -1094,7 +1094,7 @@
           <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem">
             <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Empleados registrados</span>
             <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-              <button class="btn-sm" onclick="exportarEmpleadosExcel()" style="border-color:rgba(245,184,0,0.4);color:var(--gold)">⬇ Exportar Excel</button>
+              <button class="btn-sm gold" onclick="exportarEmpleadosExcel()">⬇ Exportar Excel</button>
               <button class="btn-sm primary" onclick="showAddEmpleado()">+ Añadir empleado</button>
             </div>
           </div>
@@ -1199,7 +1199,7 @@
         <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem">
           <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Solicitudes de empleados</span>
           <div style="display:flex;gap:0.5rem">
-            <button class="btn-sm" style="border-color:rgba(245,184,0,0.4);color:var(--gold)" onclick="exportarSolicitudesExcel()">⬇ Exportar Excel</button>
+            <button class="btn-sm gold" onclick="exportarSolicitudesExcel()">⬇ Exportar Excel</button>
             <button class="btn-sm primary" onclick="cargarSolicitudesAdmin()">Actualizar</button>
           </div>
         </div>
@@ -1326,7 +1326,7 @@
               <option value="cancelada">Canceladas</option>
               <option value="todas">Todas</option>
             </select>
-            <button class="btn-sm" style="border-color:rgba(245,184,0,0.4);color:var(--gold)" onclick="exportarVacacionesExcel()">⬇ Exportar Excel</button>
+            <button class="btn-sm gold" onclick="exportarVacacionesExcel()">⬇ Exportar Excel</button>
             <button class="btn-sm" onclick="cargarVacacionesAdmin()">↺ Actualizar</button>
           </div>
         </div>
@@ -1350,7 +1350,7 @@
               <option value="Coordinador">Coordinadores</option>
               <option value="Administrativo">Administrativos</option>
             </select>
-            <button class="btn-sm" style="border-color:rgba(245,184,0,0.4);color:var(--gold)" onclick="exportarResumenVacaciones()">⬇ Exportar Excel</button>
+            <button class="btn-sm gold" onclick="exportarResumenVacaciones()">⬇ Exportar Excel</button>
             <button class="btn-sm" onclick="cargarResumenVacaciones()">↺ Actualizar</button>
           </div>
         </div>
