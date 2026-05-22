@@ -39,7 +39,7 @@ async function doLogin() {
   if (isAdmin) {
     document.getElementById('sidebarRole').textContent = 'Administrador';
     document.getElementById('userRoleLabel').textContent = 'Administrador';
-    document.querySelectorAll('.admin-only').forEach(function(el){ el.style.display='flex'; });
+    document.querySelectorAll('.admin-only, .admin-only-mobile').forEach(function(el){ el.style.display='flex'; });
     cargarEmpleados();
   }
   cargarDocumentos();
@@ -70,7 +70,7 @@ async function doLogout() {
   document.getElementById('loginWrap').style.display = 'flex';
   document.getElementById('loginEmail').value = '';
   document.getElementById('loginPassword').value = '';
-  document.querySelectorAll('.admin-only').forEach(function(el){ el.style.display='none'; });
+  document.querySelectorAll('.admin-only, .admin-only-mobile').forEach(function(el){ el.style.display='none'; });
   navigateToPage('inicio');
 }
 
