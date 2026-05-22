@@ -16,6 +16,70 @@ var vacacionesChannel  = null;
 var adminSolicitudesChannel = null;
 var adminVacacionesChannel  = null;
 
+// ─── UI HELPERS ──────────────────────────────────────────
+
+function skelDocs(n) {
+  var row =
+    '<div class="skel-doc-row">' +
+      '<div class="skel-left">' +
+        '<span class="skel skel-icon"></span>' +
+        '<div class="skel-text">' +
+          '<span class="skel skel-line w70"></span>' +
+          '<span class="skel skel-line w50"></span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="skel-btns">' +
+        '<span class="skel skel-btn"></span>' +
+        '<span class="skel skel-btn"></span>' +
+      '</div>' +
+    '</div>';
+  var html = '';
+  for (var i = 0; i < (n || 3); i++) html += row;
+  return html;
+}
+
+function skelVacs(n) {
+  var row =
+    '<div class="skel-vac-row">' +
+      '<span class="skel skel-badge"></span>' +
+      '<div class="skel-mid">' +
+        '<span class="skel skel-line w70"></span>' +
+        '<span class="skel skel-line w50"></span>' +
+      '</div>' +
+      '<span class="skel skel-dias"></span>' +
+      '<span class="skel skel-badge"></span>' +
+    '</div>';
+  var html = '';
+  for (var i = 0; i < (n || 3); i++) html += row;
+  return html;
+}
+
+function skelStatCards(n) {
+  var card =
+    '<div class="skel-stat-card">' +
+      '<span class="skel skel-line w50" style="height:8px;margin-bottom:14px"></span>' +
+      '<span class="skel skel-line w30" style="height:40px;margin-bottom:10px"></span>' +
+      '<span class="skel skel-line w50" style="height:8px"></span>' +
+    '</div>';
+  var html = '';
+  for (var i = 0; i < (n || 4); i++) html += card;
+  return html;
+}
+
+function animateValue(el, to, ms) {
+  if (!el || isNaN(to) || to === 0) { if (el) el.textContent = to; return; }
+  var start = null;
+  function step(ts) {
+    if (!start) start = ts;
+    var p = Math.min((ts - start) / ms, 1);
+    var ease = 1 - Math.pow(1 - p, 3); // ease-out cubic
+    el.textContent = Math.round(ease * to);
+    if (p < 1) requestAnimationFrame(step);
+    else el.textContent = to;
+  }
+  requestAnimationFrame(step);
+}
+
 // LOGIN
 document.getElementById('btnLogin').addEventListener('click', doLogin);
 document.getElementById('loginPassword').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
@@ -159,13 +223,19 @@ if (btnLogoutMobile) btnLogoutMobile.addEventListener('click', doLogout);
 
 // DOCUMENTOS
 async function cargarDocumentos() {
+  var recentEl = document.getElementById('recentDocs');
+  var docsEl   = document.getElementById('docsList');
+  if (recentEl) recentEl.innerHTML = skelDocs(3);
+  if (docsEl)   docsEl.innerHTML   = skelDocs(5);
+
   var query = sb.from('documentos').select('*').order('fecha', { ascending: false });
   if (currentEmpleado) query = query.eq('empleado_id', currentEmpleado.id);
   var { data, error } = await query;
   if (error || !data) { allDocs = []; return; }
   allDocs = data;
-  document.getElementById('statDocs').textContent = data.length;
-  document.getElementById('statUnread').textContent = data.filter(function(d){ return !d.leido; }).length;
+
+  animateValue(document.getElementById('statDocs'),   data.length, 700);
+  animateValue(document.getElementById('statUnread'), data.filter(function(d){ return !d.leido; }).length, 700);
   renderDocs(data, 'recentDocs', 3);
   renderDocs(data, 'docsList');
   var cuadrante = data.find(function(d){ return d.tipo === 'cuadrante'; });
@@ -206,7 +276,11 @@ function renderDocs(docs, containerId, limit) {
   var container = document.getElementById(containerId);
   if (!container) return;
   var list = limit ? docs.slice(0, limit) : docs;
-  if (!list.length) { container.innerHTML = '<div class="empty">No hay documentos disponibles</div>'; return; }
+  if (!list.length) {
+    container.innerHTML = '<div class="empty"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>No hay documentos disponibles</div>';
+    return;
+  }
+  var delay = 0;
   container.innerHTML = list.map(function(doc) {
     var icon = doc.tipo === 'nomina' ? '📄' : doc.tipo === 'cuadrante' ? '📅' : doc.tipo === 'contrato' ? '📋' : '📁';
     var safeName = doc.nombre.replace(/'/g, "\\'");
@@ -223,7 +297,9 @@ function renderDocs(docs, containerId, limit) {
       btnFirma = '<button class="btn-sm" style="border-color:rgba(245,184,0,0.45);color:var(--gold)" ' +
         'onclick="firmarDoc(\'' + doc.id + '\', \'' + safeName + '\')">✍ Firmar</button>';
     }
-    return '<div class="doc-item">' +
+    var d = delay;
+    delay += 50;
+    return '<div class="doc-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<div class="doc-info"><div class="doc-icon">' + icon + '</div>' +
       '<div><div class="doc-name">' + doc.nombre + badgeNuevo + badgeFirma + '</div>' +
       '<div class="doc-meta">' + (doc.fecha||'') + ' · ' + doc.tipo + '</div></div></div>' +
@@ -330,23 +406,25 @@ if (solicitudForm) {
 async function cargarMisSolicitudes() {
   var container = document.getElementById('misSolicitudesList');
   if (!container || !currentEmpleado) return;
-  container.innerHTML = '<div class="loading">Cargando...</div>';
+  container.innerHTML = skelVacs(4);
   var { data } = await sb.from('solicitudes').select('*')
     .eq('empleado_id', currentEmpleado.id)
     .order('created_at', { ascending: false });
   if (!data || !data.length) {
-    container.innerHTML = '<div class="empty" style="border:none;padding:2rem">Aún no has enviado solicitudes</div>';
+    container.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Aún no has enviado solicitudes</div>';
     return;
   }
   var TIPO_SOL = {
     'Solicitud de vacaciones':'Vacaciones', 'Solicitud de permiso':'Permiso',
     'Cambio de turno':'Cambio turno', 'Baja médica':'Baja médica', 'Consulta general':'Consulta'
   };
+  var delay = 0;
   container.innerHTML = data.map(function(s) {
     var bc    = s.estado === 'aprobada' ? 'badge-green' : s.estado === 'rechazada' ? 'badge-red' : 'badge-yellow';
     var fecha = new Date(s.created_at).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' });
     var tipoLbl = TIPO_SOL[s.tipo] || s.tipo;
-    return '<div class="vac-item">' +
+    var d = delay; delay += 50;
+    return '<div class="vac-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<span class="badge badge-blue vac-tipo" style="min-width:6rem;justify-content:center">' + tipoLbl + '</span>' +
       '<span class="vac-fechas">' + (s.fechas || '—') +
         (s.motivo    ? '<br><span style="font-size:0.72rem;color:var(--muted)">'  + s.motivo    + '</span>' : '') +
@@ -361,16 +439,18 @@ async function cargarMisSolicitudes() {
 async function cargarSolicitudesAdmin() {
   var container = document.getElementById('solicitudesAdminList');
   if (!container) return;
-  container.innerHTML = '<div class="loading">Cargando...</div>';
+  container.innerHTML = skelDocs(4);
   var { data, error } = await sb.from('solicitudes').select('*, empleados(nombre)').order('created_at', { ascending: false });
   if (error || !data || !data.length) {
-    container.innerHTML = '<div class="empty">No hay solicitudes</div>';
+    container.innerHTML = '<div class="empty"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>No hay solicitudes</div>';
     return;
   }
+  var delay = 0;
   container.innerHTML = data.map(function(s) {
     var bc = s.estado === 'aprobada' ? 'badge-green' : s.estado === 'rechazada' ? 'badge-red' : 'badge-yellow';
     var cmt = s.comentario ? '<div class="doc-meta" style="color:var(--gold);margin-top:3px">💬 ' + s.comentario + '</div>' : '';
-    return '<div class="doc-item">' +
+    var d = delay; delay += 45;
+    return '<div class="doc-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<div class="doc-info"><div class="doc-icon">📋</div>' +
       '<div><div class="doc-name">' + (s.empleados ? s.empleados.nombre : 'Empleado') + ' — ' + s.tipo + '</div>' +
       '<div class="doc-meta">' + (s.fechas||'') + (s.motivo ? ' · ' + s.motivo : '') + '</div>' +
@@ -674,7 +754,7 @@ async function solicitarVacaciones() {
 async function cargarVacaciones() {
   var lista = document.getElementById('vacLista');
   if (!lista || !currentEmpleado) return;
-  lista.innerHTML = '<div class="loading">Cargando...</div>';
+  lista.innerHTML = skelVacs(4);
   var { data } = await sb.from('vacaciones').select('*')
     .eq('empleado_id', currentEmpleado.id).order('fecha_inicio', { ascending: false });
 
@@ -693,20 +773,26 @@ async function cargarVacaciones() {
   var restantes = Math.max(0, total - usados);
   var resumen = document.getElementById('vacResumen');
   if (resumen) {
-    document.getElementById('vacTotal').textContent     = total;
-    document.getElementById('vacUsados').textContent    = usados;
-    document.getElementById('vacRestantes').textContent = restantes;
-    document.getElementById('vacAno').textContent       = anoActual;
+    document.getElementById('vacAno').textContent = anoActual;
     resumen.style.display = 'block';
+    // numbers animated after data loads (see below)
   }
 
-  if (!data || !data.length) { lista.innerHTML = '<div class="empty" style="border:none;padding:2rem">No tienes solicitudes</div>'; return; }
+  if (!data || !data.length) { lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>No tienes solicitudes de vacaciones</div>'; return; }
+
+  // Animate counters after data loaded
+  animateValue(document.getElementById('vacTotal'),     currentEmpleado.dias_vacaciones_anuales || 22, 600);
+  animateValue(document.getElementById('vacUsados'),    usados,    700);
+  animateValue(document.getElementById('vacRestantes'), restantes, 700);
+
+  var delay = 0;
   lista.innerHTML = data.map(function(v) {
     var desde  = new Date(v.fecha_inicio+'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'});
     var hasta  = new Date(v.fecha_fin  +'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'});
     var dias   = diasEntre(v.fecha_inicio, v.fecha_fin);
     var est    = v.estado === 'aprobada' ? 'badge-green' : v.estado === 'rechazada' ? 'badge-red' : 'badge-yellow';
-    return '<div class="vac-item">' +
+    var d = delay; delay += 50;
+    return '<div class="vac-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<span class="badge ' + (VAC_TIPO_CLASS[v.tipo]||'badge-blue') + ' vac-tipo">' + (VAC_TIPO_LABEL[v.tipo]||v.tipo) + '</span>' +
       '<span class="vac-fechas">' + desde + ' → ' + hasta +
         (v.notas     ? '<br><span style="font-size:0.72rem;color:var(--muted)">' + v.notas      + '</span>' : '') +
@@ -720,19 +806,21 @@ async function cargarVacaciones() {
 async function cargarVacacionesAdmin() {
   var lista = document.getElementById('vacAdminLista');
   if (!lista) return;
-  lista.innerHTML = '<div class="loading">Cargando...</div>';
+  lista.innerHTML = skelDocs(4);
   var filtro = document.getElementById('vacAdminFiltro').value;
   var q = sb.from('vacaciones').select('*, empleados(nombre)').order('fecha_inicio');
   if (filtro !== 'todas') q = q.eq('estado', filtro);
   var { data } = await q;
-  if (!data || !data.length) { lista.innerHTML = '<div class="empty" style="border:none;padding:2rem">Sin solicitudes</div>'; return; }
+  if (!data || !data.length) { lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Sin solicitudes de vacaciones</div>'; return; }
+  var delay = 0;
   lista.innerHTML = data.map(function(v) {
     var nombre = v.empleados ? v.empleados.nombre : '—';
     var desde  = new Date(v.fecha_inicio+'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short'});
     var hasta  = new Date(v.fecha_fin  +'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'});
     var dias   = diasEntre(v.fecha_inicio, v.fecha_fin);
     var est    = v.estado === 'aprobada' ? 'badge-green' : v.estado === 'rechazada' ? 'badge-red' : 'badge-yellow';
-    return '<div class="doc-item">' +
+    var d = delay; delay += 45;
+    return '<div class="doc-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<div class="doc-info"><div class="doc-icon">🏖️</div>' +
       '<div><div class="doc-name">' + nombre + ' · <span style="color:var(--text2);font-weight:400">' + (VAC_TIPO_LABEL[v.tipo]||v.tipo) + '</span></div>' +
       '<div class="doc-meta">' + desde + ' → ' + hasta + ' (' + dias + ' días)' + (v.notas ? ' · ' + v.notas : '') + '</div></div></div>' +
@@ -1051,7 +1139,9 @@ async function cargarDashboard() {
   var solicEl      = document.getElementById('dashSolicitudes');
   if (!statsEl) return;
 
-  statsEl.innerHTML = '<div class="loading" style="grid-column:1/-1">Cargando...</div>';
+  statsEl.innerHTML = skelStatCards(4);
+  if (sinFirmarEl) sinFirmarEl.innerHTML = skelDocs(3);
+  if (solicEl)     solicEl.innerHTML     = skelDocs(3);
 
   var [empRes, solRes, vacRes, cuadRes, solListRes] = await Promise.all([
     sb.from('empleados').select('*', { count:'exact', head:true }).eq('activo', true),
@@ -1071,31 +1161,43 @@ async function cargarDashboard() {
 
   // Cards de stats
   statsEl.innerHTML =
-    '<div class="card card-accent" style="margin:0">' +
+    '<div class="card card-accent" style="margin:0;animation:scaleIn 0.3s ease both;animation-delay:0ms">' +
       '<div class="card-label">Empleados activos</div>' +
-      '<div class="card-value">' + totalEmp + '</div>' +
+      '<div class="card-value" id="d-emp">0</div>' +
       '<div class="card-sub">En plantilla</div>' +
     '</div>' +
-    '<div class="card" style="margin:0;cursor:pointer" onclick="switchTab(\'solicitudes-admin\', document.querySelector(\'[onclick*=\\\"solicitudes-admin\\\"]\'))">' +
+    '<div class="card" style="margin:0;cursor:pointer;animation:scaleIn 0.3s ease both;animation-delay:60ms" onclick="switchTab(\'solicitudes-admin\', document.querySelector(\'[onclick*=\\\"solicitudes-admin\\\"]\'))">' +
       '<div class="card-label">Solicitudes pendientes</div>' +
-      '<div class="card-value" style="color:' + (totalSol > 0 ? 'var(--yellow)' : 'var(--green)') + '">' + totalSol + '</div>' +
+      '<div class="card-value" id="d-sol" style="color:' + (totalSol > 0 ? 'var(--yellow)' : 'var(--green)') + '">0</div>' +
       '<div class="card-sub">Requieren revisión</div>' +
     '</div>' +
-    '<div class="card" style="margin:0;cursor:pointer" onclick="switchTab(\'vacaciones-admin\', document.querySelector(\'[onclick*=\\\"vacaciones-admin\\\"]\'))">' +
+    '<div class="card" style="margin:0;cursor:pointer;animation:scaleIn 0.3s ease both;animation-delay:120ms" onclick="switchTab(\'vacaciones-admin\', document.querySelector(\'[onclick*=\\\"vacaciones-admin\\\"]\'))">' +
       '<div class="card-label">Vacaciones pendientes</div>' +
-      '<div class="card-value" style="color:' + (totalVac > 0 ? 'var(--yellow)' : 'var(--green)') + '">' + totalVac + '</div>' +
+      '<div class="card-value" id="d-vac" style="color:' + (totalVac > 0 ? 'var(--yellow)' : 'var(--green)') + '">0</div>' +
       '<div class="card-sub">Requieren revisión</div>' +
     '</div>' +
-    '<div class="card" style="margin:0">' +
+    '<div class="card" style="margin:0;animation:scaleIn 0.3s ease both;animation-delay:180ms">' +
       '<div class="card-label">Cuadrantes firmados</div>' +
-      '<div class="card-value" style="color:var(--green)">' + firmados + '<span style="font-size:1rem;color:var(--muted)"> / ' + cuadrantes.length + '</span></div>' +
+      '<div class="card-value" style="color:var(--green)"><span id="d-firm">0</span><span style="font-size:1rem;color:var(--muted)"> / ' + cuadrantes.length + '</span></div>' +
       '<div class="card-sub" style="display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem">' +
         '<div style="flex:1;height:4px;background:var(--surface3);border-radius:2px">' +
-          '<div style="width:' + pct + '%;height:100%;background:var(--green);border-radius:2px;transition:width 0.5s"></div>' +
+          '<div id="d-pct-bar" style="width:0%;height:100%;background:var(--green);border-radius:2px;transition:width 0.8s cubic-bezier(0.22,1,0.36,1)"></div>' +
         '</div>' +
-        '<span>' + pct + '%</span>' +
+        '<span id="d-pct">0%</span>' +
       '</div>' +
     '</div>';
+
+  // Animate counters
+  animateValue(document.getElementById('d-emp'),  totalEmp,  700);
+  animateValue(document.getElementById('d-sol'),  totalSol,  700);
+  animateValue(document.getElementById('d-vac'),  totalVac,  700);
+  animateValue(document.getElementById('d-firm'), firmados,  700);
+  setTimeout(function() {
+    var bar = document.getElementById('d-pct-bar');
+    var pctEl = document.getElementById('d-pct');
+    if (bar) bar.style.width = pct + '%';
+    if (pctEl) pctEl.textContent = pct + '%';
+  }, 200);
 
   // Lista sin firmar
   if (sinFirmarEl) {
@@ -1144,18 +1246,20 @@ async function cargarDashboard() {
 async function cargarTurnosAdmin() {
   var container = document.getElementById('turnosAdminList');
   if (!container) return;
-  container.innerHTML = '<div class="loading">Cargando...</div>';
+  container.innerHTML = skelDocs(4);
   var hoy = new Date().toISOString().split('T')[0];
   var { data } = await sb.from('turnos').select('*, empleados(nombre)')
     .gte('fecha', hoy).order('fecha').order('hora_inicio').limit(30);
   if (!data || !data.length) {
-    container.innerHTML = '<div class="empty" style="border:none;padding:2rem">No hay turnos próximos</div>';
+    container.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>No hay turnos próximos</div>';
     return;
   }
+  var delay = 0;
   container.innerHTML = data.map(function(t) {
     var horas = t.hora_inicio ? t.hora_inicio.slice(0,5) + (t.hora_fin ? '–' + t.hora_fin.slice(0,5) : '') : '—';
     var fecha = new Date(t.fecha + 'T12:00:00').toLocaleDateString('es-ES', { weekday:'short', day:'numeric', month:'short' });
-    return '<div class="doc-item">' +
+    var d = delay; delay += 45;
+    return '<div class="doc-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<div class="doc-info">' +
       '<div class="doc-icon" style="font-size:1.1rem">📅</div>' +
       '<div><div class="doc-name">' + (t.empleados ? t.empleados.nombre : '—') + '</div>' +
