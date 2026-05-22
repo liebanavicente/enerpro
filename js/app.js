@@ -27,7 +27,7 @@ async function doLogin() {
   currentEmpleado = emp;
   var isAdmin = email.includes('admin') || (emp && emp.cargo === 'Coordinador');
   document.getElementById('loginWrap').style.display = 'none';
-  document.getElementById('app').style.display = 'flex'; var bn = document.getElementById('bottomNav'); if (bn) bn.style.display = 'flex';
+  document.getElementById('app').style.display = 'flex';
   document.getElementById('userName').textContent = emp ? emp.nombre : email;
   document.getElementById('userAvatar').textContent = emp ? emp.nombre.charAt(0).toUpperCase() : '?';
   var mobileUser = document.getElementById('mobileUserName');
@@ -66,7 +66,7 @@ function navTo(page) { navigateToPage(page); }
 async function doLogout() {
   await sb.auth.signOut();
   currentUser = null; currentEmpleado = null; allDocs = [];
-  document.getElementById('app').style.display = 'none'; var bn = document.getElementById('bottomNav'); if (bn) bn.style.display = 'none';
+  document.getElementById('app').style.display = 'none';
   document.getElementById('loginWrap').style.display = 'flex';
   document.getElementById('loginEmail').value = '';
   document.getElementById('loginPassword').value = '';
@@ -361,7 +361,7 @@ async function subirMasivo() {
 // SESIÓN
 sb.auth.onAuthStateChange(function(event, session) {
   if (event === 'SIGNED_OUT') {
-    document.getElementById('app').style.display = 'none'; var bn = document.getElementById('bottomNav'); if (bn) bn.style.display = 'none';
+    document.getElementById('app').style.display = 'none';
     document.getElementById('loginWrap').style.display = 'flex';
   }
 });

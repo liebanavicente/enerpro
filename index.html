@@ -210,7 +210,7 @@
       .sidebar { display:none !important; }
 
       .mobile-header { display:flex; }
-      .app .bottom-nav { display:flex; }
+      .bottom-nav { display:flex; }
 
       .main {
         margin-left:0; width:100%; max-width:100%;
@@ -891,7 +891,7 @@
     </div>
   </main>
 
-  <nav class="bottom-nav" style="display:none" id="bottomNav" aria-label="Navegación principal">
+  <nav class="bottom-nav" aria-label="Navegación principal">
     <button type="button" class="bottom-nav-item nav-item active" data-page="inicio" aria-label="Inicio">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
       <span>Inicio</span>
@@ -925,3 +925,29 @@
 </div>
 
 <!-- BOTTOM NAV -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bottom-nav-item active" data-page="inicio" onclick="navTo('inicio', this)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    Inicio
+  </button>
+  <button class="bottom-nav-item" data-page="documentos" onclick="navTo('documentos', this)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Docs
+  </button>
+  <button class="bottom-nav-item" data-page="solicitudes" onclick="navTo('solicitudes', this)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    Buzón
+  </button>
+  <button class="bottom-nav-item admin-only-mobile" data-page="admin" onclick="navTo('admin', this)" style="display:none">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    Admin
+  </button>
+  <button class="bottom-nav-item" onclick="document.getElementById('btnLogout').click()">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Salir
+  </button>
+</nav>
+
+<script src="js/app.js"></script>
+</body>
+</html>
