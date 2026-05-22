@@ -243,7 +243,7 @@ function switchTab(tab, el) {
   if (el) el.classList.add('active');
   var tabEl = document.getElementById('tab-' + tab);
   if (tabEl) tabEl.style.display = 'block';
-  if (tab === 'subir' || tab === 'masivo' || tab === 'turnos-admin') cargarEmpleados();
+  if (tab === 'subir' || tab === 'masivo' || tab === 'turnos-admin' || tab === 'importar') cargarEmpleados();
   if (tab === 'solicitudes-admin') cargarSolicitudesAdmin();
   if (tab === 'turnos-admin') cargarTurnosAdmin();
 }
@@ -376,6 +376,129 @@ sb.auth.onAuthStateChange(function(event, session) {
     document.getElementById('loginWrap').style.display = 'flex';
   }
 });
+
+// ─── IMPORTAR EXCEL ──────────────────────────────────────
+
+var importarData = [];
+
+var DEMO_EMPLEADOS = [
+  { nombre:'Ana García Pérez',       email:'ana.garcia@enerpro.com',      dni:'11111111A', cargo:'Vigilante de seguridad' },
+  { nombre:'Carlos Martínez López',  email:'carlos.martinez@enerpro.com', dni:'22222222B', cargo:'Vigilante de seguridad' },
+  { nombre:'María López Fernández',  email:'maria.lopez@enerpro.com',     dni:'33333333C', cargo:'Auxiliar de servicio' },
+  { nombre:'José Rodríguez García',  email:'jose.rodriguez@enerpro.com',  dni:'44444444D', cargo:'Vigilante de seguridad' },
+  { nombre:'Laura Sánchez Ruiz',     email:'laura.sanchez@enerpro.com',   dni:'55555555E', cargo:'Coordinador' },
+  { nombre:'Miguel Torres Moreno',   email:'miguel.torres@enerpro.com',   dni:'66666666F', cargo:'Vigilante de seguridad' },
+  { nombre:'Elena Jiménez Castro',   email:'elena.jimenez@enerpro.com',   dni:'77777777G', cargo:'Auxiliar de servicio' },
+  { nombre:'Pablo Moreno Díaz',      email:'pablo.moreno@enerpro.com',    dni:'88888888H', cargo:'Vigilante de seguridad' },
+  { nombre:'Isabel Ruiz Herrera',    email:'isabel.ruiz@enerpro.com',     dni:'99999999I', cargo:'Administrativo' },
+  { nombre:'Antonio Navarro Gil',    email:'antonio.navarro@enerpro.com', dni:'00000000J', cargo:'Vigilante de seguridad' }
+];
+
+document.addEventListener('DOMContentLoaded', function() {
+  var inputExcel = document.getElementById('importarArchivo');
+  if (inputExcel) inputExcel.addEventListener('change', previsualizarExcel);
+  generarPlantilla();
+});
+
+function generarPlantilla() {
+  var link = document.getElementById('importarPlantilla');
+  if (!link || typeof XLSX === 'undefined') return;
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.aoa_to_sheet([
+    ['nombre', 'email', 'dni', 'cargo'],
+    ['Ana García', 'ana@empresa.com', '12345678A', 'Vigilante de seguridad'],
+    ['Carlos López', 'carlos@empresa.com', '87654321B', 'Auxiliar de servicio']
+  ]);
+  XLSX.utils.book_append_sheet(wb, ws, 'Empleados');
+  var blob = new Blob([XLSX.write(wb, { bookType:'xlsx', type:'array' })], { type:'application/octet-stream' });
+  link.href = URL.createObjectURL(blob);
+}
+
+function previsualizarExcel() {
+  var file = document.getElementById('importarArchivo').files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb   = XLSX.read(e.target.result, { type:'array' });
+      var ws   = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(ws, { defval:'' });
+
+      importarData = rows.map(function(r) {
+        var k = Object.keys(r).reduce(function(acc, key) { acc[key.toLowerCase().trim()] = r[key]; return acc; }, {});
+        return {
+          nombre: String(k['nombre'] || k['name'] || '').trim(),
+          email:  String(k['email']  || k['correo'] || '').trim().toLowerCase(),
+          dni:    String(k['dni']    || k['nif'] || '').trim().toUpperCase(),
+          cargo:  String(k['cargo']  || k['puesto'] || 'Vigilante de seguridad').trim()
+        };
+      }).filter(function(r) { return r.nombre && r.email; });
+
+      document.getElementById('importarCount').textContent = importarData.length;
+      document.getElementById('importarTabla').innerHTML = importarData.slice(0,10).map(function(r) {
+        return '<tr><td>' + r.nombre + '</td><td style="color:var(--text2)">' + r.email +
+               '</td><td>' + r.dni + '</td><td>' + r.cargo + '</td></tr>';
+      }).join('') + (importarData.length > 10 ? '<tr><td colspan="4" style="color:var(--muted);text-align:center">... y ' + (importarData.length - 10) + ' más</td></tr>' : '');
+      document.getElementById('importarPreview').style.display = 'block';
+    } catch(err) {
+      var errEl = document.getElementById('importarError');
+      errEl.style.display = 'block'; errEl.textContent = 'Error al leer el archivo: ' + err.message;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function confirmarImportacion() {
+  if (!importarData.length) return;
+  var ok  = document.getElementById('importarOk');
+  var err = document.getElementById('importarError');
+  var prog = document.getElementById('importarProgress');
+  var progText = document.getElementById('importarProgressText');
+  var progBar  = document.getElementById('importarProgressBar');
+  ok.style.display = 'none'; err.style.display = 'none';
+  prog.style.display = 'block';
+
+  var okCount = 0, failCount = 0;
+  for (var i = 0; i < importarData.length; i++) {
+    progText.textContent = 'Importando ' + (i+1) + ' de ' + importarData.length + '…';
+    progBar.style.width = Math.round(((i+1) / importarData.length) * 100) + '%';
+    var { error } = await sb.from('empleados').insert({ ...importarData[i], activo: true });
+    if (error) { failCount++; } else { okCount++; }
+  }
+  prog.style.display = 'none';
+  ok.style.display = 'block';
+  ok.textContent = '✓ ' + okCount + ' empleados importados.' + (failCount ? ' ' + failCount + ' fallaron (email/DNI duplicado).' : '');
+  document.getElementById('importarPreview').style.display = 'none';
+  document.getElementById('importarArchivo').value = '';
+  importarData = [];
+  cargarEmpleados();
+}
+
+async function cargarDemoEmpleados() {
+  var ok  = document.getElementById('demoOk');
+  var err = document.getElementById('demoError');
+  ok.style.display = 'none'; err.style.display = 'none';
+  var { error } = await sb.from('empleados').insert(
+    DEMO_EMPLEADOS.map(function(e) { return { ...e, activo: true }; })
+  );
+  if (error) {
+    err.style.display = 'block'; err.textContent = 'Error: ' + error.message; return;
+  }
+  ok.style.display = 'block'; ok.textContent = '✓ 10 empleados demo insertados correctamente.';
+  cargarEmpleados();
+}
+
+async function borrarDemoEmpleados() {
+  if (!confirm('¿Eliminar todos los empleados demo?')) return;
+  var emails = DEMO_EMPLEADOS.map(function(e) { return e.email; });
+  var ok  = document.getElementById('demoOk');
+  var err = document.getElementById('demoError');
+  ok.style.display = 'none'; err.style.display = 'none';
+  var { error } = await sb.from('empleados').delete().in('email', emails);
+  if (error) { err.style.display='block'; err.textContent='Error: '+error.message; return; }
+  ok.style.display = 'block'; ok.textContent = '✓ Empleados demo eliminados.';
+  cargarEmpleados();
+}
 
 // ─── CALENDARIO ──────────────────────────────────────────
 

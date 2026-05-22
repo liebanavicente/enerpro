@@ -6,6 +6,7 @@
   <title>ENERPRO — Portal del Empleado</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
   /* ─── DESIGN SYSTEM ───────────────────────────────── */
@@ -490,7 +491,8 @@
     .cal-pill { font-size:0.55rem; padding:0.1rem 0.25rem; }
     .cal-grid { gap:2px; }
     #page-admin .admin-tabs { gap:0; }
-    #tab-turnos-admin > div { grid-template-columns:1fr !important; }
+    #tab-turnos-admin > div,
+    #tab-importar > div { grid-template-columns:1fr !important; }
   }
 
   /* Legacy aliases para JS que usa --bg2 / --bg3 en inline styles */
@@ -684,6 +686,7 @@
         <button class="admin-tab" onclick="switchTab('masivo', this)">Subida masiva ZIP</button>
         <button class="admin-tab" onclick="switchTab('solicitudes-admin', this)">Solicitudes</button>
         <button class="admin-tab" onclick="switchTab('turnos-admin', this)">Turnos</button>
+        <button class="admin-tab" onclick="switchTab('importar', this)">Importar Excel</button>
       </div>
 
       <div class="admin-tab-content active" id="tab-empleados">
@@ -822,6 +825,61 @@
             <button class="btn-sm" onclick="cargarTurnosAdmin()">↺ Actualizar</button>
           </div>
           <div id="turnosAdminList"><div class="loading">Cargando...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-tab-content" id="tab-importar" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">
+
+        <!-- Importar Excel -->
+        <div class="card">
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.375rem">Importar desde Excel</div>
+          <p style="font-size:0.8rem;color:var(--text2);line-height:1.6;margin-bottom:1.25rem">Sube un <strong style="color:var(--text)">.xlsx</strong> con columnas: <code style="color:var(--gold)">nombre · email · dni · cargo</code>. La primera fila debe ser la cabecera.</p>
+          <div class="success-box" id="importarOk"></div>
+          <div class="error-box"   id="importarError"></div>
+          <div class="form-group">
+            <label>Archivo Excel (.xlsx)</label>
+            <input type="file" id="importarArchivo" accept=".xlsx,.xls">
+          </div>
+          <div id="importarPreview" style="display:none;margin-bottom:1rem">
+            <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.625rem">Vista previa (<span id="importarCount">0</span> empleados)</div>
+            <div style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r-sm)">
+              <table style="font-size:0.78rem"><thead><tr><th>Nombre</th><th>Email</th><th>DNI</th><th>Cargo</th></tr></thead>
+              <tbody id="importarTabla"></tbody></table>
+            </div>
+            <button class="btn-sm primary" onclick="confirmarImportacion()" style="width:100%;margin-top:0.875rem;min-height:44px">Importar todos</button>
+          </div>
+          <div id="importarProgress" style="display:none;margin-bottom:0.75rem">
+            <div style="font-size:0.75rem;color:var(--text2);margin-bottom:0.375rem" id="importarProgressText">Importando...</div>
+            <div style="height:4px;background:var(--surface3);border-radius:2px"><div id="importarProgressBar" style="height:100%;background:var(--gold);width:0%;transition:width 0.3s;border-radius:2px"></div></div>
+          </div>
+          <a id="importarPlantilla" download="plantilla_empleados.xlsx" style="display:inline-block;margin-top:0.5rem;font-size:0.75rem;color:var(--gold);text-decoration:none">⬇ Descargar plantilla</a>
+        </div>
+
+        <!-- Datos demo -->
+        <div class="card">
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.375rem">Datos de demostración</div>
+          <p style="font-size:0.8rem;color:var(--text2);line-height:1.6;margin-bottom:1.25rem">Inserta empleados de prueba con un clic para demostrar el portal sin datos reales.</p>
+          <div class="success-box" id="demoOk"></div>
+          <div class="error-box"   id="demoError"></div>
+          <div id="demoLista" style="margin-bottom:1.25rem;border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden">
+            <div style="padding:0.75rem 1rem;font-size:0.75rem;color:var(--text2);border-bottom:1px solid var(--border);background:var(--surface2)">10 empleados ficticios</div>
+            <div style="padding:0.75rem 1rem;font-size:0.78rem;color:var(--muted);line-height:2">
+              Ana García · Vigilante<br>
+              Carlos Martínez · Vigilante<br>
+              María López · Auxiliar de servicio<br>
+              José Rodríguez · Vigilante<br>
+              Laura Sánchez · Coordinador<br>
+              Miguel Torres · Vigilante<br>
+              Elena Jiménez · Auxiliar de servicio<br>
+              Pablo Moreno · Vigilante<br>
+              Isabel Ruiz · Administrativo<br>
+              Antonio Navarro · Vigilante
+            </div>
+          </div>
+          <button class="btn-sm primary" onclick="cargarDemoEmpleados()" style="width:100%;min-height:44px">Insertar empleados demo</button>
+          <button class="btn-sm" onclick="borrarDemoEmpleados()" style="width:100%;margin-top:0.5rem;min-height:44px;color:var(--red);border-color:rgba(220,38,38,0.3)">Borrar empleados demo</button>
         </div>
       </div>
     </div>
