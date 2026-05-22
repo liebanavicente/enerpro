@@ -8,6 +8,7 @@ var currentUser = null;
 var currentEmpleado = null;
 var allDocs = [];
 var realtimeChannel = null;
+var solicitudesChannel = null;
 
 // LOGIN
 document.getElementById('btnLogin').addEventListener('click', doLogin);
@@ -46,6 +47,7 @@ async function doLogin() {
   cargarDocumentos();
   pedirPermisoNotificaciones();
   suscribirDocumentosNuevos();
+  suscribirSolicitudesEmpleado();
 }
 
 // NAVEGACIÓN
@@ -68,7 +70,8 @@ function navTo(page) { navigateToPage(page); }
 
 // LOGOUT
 async function doLogout() {
-  if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
+  if (realtimeChannel)    { sb.removeChannel(realtimeChannel);    realtimeChannel    = null; }
+  if (solicitudesChannel) { sb.removeChannel(solicitudesChannel); solicitudesChannel = null; }
   await sb.auth.signOut();
   currentUser = null; currentEmpleado = null; allDocs = [];
   document.getElementById('app').style.display = 'none';
@@ -577,6 +580,33 @@ function mostrarToast(titulo, cuerpo) {
     toast.classList.add('hide');
     setTimeout(function() { toast.remove(); }, 350);
   }, 5000);
+}
+
+function suscribirSolicitudesEmpleado() {
+  if (!currentEmpleado) return;
+  if (solicitudesChannel) { sb.removeChannel(solicitudesChannel); }
+  solicitudesChannel = sb.channel('solicitudes-' + currentEmpleado.id)
+    .on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'solicitudes',
+      filter: 'empleado_id=eq.' + currentEmpleado.id
+    }, function(payload) {
+      var estado = payload.new.estado;
+      if (estado !== 'aprobada' && estado !== 'rechazada') return;
+      var tipo  = payload.new.tipo || 'Solicitud';
+      var emoji = estado === 'aprobada' ? '✅' : '❌';
+      var titulo = estado === 'aprobada' ? 'Solicitud aprobada' : 'Solicitud rechazada';
+      var cuerpo = tipo + ' ha sido ' + estado;
+      mostrarToast(emoji + ' ' + titulo, cuerpo);
+      if (Notification.permission === 'granted') {
+        new Notification('ENERPRO — ' + titulo, {
+          body: cuerpo,
+          icon: 'enerprologo.jpg'
+        });
+      }
+    })
+    .subscribe();
 }
 
 function suscribirDocumentosNuevos() {
