@@ -933,9 +933,12 @@
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
         <span data-i18n="nav.perfil">Mi perfil</span>
       </button>
-      <button class="nav-item admin-only" data-page="admin" style="display:none">
-        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-        <span data-i18n="nav.admin">Administración</span>
+      <button class="nav-item admin-only" data-page="admin" style="display:none;justify-content:space-between">
+        <span style="display:flex;align-items:center;gap:0.75rem">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:1rem;height:1rem;flex-shrink:0"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          <span data-i18n="nav.admin">Administración</span>
+        </span>
+        <span id="adminBadge" style="display:none;background:var(--red);color:#fff;font-size:0.55rem;font-weight:700;padding:0.15rem 0.45rem;border-radius:100px;line-height:1.4;letter-spacing:0.04em;flex-shrink:0;animation:glowPulse 2s ease-in-out infinite;box-shadow:0 0 8px rgba(229,57,53,0.5)">0</span>
       </button>
     </nav>
     <div class="sidebar-footer">
@@ -1671,7 +1674,10 @@
       <span data-i18n="bnav.calendario">Turnos</span>
     </button>
     <button type="button" class="bottom-nav-item nav-item admin-only" data-page="admin" aria-label="Administración" style="display:none">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      <span style="position:relative;display:inline-flex">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="width:1.3rem;height:1.3rem"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <span id="adminBadgeMobile" style="display:none;position:absolute;top:-5px;right:-7px;background:var(--red);color:#fff;font-size:0.5rem;font-weight:700;min-width:14px;height:14px;border-radius:100px;padding:0 3px;align-items:center;justify-content:center;line-height:1;box-shadow:0 0 0 2px var(--bg),0 0 8px rgba(229,57,53,0.5)">0</span>
+      </span>
       <span data-i18n="bnav.admin">Admin</span>
     </button>
   </nav>

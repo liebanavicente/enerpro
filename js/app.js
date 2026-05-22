@@ -988,6 +988,24 @@ function animateValue(el, to, ms) {
 
 // ─── BADGE DOCUMENTOS ─────────────────────────────────────
 
+function actualizarBadgeAdmin(count) {
+  var badge       = document.getElementById('adminBadge');
+  var badgeMobile = document.getElementById('adminBadgeMobile');
+  var label   = count > 99 ? '99+' : String(count);
+  var mostrar = count > 0;
+  if (badge)       { badge.textContent       = label; badge.style.display       = mostrar ? 'inline-flex' : 'none'; }
+  if (badgeMobile) { badgeMobile.textContent = label; badgeMobile.style.display = mostrar ? 'flex'        : 'none'; }
+}
+
+async function cargarBadgeAdmin() {
+  if (!currentIsAdmin) return;
+  var [solRes, vacRes] = await Promise.all([
+    sb.from('solicitudes').select('*', { count:'exact', head:true }).eq('estado', 'pendiente'),
+    sb.from('vacaciones').select('*',  { count:'exact', head:true }).eq('estado', 'pendiente')
+  ]);
+  actualizarBadgeAdmin((solRes.count || 0) + (vacRes.count || 0));
+}
+
 function actualizarBadgeDocumentos(count) {
   _docBadgeCount = count;
   var badge       = document.getElementById('docBadge');
@@ -1062,6 +1080,7 @@ function iniciarApp() {
   if (isAdmin) {
     suscribirSolicitudesAdmin();
     suscribirVacacionesAdmin();
+    cargarBadgeAdmin();
   }
 }
 
@@ -1423,6 +1442,7 @@ async function confirmarSolicitud(id, estado) {
   await sb.from('solicitudes').update(payload).eq('id', id);
   cargarSolicitudesAdmin();
   if (document.getElementById('dashStats')) cargarDashboard();
+  cargarBadgeAdmin();
 }
 
 // TABS ADMIN
@@ -1909,6 +1929,7 @@ async function confirmarVacacion(id, estado) {
   await sb.from('vacaciones').update(payload).eq('id', id);
   cargarVacacionesAdmin();
   if (document.getElementById('dashStats')) cargarDashboard();
+  cargarBadgeAdmin();
 }
 
 // ─── CANCELAR SOLICITUDES / VACACIONES (EMPLEADO) ────────
@@ -2851,6 +2872,7 @@ function suscribirSolicitudesAdmin() {
         new Notification('ENERPRO — Nueva solicitud', { body: nombre + ': ' + tipo, icon: 'enerprologo.jpg' });
       }
       if (document.getElementById('dashStats')) cargarDashboard();
+      cargarBadgeAdmin();
     })
     .subscribe();
 }
@@ -2874,6 +2896,7 @@ function suscribirVacacionesAdmin() {
         new Notification('ENERPRO — Vacaciones', { body: nombre + ': ' + tipo + ' (' + fechas + ')', icon: 'enerprologo.jpg' });
       }
       if (document.getElementById('dashStats')) cargarDashboard();
+      cargarBadgeAdmin();
     })
     .subscribe();
 }
