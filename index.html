@@ -871,19 +871,19 @@
     <div class="login-logo">
       <img src="enerprologo.jpg" alt="ENERPRO" style="width:100px;height:auto;margin:0 auto 1rem;display:block;filter:drop-shadow(0 4px 12px rgba(220,38,38,0.3))">
       <div class="brand">ENER<span>PRO</span></div>
-      <div class="brand-sub">Portal del Empleado · Acceso Privado</div>
+      <div class="brand-sub" data-i18n="login.subtitulo">Portal del Empleado · Acceso Privado</div>
     </div>
     <div class="divider"></div>
-    <div class="error-box" id="loginError">Credenciales incorrectas. Inténtalo de nuevo.</div>
+    <div class="error-box" id="loginError" data-i18n="login.error">Credenciales incorrectas. Inténtalo de nuevo.</div>
     <div class="form-group">
-      <label>Email corporativo</label>
-      <input type="email" id="loginEmail" placeholder="usuario@enerpro.com">
+      <label data-i18n="login.email">Email corporativo</label>
+      <input type="email" id="loginEmail" placeholder="usuario@enerpro.com" data-i18n-ph="login.email_ph">
     </div>
     <div class="form-group">
-      <label>Contraseña</label>
-      <input type="password" id="loginPassword" placeholder="••••••••">
+      <label data-i18n="login.pass">Contraseña</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" data-i18n-ph="login.pass_ph">
     </div>
-    <button class="btn-primary" id="btnLogin">Acceder al portal</button>
+    <button class="btn-primary" id="btnLogin" data-i18n="login.btn">Acceder al portal</button>
   </div>
 </div>
 
@@ -898,34 +898,34 @@
       </div>
     </div>
     <nav class="sidebar-nav">
-      <div class="nav-section">Principal</div>
+      <div class="nav-section" data-i18n="nav.principal">Principal</div>
       <button class="nav-item active" data-page="inicio">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        Inicio
+        <span data-i18n="nav.inicio">Inicio</span>
       </button>
-      <div class="nav-section">Mi área</div>
+      <div class="nav-section" data-i18n="nav.miarea">Mi área</div>
       <button class="nav-item" data-page="documentos" style="justify-content:space-between">
         <span style="display:flex;align-items:center;gap:0.75rem">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:1rem;height:1rem;flex-shrink:0"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Mis documentos
+          <span data-i18n="nav.documentos">Mis documentos</span>
         </span>
         <span id="docBadge" style="display:none;background:var(--red);color:#fff;font-size:0.55rem;font-weight:700;padding:0.15rem 0.45rem;border-radius:100px;line-height:1.4;letter-spacing:0.04em;flex-shrink:0;animation:glowPulse 2s ease-in-out infinite;box-shadow:0 0 8px rgba(229,57,53,0.5)">0</span>
       </button>
       <button class="nav-item" data-page="solicitudes">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-        Solicitudes
+        <span data-i18n="nav.solicitudes">Solicitudes</span>
       </button>
       <button class="nav-item" data-page="calendario">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Mis turnos
+        <span data-i18n="nav.calendario">Mis turnos</span>
       </button>
       <button class="nav-item" data-page="vacaciones">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-        Vacaciones
+        <span data-i18n="nav.vacaciones">Vacaciones</span>
       </button>
       <button class="nav-item admin-only" data-page="admin" style="display:none">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-        Administración
+        <span data-i18n="nav.admin">Administración</span>
       </button>
     </nav>
     <div class="sidebar-footer">
@@ -933,11 +933,15 @@
         <div class="user-avatar" id="userAvatar">?</div>
         <div>
           <div class="user-name" id="userName">—</div>
-          <div class="user-role" id="userRoleLabel">Empleado</div>
+          <div class="user-role" id="userRoleLabel" data-i18n="sidebar.emp_rol">Empleado</div>
         </div>
       </div>
-      <button class="btn-logout" id="btnLogout">Cerrar sesión</button>
-      <button class="btn-logout" onclick="abrirCambioPassPerfil()" style="margin-top:0.5rem;border-color:rgba(245,184,0,0.2);color:var(--muted)">🔑 Cambiar contraseña</button>
+      <div style="display:flex;gap:0.375rem;margin-bottom:0.5rem">
+        <button id="langBtnEs" onclick="cambiarIdioma('es')" class="btn-sm primary" style="flex:1;font-size:0.7rem;padding:0.3rem 0;letter-spacing:0.08em">ES</button>
+        <button id="langBtnCa" onclick="cambiarIdioma('ca')" class="btn-sm" style="flex:1;font-size:0.7rem;padding:0.3rem 0;letter-spacing:0.08em">CA</button>
+      </div>
+      <button class="btn-logout" id="btnLogout" data-i18n="sidebar.logout">Cerrar sesión</button>
+      <button class="btn-logout" onclick="abrirCambioPassPerfil()" style="margin-top:0.5rem;border-color:rgba(245,184,0,0.2);color:var(--muted)" data-i18n="sidebar.pass">🔑 Cambiar contraseña</button>
     </div>
   </aside>
 
@@ -949,7 +953,8 @@
         <div class="mobile-header-user" id="mobileUserName">Portal del empleado</div>
       </div>
     </div>
-    <button type="button" class="btn-logout-mobile" id="btnLogoutMobile">Salir</button>
+    <button onclick="cambiarIdioma(_lang === 'es' ? 'ca' : 'es')" id="langToggleMobile" class="btn-logout-mobile" style="font-size:0.65rem;padding:0 0.625rem;min-width:36px">ES</button>
+    <button type="button" class="btn-logout-mobile" id="btnLogoutMobile" data-i18n="sidebar.salir">Salir</button>
   </header>
 
   <main class="main">
@@ -957,117 +962,117 @@
     <!-- INICIO -->
     <div class="page active" id="page-inicio">
       <div class="page-header">
-        <div class="page-eyebrow">Panel principal</div>
+        <div class="page-eyebrow" data-i18n="ini.eyebrow">Panel principal</div>
         <h1 id="welcomeMsg">Bienvenido</h1>
         <p id="welcomeSub">Cargando datos...</p>
       </div>
       <div class="stats-grid">
         <div class="card card-accent">
-          <div class="card-label">Documentos disponibles</div>
+          <div class="card-label" data-i18n="ini.stat_docs">Documentos disponibles</div>
           <div class="card-value" id="statDocs">—</div>
-          <div class="card-sub">Nóminas y cuadrantes</div>
+          <div class="card-sub" data-i18n="ini.stat_docs_sub">Nóminas y cuadrantes</div>
         </div>
         <div class="card">
-          <div class="card-label">Sin leer</div>
+          <div class="card-label" data-i18n="ini.stat_unread">Sin leer</div>
           <div class="card-value" id="statUnread" style="color:var(--red)">—</div>
-          <div class="card-sub">Documentos nuevos</div>
+          <div class="card-sub" data-i18n="ini.stat_unread_sub">Documentos nuevos</div>
         </div>
         <div class="card">
-          <div class="card-label">Estado</div>
+          <div class="card-label" data-i18n="ini.stat_estado">Estado</div>
           <div class="card-value" style="font-size:1.2rem;margin-top:0.5rem"><span class="badge badge-green">Activo</span></div>
-          <div class="card-sub">Servicio en curso</div>
+          <div class="card-sub" data-i18n="ini.stat_estado_sub">Servicio en curso</div>
         </div>
       </div>
       <div class="card" style="padding:0;border-top:2px solid var(--red);margin-bottom:1rem">
         <div style="padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)">
-          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Mi cuadrante del mes</div>
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)" data-i18n="ini.cuadrante">Mi cuadrante del mes</div>
           <span class="badge badge-red" id="cuadranteMes"></span>
         </div>
-        <div id="cuadranteDestacado" style="padding:1.5rem"><div class="loading">Cargando...</div></div>
+        <div id="cuadranteDestacado" style="padding:1.5rem"><div class="loading" data-i18n="ini.cargando">Cargando...</div></div>
       </div>
       <div class="card" style="padding:0">
-        <div style="padding:1rem 1.5rem;font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Últimos documentos</div>
-        <div id="recentDocs"><div class="loading">Cargando...</div></div>
+        <div style="padding:1rem 1.5rem;font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)" data-i18n="ini.ultimos">Últimos documentos</div>
+        <div id="recentDocs"><div class="loading" data-i18n="ini.cargando">Cargando...</div></div>
       </div>
     </div>
 
     <!-- DOCUMENTOS -->
     <div class="page" id="page-documentos">
       <div class="page-header">
-        <div class="page-eyebrow">Mi área</div>
-        <h1>Mis documentos</h1>
-        <p>Nóminas, cuadrantes y documentación personal</p>
+        <div class="page-eyebrow" data-i18n="doc.eyebrow">Mi área</div>
+        <h1 data-i18n="doc.titulo">Mis documentos</h1>
+        <p data-i18n="doc.sub">Nóminas, cuadrantes y documentación personal</p>
       </div>
       <div class="card" style="padding:0;margin-bottom:1rem">
         <div class="doc-filters" style="padding:1rem 1.5rem;border-bottom:1px solid var(--border)">
-          <button class="btn-sm doc-filter primary" data-filter="todos" onclick="filterDocs('todos')">Todos</button>
-          <button class="btn-sm doc-filter" data-filter="nomina" onclick="filterDocs('nomina')">Nóminas</button>
-          <button class="btn-sm doc-filter" data-filter="cuadrante" onclick="filterDocs('cuadrante')">Cuadrantes</button>
-          <button class="btn-sm doc-filter" data-filter="contrato" onclick="filterDocs('contrato')">Contratos</button>
+          <button class="btn-sm doc-filter primary" data-filter="todos" onclick="filterDocs('todos')" data-i18n="doc.todos">Todos</button>
+          <button class="btn-sm doc-filter" data-filter="nomina" onclick="filterDocs('nomina')" data-i18n="doc.nominas">Nóminas</button>
+          <button class="btn-sm doc-filter" data-filter="cuadrante" onclick="filterDocs('cuadrante')" data-i18n="doc.cuadrantes">Cuadrantes</button>
+          <button class="btn-sm doc-filter" data-filter="contrato" onclick="filterDocs('contrato')" data-i18n="doc.contratos">Contratos</button>
         </div>
-        <div id="docsList"><div class="loading">Cargando documentos...</div></div>
+        <div id="docsList"><div class="loading" data-i18n="doc.cargando">Cargando documentos...</div></div>
       </div>
     </div>
 
     <!-- SOLICITUDES -->
     <div class="page" id="page-solicitudes">
       <div class="page-header">
-        <div class="page-eyebrow">Buzón</div>
-        <h1>Solicitudes</h1>
-        <p>Envía una solicitud al coordinador</p>
+        <div class="page-eyebrow" data-i18n="sol.eyebrow">Buzón</div>
+        <h1 data-i18n="sol.titulo">Solicitudes</h1>
+        <p data-i18n="sol.sub">Envía una solicitud al coordinador</p>
       </div>
       <div class="card form-card-narrow">
-        <div class="success-box" id="solicitudOk">✓ Solicitud enviada correctamente. El coordinador la revisará en breve.</div>
+        <div class="success-box" id="solicitudOk" data-i18n="sol.ok">✓ Solicitud enviada. El coordinador la revisará en breve.</div>
         <div class="error-box" id="solicitudError">Error al enviar. Inténtalo de nuevo.</div>
         <form id="solicitudForm">
           <div class="form-group">
-            <label>Tipo de solicitud</label>
+            <label data-i18n="sol.tipo">Tipo de solicitud</label>
             <select name="tipo">
-              <option>Solicitud de vacaciones</option>
-              <option>Solicitud de permiso</option>
-              <option>Cambio de turno</option>
-              <option>Baja médica</option>
-              <option>Consulta general</option>
+              <option data-i18n="sol.t_vac">Solicitud de vacaciones</option>
+              <option data-i18n="sol.t_perm">Solicitud de permiso</option>
+              <option data-i18n="sol.t_turno">Cambio de turno</option>
+              <option data-i18n="sol.t_baja">Baja médica</option>
+              <option data-i18n="sol.t_consulta">Consulta general</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Fechas (si aplica)</label>
-            <input type="text" name="fechas" placeholder="Ej: 15 al 20 de junio">
+            <label data-i18n="sol.fechas">Fechas (si aplica)</label>
+            <input type="text" name="fechas" placeholder="Ej: 15 al 20 de junio" data-i18n-ph="sol.fechas_ph">
           </div>
           <div class="form-group">
-            <label>Descripción</label>
-            <textarea name="motivo" rows="4" placeholder="Describe tu solicitud..."></textarea>
+            <label data-i18n="sol.desc">Descripción</label>
+            <textarea name="motivo" rows="4" placeholder="Describe tu solicitud..." data-i18n-ph="sol.desc_ph"></textarea>
           </div>
-          <button type="submit" class="btn-primary">Enviar solicitud</button>
+          <button type="submit" class="btn-primary" data-i18n="sol.btn">Enviar solicitud</button>
         </form>
       </div>
       <div class="card form-card-narrow" style="padding:0;margin-top:1rem">
         <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Mis solicitudes</span>
+          <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)" data-i18n="sol.mis">Mis solicitudes</span>
           <button class="btn-sm" onclick="cargarMisSolicitudes()">↺</button>
         </div>
-        <div id="misSolicitudesList"><div class="loading">Cargando...</div></div>
+        <div id="misSolicitudesList"><div class="loading" data-i18n="g.cargando">Cargando...</div></div>
       </div>
     </div>
 
     <!-- ADMIN -->
     <div class="page" id="page-admin">
       <div class="page-header">
-        <div class="page-eyebrow">Administración</div>
-        <h1>Panel de control</h1>
-        <p>Gestión de empleados y documentos</p>
+        <div class="page-eyebrow" data-i18n="adm.eyebrow">Administración</div>
+        <h1 data-i18n="adm.titulo">Panel de control</h1>
+        <p data-i18n="adm.sub">Gestión de empleados y documentos</p>
       </div>
       <div class="admin-tabs">
-        <button class="admin-tab active" onclick="switchTab('dashboard', this)">📊 Dashboard</button>
-        <button class="admin-tab" onclick="switchTab('empleados', this)">Empleados</button>
-        <button class="admin-tab" onclick="switchTab('subir', this)">Subir documento</button>
-        <button class="admin-tab" onclick="switchTab('masivo', this)">Subida masiva ZIP</button>
-        <button class="admin-tab" onclick="switchTab('solicitudes-admin', this)">Solicitudes</button>
-        <button class="admin-tab" onclick="switchTab('turnos-admin', this)">Turnos</button>
-        <button class="admin-tab" onclick="switchTab('importar', this)">Importar Excel</button>
-        <button class="admin-tab" onclick="switchTab('vacaciones-admin', this)">Vacaciones</button>
-        <button class="admin-tab" onclick="switchTab('resumen-vac', this)">📋 Resumen vacacional</button>
-        <button class="admin-tab" onclick="switchTab('docs-admin', this)">📂 Documentos</button>
+        <button class="admin-tab active" onclick="switchTab('dashboard', this)" data-i18n="tab.dashboard">📊 Dashboard</button>
+        <button class="admin-tab" onclick="switchTab('empleados', this)" data-i18n="tab.empleados">Empleados</button>
+        <button class="admin-tab" onclick="switchTab('subir', this)" data-i18n="tab.subir">Subir documento</button>
+        <button class="admin-tab" onclick="switchTab('masivo', this)" data-i18n="tab.masivo">Subida masiva ZIP</button>
+        <button class="admin-tab" onclick="switchTab('solicitudes-admin', this)" data-i18n="tab.solicitudes">Solicitudes</button>
+        <button class="admin-tab" onclick="switchTab('turnos-admin', this)" data-i18n="tab.turnos">Turnos</button>
+        <button class="admin-tab" onclick="switchTab('importar', this)" data-i18n="tab.importar">Importar Excel</button>
+        <button class="admin-tab" onclick="switchTab('vacaciones-admin', this)" data-i18n="tab.vacaciones">Vacaciones</button>
+        <button class="admin-tab" onclick="switchTab('resumen-vac', this)" data-i18n="tab.resumen">📋 Resumen vacacional</button>
+        <button class="admin-tab" onclick="switchTab('docs-admin', this)" data-i18n="tab.docs">📂 Documentos</button>
       </div>
 
       <!-- TAB DASHBOARD -->
@@ -1078,14 +1083,14 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;align-items:start">
           <div class="card" style="padding:0">
             <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-              <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Sin firmar cuadrante</span>
-              <button class="btn-sm" onclick="cargarDashboard()">↺ Actualizar</button>
+              <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)" data-i18n="dash.sin_firmar">Sin firmar cuadrante</span>
+              <button class="btn-sm" onclick="cargarDashboard()" data-i18n="dash.actualizar">↺ Actualizar</button>
             </div>
-            <div id="dashSinFirmar"><div class="loading">Cargando...</div></div>
+            <div id="dashSinFirmar"><div class="loading" data-i18n="g.cargando">Cargando...</div></div>
           </div>
           <div class="card" style="padding:0">
             <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border)">
-              <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Solicitudes pendientes</span>
+              <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)" data-i18n="dash.solicitudes">Solicitudes pendientes</span>
             </div>
             <div id="dashSolicitudes"><div class="loading">Cargando...</div></div>
           </div>
@@ -1095,114 +1100,114 @@
       <div class="admin-tab-content" id="tab-empleados">
         <div class="card" style="padding:0">
           <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem">
-            <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Empleados registrados</span>
+            <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)" data-i18n="emp.titulo">Empleados registrados</span>
             <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-              <button class="btn-sm gold" onclick="exportarEmpleadosExcel()">⬇ Exportar Excel</button>
-              <button class="btn-sm primary" onclick="showAddEmpleado()">+ Añadir empleado</button>
+              <button class="btn-sm gold" onclick="exportarEmpleadosExcel()" data-i18n="emp.exportar">⬇ Exportar Excel</button>
+              <button class="btn-sm primary" onclick="showAddEmpleado()" data-i18n="emp.anadir">+ Añadir empleado</button>
             </div>
           </div>
           <div style="padding:0.625rem 1.5rem;border-bottom:1px solid var(--border);position:relative">
             <svg style="position:absolute;left:2.25rem;top:50%;transform:translateY(-50%);opacity:0.35;pointer-events:none" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="empBuscador" placeholder="Buscar por nombre, email o DNI…"
+            <input type="text" id="empBuscador" placeholder="Buscar por nombre, email o DNI…" data-i18n-ph="emp.buscar_ph"
               oninput="buscarEmpleados(this.value)"
               style="width:100%;padding:0.55rem 1rem 0.55rem 2.25rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--white);font-size:0.875rem;font-family:inherit;outline:none;transition:border-color 0.18s,box-shadow 0.18s"
               onfocus="this.style.borderColor='rgba(245,184,0,0.5)';this.style.boxShadow='0 0 0 3px rgba(245,184,0,0.08)'"
               onblur="this.style.borderColor='';this.style.boxShadow=''">
           </div>
           <div class="doc-filters" style="padding:0.75rem 1.5rem;border-bottom:1px solid var(--border)">
-            <button class="btn-sm emp-filter primary" onclick="filtrarEmpleados('todos',this)">Todos</button>
-            <button class="btn-sm emp-filter" onclick="filtrarEmpleados('Vigilante de seguridad',this)">Vigilantes</button>
-            <button class="btn-sm emp-filter" onclick="filtrarEmpleados('Auxiliar de servicio',this)">Auxiliares</button>
-            <button class="btn-sm emp-filter" onclick="filtrarEmpleados('Coordinador',this)">Coordinadores</button>
-            <button class="btn-sm emp-filter" onclick="filtrarEmpleados('Administrativo',this)">Administrativos</button>
+            <button class="btn-sm emp-filter primary" onclick="filtrarEmpleados('todos',this)" data-i18n="emp.f_todos">Todos</button>
+            <button class="btn-sm emp-filter" onclick="filtrarEmpleados('Vigilante de seguridad',this)" data-i18n="emp.f_vig">Vigilantes</button>
+            <button class="btn-sm emp-filter" onclick="filtrarEmpleados('Auxiliar de servicio',this)" data-i18n="emp.f_aux">Auxiliares</button>
+            <button class="btn-sm emp-filter" onclick="filtrarEmpleados('Coordinador',this)" data-i18n="emp.f_coo">Coordinadores</button>
+            <button class="btn-sm emp-filter" onclick="filtrarEmpleados('Administrativo',this)" data-i18n="emp.f_adm">Administrativos</button>
           </div>
-          <div id="empleadosList"><div class="loading">Cargando...</div></div>
+          <div id="empleadosList"><div class="loading" data-i18n="g.cargando">Cargando...</div></div>
         </div>
         <div class="card" id="addEmpleadoForm" style="display:none;max-width:500px;margin-top:1rem">
-          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem">Nuevo empleado</div>
-          <div class="success-box" id="empleadoOk">✓ Empleado creado correctamente.</div>
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem" data-i18n="emp.nuevo">Nuevo empleado</div>
+          <div class="success-box" id="empleadoOk" data-i18n="emp.ok">✓ Empleado creado correctamente.</div>
           <div class="error-box" id="empleadoError"></div>
-          <div class="form-group"><label>Nombre completo</label><input type="text" id="empNombre" placeholder="Carlos Martínez López"></div>
-          <div class="form-group"><label>Email corporativo</label><input type="email" id="empEmail" placeholder="cmartinez@enerpro.com"></div>
-          <div class="form-group"><label>DNI</label><input type="text" id="empDni" placeholder="12345678A"></div>
-          <div class="form-group"><label>Cargo</label>
+          <div class="form-group"><label data-i18n="emp.nombre">Nombre completo</label><input type="text" id="empNombre" placeholder="Carlos Martínez López" data-i18n-ph="emp.nombre_ph"></div>
+          <div class="form-group"><label data-i18n="emp.email">Email corporativo</label><input type="email" id="empEmail" placeholder="cmartinez@enerpro.com" data-i18n-ph="emp.email_ph"></div>
+          <div class="form-group"><label data-i18n="emp.dni">DNI</label><input type="text" id="empDni" placeholder="12345678A" data-i18n-ph="emp.dni_ph"></div>
+          <div class="form-group"><label data-i18n="emp.cargo">Cargo</label>
             <select id="empCargo">
-              <option>Vigilante de seguridad</option>
-              <option>Auxiliar de servicio</option>
-              <option>Coordinador</option>
-              <option>Administrativo</option>
+              <option data-i18n="emp.c_vig">Vigilante de seguridad</option>
+              <option data-i18n="emp.c_aux">Auxiliar de servicio</option>
+              <option data-i18n="emp.c_coo">Coordinador</option>
+              <option data-i18n="emp.c_adm">Administrativo</option>
             </select>
           </div>
-          <div class="form-group"><label>Contraseña inicial</label><input type="password" id="empPassword" placeholder="Mínimo 6 caracteres"></div>
+          <div class="form-group"><label data-i18n="emp.pass_ini">Contraseña inicial</label><input type="password" id="empPassword" placeholder="Mínimo 6 caracteres" data-i18n-ph="emp.pass_ph"></div>
           <div class="admin-form-actions" style="display:flex;gap:0.75rem">
-            <button class="btn-sm primary" onclick="crearEmpleado()" style="flex:1;padding:0.65rem">Crear empleado</button>
-            <button class="btn-sm" onclick="hideAddEmpleado()" style="padding:0.65rem 1rem">Cancelar</button>
+            <button class="btn-sm primary" onclick="crearEmpleado()" style="flex:1;padding:0.65rem" data-i18n="emp.btn_crear">Crear empleado</button>
+            <button class="btn-sm" onclick="hideAddEmpleado()" style="padding:0.65rem 1rem" data-i18n="emp.btn_cancel">Cancelar</button>
           </div>
         </div>
       </div>
 
       <div class="admin-tab-content" id="tab-subir">
         <div class="card" style="max-width:500px">
-          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem">Subir documento a empleado</div>
-          <div class="success-box" id="subirOk">✓ Documento subido y asignado correctamente.</div>
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem" data-i18n="sub.titulo">Subir documento a empleado</div>
+          <div class="success-box" id="subirOk" data-i18n="sub.ok">✓ Documento subido y asignado correctamente.</div>
           <div class="error-box" id="subirError"></div>
-          <div class="form-group"><label>Empleado</label>
-            <select id="subirEmpleado"><option value="">Selecciona empleado...</option></select>
+          <div class="form-group"><label data-i18n="sub.empleado">Empleado</label>
+            <select id="subirEmpleado"><option value="" data-i18n="sub.empleado_ph">Selecciona empleado...</option></select>
           </div>
-          <div class="form-group"><label>Tipo de documento</label>
+          <div class="form-group"><label data-i18n="sub.tipo">Tipo de documento</label>
             <select id="subirTipo">
-              <option value="nomina">Nómina</option>
-              <option value="cuadrante">Cuadrante</option>
-              <option value="contrato">Contrato</option>
-              <option value="protocolo">Protocolo de seguridad</option>
-              <option value="otro">Otro</option>
+              <option value="nomina" data-i18n="tdoc.nomina">Nómina</option>
+              <option value="cuadrante" data-i18n="tdoc.cuadrante">Cuadrante</option>
+              <option value="contrato" data-i18n="tdoc.contrato">Contrato</option>
+              <option value="protocolo" data-i18n="tdoc.protocolo">Protocolo de seguridad</option>
+              <option value="otro" data-i18n="tdoc.otro">Otro</option>
             </select>
           </div>
-          <div class="form-group"><label>Nombre del documento</label><input type="text" id="subirNombre" placeholder="Ej: Nómina Mayo 2026"></div>
-          <div class="form-group"><label>Archivo PDF</label><input type="file" id="subirArchivo" accept=".pdf"></div>
-          <button class="btn-sm primary" onclick="subirDocumento()" style="width:100%;padding:0.75rem">Subir documento</button>
+          <div class="form-group"><label data-i18n="sub.nombre">Nombre del documento</label><input type="text" id="subirNombre" placeholder="Ej: Nómina Mayo 2026" data-i18n-ph="sub.nombre_ph"></div>
+          <div class="form-group"><label data-i18n="sub.archivo">Archivo PDF</label><input type="file" id="subirArchivo" accept=".pdf"></div>
+          <button class="btn-sm primary" onclick="subirDocumento()" style="width:100%;padding:0.75rem" data-i18n="sub.btn">Subir documento</button>
         </div>
       </div>
 
     <!-- SUBIDA MASIVA -->
     <div class="admin-tab-content" id="tab-masivo" style="display:none">
       <div class="card" style="max-width:560px">
-        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem">Subida masiva por ZIP</div>
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem" data-i18n="masi.titulo">Subida masiva por ZIP</div>
         <p style="font-size:0.8rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.6">Sube un ZIP con los PDFs de cada empleado. Cada PDF debe llamarse con el <strong style="color:var(--text)">DNI del empleado</strong> (ej: <code style="color:var(--red)">12345678A.pdf</code>). El sistema los asignará automáticamente.</p>
         <div class="success-box" id="masivoOk"></div>
         <div class="error-box" id="masivoError"></div>
         <div class="form-group">
-          <label>Tipo de documento</label>
+          <label data-i18n="masi.tipo">Tipo de documento</label>
           <select id="masivoTipo">
-            <option value="nomina">Nómina</option>
-            <option value="cuadrante">Cuadrante</option>
-            <option value="contrato">Contrato</option>
-            <option value="otro">Otro</option>
+            <option value="nomina" data-i18n="tdoc.nomina">Nómina</option>
+            <option value="cuadrante" data-i18n="tdoc.cuadrante">Cuadrante</option>
+            <option value="contrato" data-i18n="tdoc.contrato">Contrato</option>
+            <option value="otro" data-i18n="tdoc.otro">Otro</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Nombre base del documento</label>
-          <input type="text" id="masivoNombre" placeholder="Ej: Nómina Mayo 2026">
+          <label data-i18n="masi.nombre">Nombre base del documento</label>
+          <input type="text" id="masivoNombre" placeholder="Ej: Nómina Mayo 2026" data-i18n-ph="masi.nombre_ph">
         </div>
         <div class="form-group">
-          <label>Archivo ZIP</label>
+          <label data-i18n="masi.archivo">Archivo ZIP</label>
           <input type="file" id="masivoArchivo" accept=".zip">
         </div>
         <div id="masivoProgress" style="display:none;margin-bottom:1rem">
-          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem" id="masivoProgressText">Procesando...</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem" id="masivoProgressText" data-i18n="masi.proc">Procesando...</div>
           <div style="height:4px;background:var(--bg3)"><div id="masivoProgressBar" style="height:100%;background:var(--red);width:0%;transition:width 0.3s"></div></div>
         </div>
-        <button class="btn-sm primary" onclick="subirMasivo()" style="width:100%;padding:0.75rem">Procesar y subir ZIP</button>
+        <button class="btn-sm primary" onclick="subirMasivo()" style="width:100%;padding:0.75rem" data-i18n="masi.btn">Procesar y subir ZIP</button>
       </div>
     </div>
 
     <div class="admin-tab-content" id="tab-solicitudes-admin" style="display:none">
       <div class="card" style="padding:0">
         <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem">
-          <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Solicitudes de empleados</span>
+          <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)" data-i18n="sa.titulo">Solicitudes de empleados</span>
           <div style="display:flex;gap:0.5rem">
-            <button class="btn-sm gold" onclick="exportarSolicitudesExcel()">⬇ Exportar Excel</button>
-            <button class="btn-sm primary" onclick="cargarSolicitudesAdmin()">Actualizar</button>
+            <button class="btn-sm gold" onclick="exportarSolicitudesExcel()" data-i18n="sa.exportar">⬇ Exportar Excel</button>
+            <button class="btn-sm primary" onclick="cargarSolicitudesAdmin()" data-i18n="sa.actualizar">Actualizar</button>
           </div>
         </div>
         <div id="solicitudesAdminList"><div class="loading">Cargando...</div></div>
@@ -1212,40 +1217,40 @@
     <div class="admin-tab-content" id="tab-turnos-admin" style="display:none">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">
         <div class="card" style="max-width:100%">
-          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem">Asignar turno</div>
-          <div class="success-box" id="turnoOk">✓ Turno asignado correctamente.</div>
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem" data-i18n="ta.titulo">Asignar turno</div>
+          <div class="success-box" id="turnoOk" data-i18n="ta.ok">✓ Turno asignado correctamente.</div>
           <div class="error-box" id="turnoError"></div>
-          <div class="form-group"><label>Empleado</label>
-            <select id="turnoEmpleado"><option value="">Selecciona empleado...</option></select>
+          <div class="form-group"><label data-i18n="ta.empleado">Empleado</label>
+            <select id="turnoEmpleado"><option value="" data-i18n="ta.empleado_ph">Selecciona empleado...</option></select>
           </div>
-          <div class="form-group"><label>Fecha</label>
+          <div class="form-group"><label data-i18n="ta.fecha">Fecha</label>
             <input type="date" id="turnoFecha">
           </div>
-          <div class="form-group"><label>Tipo de turno</label>
+          <div class="form-group"><label data-i18n="ta.tipo">Tipo de turno</label>
             <select id="turnoTipo">
-              <option value="manana">Mañana</option>
-              <option value="tarde">Tarde</option>
-              <option value="noche">Noche</option>
-              <option value="guardia">Guardia</option>
-              <option value="libre">Libre / Descanso</option>
+              <option value="manana" data-i18n="tur.manana">Mañana</option>
+              <option value="tarde" data-i18n="tur.tarde">Tarde</option>
+              <option value="noche" data-i18n="tur.noche">Noche</option>
+              <option value="guardia" data-i18n="tur.guardia">Guardia</option>
+              <option value="libre" data-i18n="tur.libre">Libre</option>
             </select>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
-            <div class="form-group" style="margin-bottom:0"><label>Hora inicio</label><input type="time" id="turnoInicio"></div>
-            <div class="form-group" style="margin-bottom:0"><label>Hora fin</label><input type="time" id="turnoFin"></div>
+            <div class="form-group" style="margin-bottom:0"><label data-i18n="ta.inicio">Hora inicio</label><input type="time" id="turnoInicio"></div>
+            <div class="form-group" style="margin-bottom:0"><label data-i18n="ta.fin">Hora fin</label><input type="time" id="turnoFin"></div>
           </div>
-          <div class="form-group" style="margin-top:1.25rem"><label>Ubicación (opcional)</label>
-            <input type="text" id="turnoUbicacion" placeholder="Ej: Centro Comercial Norte">
+          <div class="form-group" style="margin-top:1.25rem"><label data-i18n="ta.ubic">Ubicación (opcional)</label>
+            <input type="text" id="turnoUbicacion" placeholder="Ej: Centro Comercial Norte" data-i18n-ph="ta.ubic_ph">
           </div>
-          <div class="form-group"><label>Notas (opcional)</label>
-            <textarea id="turnoNotas" rows="2" placeholder="Indicaciones especiales..."></textarea>
+          <div class="form-group"><label data-i18n="ta.notas">Notas (opcional)</label>
+            <textarea id="turnoNotas" rows="2" placeholder="Indicaciones especiales..." data-i18n-ph="ta.notas_ph"></textarea>
           </div>
-          <button class="btn-sm primary" onclick="crearTurno()" style="width:100%;padding:0.7rem">Guardar turno</button>
+          <button class="btn-sm primary" onclick="crearTurno()" style="width:100%;padding:0.7rem" data-i18n="ta.btn">Guardar turno</button>
         </div>
         <div class="card" style="padding:0;max-width:100%">
           <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Próximos turnos</span>
-            <button class="btn-sm" onclick="cargarTurnosAdmin()">↺ Actualizar</button>
+            <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)" data-i18n="ta.proximos">Próximos turnos</span>
+            <button class="btn-sm" onclick="cargarTurnosAdmin()" data-i18n="ta.actualizar">↺ Actualizar</button>
           </div>
           <div id="turnosAdminList"><div class="loading">Cargando...</div></div>
         </div>
@@ -1253,65 +1258,65 @@
 
       <!-- ASIGNACIÓN MASIVA -->
       <div class="card" style="margin-top:1.5rem;border-top:2px solid var(--gold)">
-        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem">Asignación masiva de turnos</div>
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem" data-i18n="am.titulo">Asignación masiva de turnos</div>
         <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.25rem">
-          <button id="masivaTabFecha" class="admin-tab active" style="font-size:0.78rem" onclick="switchMasivaTab('fecha')">📅 Rango de fechas</button>
-          <button id="masivaTabEmpleados" class="admin-tab" style="font-size:0.78rem" onclick="switchMasivaTab('empleados')">👥 Varios empleados</button>
+          <button id="masivaTabFecha" class="admin-tab active" style="font-size:0.78rem" onclick="switchMasivaTab('fecha')" data-i18n="am.tab_fecha">📅 Rango de fechas</button>
+          <button id="masivaTabEmpleados" class="admin-tab" style="font-size:0.78rem" onclick="switchMasivaTab('empleados')" data-i18n="am.tab_emp">👥 Varios empleados</button>
         </div>
 
         <!-- Modo A: un empleado, rango de fechas -->
         <div id="masiva-fecha">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem">
-            <div class="form-group" style="margin:0"><label>Empleado</label>
-              <select id="masivaEmpFecha"><option value="">Selecciona empleado...</option></select>
+            <div class="form-group" style="margin:0"><label data-i18n="ta.empleado">Empleado</label>
+              <select id="masivaEmpFecha"><option value="" data-i18n="ta.empleado_ph">Selecciona empleado...</option></select>
             </div>
-            <div class="form-group" style="margin:0"><label>Tipo de turno</label>
+            <div class="form-group" style="margin:0"><label data-i18n="ta.tipo">Tipo de turno</label>
               <select id="masivaTipoFecha">
-                <option value="manana">Mañana</option><option value="tarde">Tarde</option>
-                <option value="noche">Noche</option><option value="guardia">Guardia</option>
-                <option value="libre">Libre / Descanso</option>
+                <option value="manana" data-i18n="tur.manana">Mañana</option><option value="tarde" data-i18n="tur.tarde">Tarde</option>
+                <option value="noche" data-i18n="tur.noche">Noche</option><option value="guardia" data-i18n="tur.guardia">Guardia</option>
+                <option value="libre" data-i18n="tur.libre">Libre</option>
               </select>
             </div>
-            <div class="form-group" style="margin:0"><label>Desde</label><input type="date" id="masivaDesde"></div>
-            <div class="form-group" style="margin:0"><label>Hasta</label><input type="date" id="masivaHasta"></div>
-            <div class="form-group" style="margin:0"><label>Hora inicio</label><input type="time" id="masivaHoraIni"></div>
-            <div class="form-group" style="margin:0"><label>Hora fin</label><input type="time" id="masivaHoraFin"></div>
+            <div class="form-group" style="margin:0"><label data-i18n="am.desde">Desde</label><input type="date" id="masivaDesde"></div>
+            <div class="form-group" style="margin:0"><label data-i18n="am.hasta">Hasta</label><input type="date" id="masivaHasta"></div>
+            <div class="form-group" style="margin:0"><label data-i18n="am.inicio">Hora inicio</label><input type="time" id="masivaHoraIni"></div>
+            <div class="form-group" style="margin:0"><label data-i18n="am.fin">Hora fin</label><input type="time" id="masivaHoraFin"></div>
           </div>
-          <div class="form-group"><label>Ubicación (opcional)</label><input type="text" id="masivaUbicFecha" placeholder="Ej: Centro Comercial Norte"></div>
+          <div class="form-group"><label data-i18n="ta.ubic">Ubicación (opcional)</label><input type="text" id="masivaUbicFecha" placeholder="Ej: Centro Comercial Norte" data-i18n-ph="am.ubic_ph"></div>
           <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;color:var(--text2);cursor:pointer;margin-bottom:1rem">
-            <input type="checkbox" id="masivaExcluirFinde" checked style="width:auto;padding:0;border:none;background:none;min-height:auto"> Excluir sábados y domingos
+            <input type="checkbox" id="masivaExcluirFinde" checked style="width:auto;padding:0;border:none;background:none;min-height:auto"> <span data-i18n="am.excl">Excluir sábados y domingos</span>
           </label>
           <div class="success-box" id="masivaFechaOk"></div>
           <div class="error-box"   id="masivaFechaErr"></div>
-          <button class="btn-sm primary" id="masivaFechaBtn" onclick="crearTurnosPorFecha()" style="padding:0.65rem 1.5rem">Crear turnos en el rango</button>
+          <button class="btn-sm primary" id="masivaFechaBtn" onclick="crearTurnosPorFecha()" style="padding:0.65rem 1.5rem" data-i18n="am.btn_fecha">Crear turnos en el rango</button>
         </div>
 
         <!-- Modo B: varios empleados, una fecha -->
         <div id="masiva-empleados" style="display:none">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem">
-            <div class="form-group" style="margin:0"><label>Fecha</label><input type="date" id="masivaFechaEmp"></div>
-            <div class="form-group" style="margin:0"><label>Tipo de turno</label>
+            <div class="form-group" style="margin:0"><label data-i18n="am.fecha">Fecha</label><input type="date" id="masivaFechaEmp"></div>
+            <div class="form-group" style="margin:0"><label data-i18n="ta.tipo">Tipo de turno</label>
               <select id="masivaTipoEmp">
-                <option value="manana">Mañana</option><option value="tarde">Tarde</option>
-                <option value="noche">Noche</option><option value="guardia">Guardia</option>
-                <option value="libre">Libre / Descanso</option>
+                <option value="manana" data-i18n="tur.manana">Mañana</option><option value="tarde" data-i18n="tur.tarde">Tarde</option>
+                <option value="noche" data-i18n="tur.noche">Noche</option><option value="guardia" data-i18n="tur.guardia">Guardia</option>
+                <option value="libre" data-i18n="tur.libre">Libre</option>
               </select>
             </div>
-            <div class="form-group" style="margin:0"><label>Hora inicio</label><input type="time" id="masivaHoraIniEmp"></div>
-            <div class="form-group" style="margin:0"><label>Hora fin</label><input type="time" id="masivaHoraFinEmp"></div>
+            <div class="form-group" style="margin:0"><label data-i18n="am.inicio">Hora inicio</label><input type="time" id="masivaHoraIniEmp"></div>
+            <div class="form-group" style="margin:0"><label data-i18n="am.fin">Hora fin</label><input type="time" id="masivaHoraFinEmp"></div>
           </div>
-          <div class="form-group"><label>Ubicación (opcional)</label><input type="text" id="masivaUbicEmp" placeholder="Ej: Centro Comercial Norte"></div>
+          <div class="form-group"><label data-i18n="ta.ubic">Ubicación (opcional)</label><input type="text" id="masivaUbicEmp" placeholder="Ej: Centro Comercial Norte" data-i18n-ph="am.ubic_ph"></div>
           <div style="margin-bottom:1rem">
-            <div style="font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.625rem">Empleados</div>
+            <div style="font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.625rem" data-i18n="am.emp_label">Empleados</div>
             <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem">
-              <button class="btn-sm" onclick="seleccionarTodosEmp(true)" style="font-size:0.7rem">Seleccionar todos</button>
-              <button class="btn-sm" onclick="seleccionarTodosEmp(false)" style="font-size:0.7rem">Deseleccionar todos</button>
+              <button class="btn-sm" onclick="seleccionarTodosEmp(true)" style="font-size:0.7rem" data-i18n="am.sel_todos">Seleccionar todos</button>
+              <button class="btn-sm" onclick="seleccionarTodosEmp(false)" style="font-size:0.7rem" data-i18n="am.desel_todos">Deseleccionar todos</button>
             </div>
             <div id="masivaEmpCheckList" style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r-sm);padding:0.5rem"></div>
           </div>
           <div class="success-box" id="masivaEmpOk"></div>
           <div class="error-box"   id="masivaEmpErr"></div>
-          <button class="btn-sm primary" id="masivaEmpBtn" onclick="crearTurnosPorEmpleados()" style="padding:0.65rem 1.5rem">Crear turnos para seleccionados</button>
+          <button class="btn-sm primary" id="masivaEmpBtn" onclick="crearTurnosPorEmpleados()" style="padding:0.65rem 1.5rem" data-i18n="am.btn_emp">Crear turnos para seleccionados</button>
         </div>
       </div>
     </div>
@@ -1319,17 +1324,17 @@
     <div class="admin-tab-content" id="tab-vacaciones-admin" style="display:none">
       <div class="card" style="padding:0">
         <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem">
-          <span class="card-label" style="margin:0">Solicitudes de vacaciones</span>
+          <span class="card-label" style="margin:0" data-i18n="va.titulo">Solicitudes de vacaciones</span>
           <div style="display:flex;gap:0.5rem">
             <select id="vacAdminFiltro" class="btn-sm" style="padding:0 0.75rem;height:36px;border-radius:var(--r-xs);background:var(--surface2);color:var(--text2)" onchange="cargarVacacionesAdmin()">
-              <option value="pendiente">Pendientes</option>
-              <option value="aprobada">Aprobadas</option>
-              <option value="rechazada">Rechazadas</option>
-              <option value="cancelada">Canceladas</option>
-              <option value="todas">Todas</option>
+              <option value="pendiente" data-i18n="va.f_pend">Pendientes</option>
+              <option value="aprobada" data-i18n="va.f_apr">Aprobadas</option>
+              <option value="rechazada" data-i18n="va.f_rech">Rechazadas</option>
+              <option value="cancelada" data-i18n="va.f_can">Canceladas</option>
+              <option value="todas" data-i18n="va.f_todas">Todas</option>
             </select>
-            <button class="btn-sm gold" onclick="exportarVacacionesExcel()">⬇ Exportar Excel</button>
-            <button class="btn-sm" onclick="cargarVacacionesAdmin()">↺ Actualizar</button>
+            <button class="btn-sm gold" onclick="exportarVacacionesExcel()" data-i18n="va.exportar">⬇ Exportar Excel</button>
+            <button class="btn-sm" onclick="cargarVacacionesAdmin()" data-i18n="va.actualizar">↺ Actualizar</button>
           </div>
         </div>
         <div id="vacAdminLista"><div class="loading">Cargando...</div></div>
@@ -1341,19 +1346,19 @@
       <div class="card" style="padding:0">
         <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem">
           <div>
-            <span class="card-label" style="margin:0">Resumen vacacional</span>
+            <span class="card-label" style="margin:0" data-i18n="rv.titulo">Resumen vacacional</span>
             <span id="resumenVacAno" style="font-size:0.72rem;color:var(--muted);margin-left:0.5rem"></span>
           </div>
           <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
             <select id="resumenVacCargo" class="btn-sm" style="padding:0 0.75rem;height:36px;border-radius:var(--r-xs);background:var(--surface2);color:var(--text2)" onchange="cargarResumenVacaciones()">
-              <option value="todos">Todos los cargos</option>
-              <option value="Vigilante de seguridad">Vigilantes</option>
-              <option value="Auxiliar de servicio">Auxiliares</option>
-              <option value="Coordinador">Coordinadores</option>
-              <option value="Administrativo">Administrativos</option>
+              <option value="todos" data-i18n="rv.c_todos">Todos los cargos</option>
+              <option value="Vigilante de seguridad" data-i18n="rv.c_vig">Vigilantes</option>
+              <option value="Auxiliar de servicio" data-i18n="rv.c_aux">Auxiliares</option>
+              <option value="Coordinador" data-i18n="rv.c_coo">Coordinadores</option>
+              <option value="Administrativo" data-i18n="rv.c_adm">Administrativos</option>
             </select>
-            <button class="btn-sm gold" onclick="exportarResumenVacaciones()">⬇ Exportar Excel</button>
-            <button class="btn-sm" onclick="cargarResumenVacaciones()">↺ Actualizar</button>
+            <button class="btn-sm gold" onclick="exportarResumenVacaciones()" data-i18n="rv.exportar">⬇ Exportar Excel</button>
+            <button class="btn-sm" onclick="cargarResumenVacaciones()" data-i18n="rv.actualizar">↺ Actualizar</button>
           </div>
         </div>
         <div id="resumenVacLista"><div class="loading">Cargando...</div></div>
@@ -1365,27 +1370,27 @@
       <div class="card" style="padding:0">
         <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem">
           <div>
-            <span class="card-label" style="margin:0">Todos los documentos</span>
+            <span class="card-label" style="margin:0" data-i18n="da.titulo">Todos los documentos</span>
             <span id="docsAdminCount" style="font-size:0.72rem;color:var(--muted);margin-left:0.5rem"></span>
           </div>
           <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
             <select id="docsAdminEmp" class="btn-sm" style="padding:0 0.75rem;height:36px;border-radius:var(--r-xs);background:var(--surface2);color:var(--text2);border:1px solid var(--border2)" onchange="filtrarDocsAdmin()">
-              <option value="">Todos los empleados</option>
+              <option value="" data-i18n="da.emp_ph">Todos los empleados</option>
             </select>
             <select id="docsAdminTipo" class="btn-sm" style="padding:0 0.75rem;height:36px;border-radius:var(--r-xs);background:var(--surface2);color:var(--text2);border:1px solid var(--border2)" onchange="filtrarDocsAdmin()">
-              <option value="">Todos los tipos</option>
-              <option value="nomina">Nóminas</option>
-              <option value="cuadrante">Cuadrantes</option>
-              <option value="contrato">Contratos</option>
-              <option value="protocolo">Protocolos</option>
-              <option value="otro">Otros</option>
+              <option value="" data-i18n="da.tipo_ph">Todos los tipos</option>
+              <option value="nomina" data-i18n="doc.nominas">Nóminas</option>
+              <option value="cuadrante" data-i18n="doc.cuadrantes">Cuadrantes</option>
+              <option value="contrato" data-i18n="doc.contratos">Contratos</option>
+              <option value="protocolo" data-i18n="tdoc.protocolo">Protocolos</option>
+              <option value="otro" data-i18n="tdoc.otro">Otros</option>
             </select>
             <select id="docsAdminFirmado" class="btn-sm" style="padding:0 0.75rem;height:36px;border-radius:var(--r-xs);background:var(--surface2);color:var(--text2);border:1px solid var(--border2)" onchange="filtrarDocsAdmin()">
-              <option value="">Firmados y sin firmar</option>
-              <option value="true">Firmados</option>
-              <option value="false">Sin firmar</option>
+              <option value="" data-i18n="da.firm_ph">Firmados y sin firmar</option>
+              <option value="true" data-i18n="da.firm_si">Firmados</option>
+              <option value="false" data-i18n="da.firm_no">Sin firmar</option>
             </select>
-            <button class="btn-sm" onclick="cargarDocumentosAdmin()">↺ Actualizar</button>
+            <button class="btn-sm" onclick="cargarDocumentosAdmin()" data-i18n="da.actualizar">↺ Actualizar</button>
           </div>
         </div>
         <div id="docsAdminList"><div class="loading">Cargando...</div></div>
@@ -1397,32 +1402,32 @@
 
         <!-- Importar Excel -->
         <div class="card">
-          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.375rem">Importar desde Excel</div>
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.375rem" data-i18n="imp.titulo">Importar desde Excel</div>
           <p style="font-size:0.8rem;color:var(--text2);line-height:1.6;margin-bottom:1.25rem">Sube un <strong style="color:var(--text)">.xlsx</strong> con columnas: <code style="color:var(--gold)">nombre · email · dni · cargo</code>. La primera fila debe ser la cabecera.</p>
           <div class="success-box" id="importarOk"></div>
           <div class="error-box"   id="importarError"></div>
           <div class="form-group">
-            <label>Archivo Excel (.xlsx)</label>
+            <label data-i18n="imp.archivo">Archivo Excel (.xlsx)</label>
             <input type="file" id="importarArchivo" accept=".xlsx,.xls">
           </div>
           <div id="importarPreview" style="display:none;margin-bottom:1rem">
-            <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.625rem">Vista previa (<span id="importarCount">0</span> empleados)</div>
+            <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.625rem"><span data-i18n="imp.preview">Vista previa</span> (<span id="importarCount">0</span> empleados)</div>
             <div style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r-sm)">
               <table style="font-size:0.78rem"><thead><tr><th>Nombre</th><th>Email</th><th>DNI</th><th>Cargo</th></tr></thead>
               <tbody id="importarTabla"></tbody></table>
             </div>
-            <button class="btn-sm primary" onclick="confirmarImportacion()" style="width:100%;margin-top:0.875rem;min-height:44px">Importar todos</button>
+            <button class="btn-sm primary" onclick="confirmarImportacion()" style="width:100%;margin-top:0.875rem;min-height:44px" data-i18n="imp.btn">Importar todos</button>
           </div>
           <div id="importarProgress" style="display:none;margin-bottom:0.75rem">
-            <div style="font-size:0.75rem;color:var(--text2);margin-bottom:0.375rem" id="importarProgressText">Importando...</div>
+            <div style="font-size:0.75rem;color:var(--text2);margin-bottom:0.375rem" id="importarProgressText" data-i18n="imp.importando">Importando...</div>
             <div style="height:4px;background:var(--surface3);border-radius:2px"><div id="importarProgressBar" style="height:100%;background:var(--gold);width:0%;transition:width 0.3s;border-radius:2px"></div></div>
           </div>
-          <a id="importarPlantilla" download="plantilla_empleados.xlsx" style="display:inline-block;margin-top:0.5rem;font-size:0.75rem;color:var(--gold);text-decoration:none">⬇ Descargar plantilla</a>
+          <a id="importarPlantilla" download="plantilla_empleados.xlsx" style="display:inline-block;margin-top:0.5rem;font-size:0.75rem;color:var(--gold);text-decoration:none" data-i18n="imp.plantilla">⬇ Descargar plantilla</a>
         </div>
 
         <!-- Datos demo -->
         <div class="card">
-          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.375rem">Datos de demostración</div>
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.375rem" data-i18n="demo.titulo">Datos de demostración</div>
           <p style="font-size:0.8rem;color:var(--text2);line-height:1.6;margin-bottom:1.25rem">Inserta empleados de prueba con un clic para demostrar el portal sin datos reales.</p>
           <div class="success-box" id="demoOk"></div>
           <div class="error-box"   id="demoError"></div>
@@ -1441,8 +1446,8 @@
               Antonio Navarro · Vigilante
             </div>
           </div>
-          <button class="btn-sm primary" onclick="cargarDemoEmpleados()" style="width:100%;min-height:44px">Insertar empleados demo</button>
-          <button class="btn-sm" onclick="borrarDemoEmpleados()" style="width:100%;margin-top:0.5rem;min-height:44px;color:var(--red);border-color:rgba(220,38,38,0.3)">Borrar empleados demo</button>
+          <button class="btn-sm primary" onclick="cargarDemoEmpleados()" style="width:100%;min-height:44px" data-i18n="demo.btn_ins">Insertar empleados demo</button>
+          <button class="btn-sm" onclick="borrarDemoEmpleados()" style="width:100%;margin-top:0.5rem;min-height:44px;color:var(--red);border-color:rgba(220,38,38,0.3)" data-i18n="demo.btn_bor">Borrar empleados demo</button>
         </div>
       </div>
     </div>
@@ -1451,28 +1456,28 @@
     <!-- VACACIONES -->
     <div class="page" id="page-vacaciones">
       <div class="page-header">
-        <div class="page-eyebrow">Mi área</div>
-        <h1>Vacaciones y permisos</h1>
-        <p>Solicita días libres y consulta el estado de tus peticiones</p>
+        <div class="page-eyebrow" data-i18n="vac.eyebrow">Mi área</div>
+        <h1 data-i18n="vac.titulo">Vacaciones y permisos</h1>
+        <p data-i18n="vac.sub">Solicita días libres y consulta el estado de tus peticiones</p>
       </div>
 
       <!-- CONTADOR DÍAS -->
       <div id="vacResumen" style="display:none;margin-bottom:1.25rem">
         <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
           <div class="card card-accent" style="margin:0">
-            <div class="card-label">Días anuales</div>
+            <div class="card-label" data-i18n="vac.dias_anual">Días anuales</div>
             <div class="card-value" id="vacTotal">—</div>
             <div class="card-sub">Año <span id="vacAno">2026</span></div>
           </div>
           <div class="card" style="margin:0">
-            <div class="card-label">Días usados</div>
+            <div class="card-label" data-i18n="vac.usados">Días usados</div>
             <div class="card-value" id="vacUsados" style="color:var(--yellow)">—</div>
-            <div class="card-sub">Vacaciones aprobadas</div>
+            <div class="card-sub" data-i18n="vac.usados_sub">Vacaciones aprobadas</div>
           </div>
           <div class="card" style="margin:0">
-            <div class="card-label">Días restantes</div>
+            <div class="card-label" data-i18n="vac.restantes">Días restantes</div>
             <div class="card-value" id="vacRestantes" style="color:var(--green)">—</div>
-            <div class="card-sub">Disponibles</div>
+            <div class="card-sub" data-i18n="vac.restantes_sub">Disponibles</div>
           </div>
         </div>
       </div>
@@ -1481,37 +1486,37 @@
 
         <!-- Formulario solicitud -->
         <div class="card">
-          <div class="card-label" style="margin-bottom:1rem">Nueva solicitud</div>
+          <div class="card-label" style="margin-bottom:1rem" data-i18n="vac.nueva">Nueva solicitud</div>
           <div class="success-box" id="vacOk"></div>
           <div class="error-box"   id="vacError"></div>
           <div class="form-group">
-            <label>Tipo</label>
+            <label data-i18n="vac.tipo">Tipo</label>
             <select id="vacTipo">
-              <option value="vacaciones">Vacaciones</option>
-              <option value="permiso">Permiso personal</option>
-              <option value="asuntos_propios">Asuntos propios</option>
-              <option value="baja_medica">Baja médica</option>
+              <option value="vacaciones" data-i18n="vac.t_vac">Vacaciones</option>
+              <option value="permiso" data-i18n="vac.t_perm">Permiso personal</option>
+              <option value="asuntos_propios" data-i18n="vac.t_asuntos">Asuntos propios</option>
+              <option value="baja_medica" data-i18n="vac.t_baja">Baja médica</option>
             </select>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
-            <div class="form-group" style="margin-bottom:0"><label>Desde</label><input type="date" id="vacDesde"></div>
-            <div class="form-group" style="margin-bottom:0"><label>Hasta</label><input type="date" id="vacHasta"></div>
+            <div class="form-group" style="margin-bottom:0"><label data-i18n="vac.desde">Desde</label><input type="date" id="vacDesde"></div>
+            <div class="form-group" style="margin-bottom:0"><label data-i18n="vac.hasta">Hasta</label><input type="date" id="vacHasta"></div>
           </div>
           <div class="form-group" style="margin-top:1.25rem">
-            <label>Notas (opcional)</label>
-            <textarea id="vacNotas" rows="3" placeholder="Motivo o indicaciones..."></textarea>
+            <label data-i18n="vac.notas">Notas (opcional)</label>
+            <textarea id="vacNotas" rows="3" placeholder="Motivo o indicaciones..." data-i18n-ph="vac.notas_ph"></textarea>
           </div>
           <div id="vacDiasCont" style="display:none;margin-bottom:1rem;padding:0.75rem 1rem;background:var(--surface2);border-radius:var(--r-sm)">
-            <span style="font-size:0.8rem;color:var(--text2)">Días solicitados: </span>
+            <span style="font-size:0.8rem;color:var(--text2)" data-i18n="vac.dias_sol">Días solicitados: </span>
             <strong id="vacDias" style="color:var(--gold)">—</strong>
           </div>
-          <button class="btn-primary" onclick="solicitarVacaciones()">Enviar solicitud</button>
+          <button class="btn-primary" onclick="solicitarVacaciones()" data-i18n="vac.btn">Enviar solicitud</button>
         </div>
 
         <!-- Historial de solicitudes -->
         <div class="card" style="padding:0">
           <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-            <span class="card-label" style="margin:0">Mis solicitudes</span>
+            <span class="card-label" style="margin:0" data-i18n="vac.mis">Mis solicitudes</span>
             <button class="btn-sm" onclick="cargarVacaciones()">↺</button>
           </div>
           <div id="vacLista"><div class="loading">Cargando...</div></div>
@@ -1523,13 +1528,13 @@
     <div class="page" id="page-calendario">
       <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem">
         <div>
-          <div class="page-eyebrow">Mi área</div>
-          <h1>Mis turnos</h1>
-          <p>Calendario de turnos asignados</p>
+          <div class="page-eyebrow" data-i18n="cal.eyebrow">Mi área</div>
+          <h1 data-i18n="cal.titulo">Mis turnos</h1>
+          <p data-i18n="cal.sub">Calendario de turnos asignados</p>
         </div>
         <button class="btn-sm gold" onclick="exportarCalendarioICal()" style="margin-left:0;flex-shrink:0">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14" style="margin-right:0.35rem"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Exportar iCal
+          <span data-i18n="cal.ical">Exportar iCal</span>
         </button>
       </div>
       <div class="card" style="padding:1.25rem 1.5rem 1.5rem">
@@ -1551,30 +1556,30 @@
   <nav class="bottom-nav" aria-label="Navegación principal">
     <button type="button" class="bottom-nav-item nav-item active" data-page="inicio" aria-label="Inicio">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      <span>Inicio</span>
+      <span data-i18n="bnav.inicio">Inicio</span>
     </button>
     <button type="button" class="bottom-nav-item nav-item" data-page="documentos" aria-label="Documentos">
       <span style="position:relative;display:inline-flex">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="width:1.3rem;height:1.3rem"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         <span id="docBadgeMobile" style="display:none;position:absolute;top:-5px;right:-7px;background:var(--red);color:#fff;font-size:0.5rem;font-weight:700;min-width:14px;height:14px;border-radius:100px;padding:0 3px;align-items:center;justify-content:center;line-height:1;box-shadow:0 0 0 2px var(--bg),0 0 8px rgba(229,57,53,0.5)">0</span>
       </span>
-      <span>Documentos</span>
+      <span data-i18n="bnav.documentos">Documentos</span>
     </button>
     <button type="button" class="bottom-nav-item nav-item" data-page="solicitudes" aria-label="Solicitudes">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      <span>Solicitudes</span>
+      <span data-i18n="bnav.solicitudes">Solicitudes</span>
     </button>
     <button type="button" class="bottom-nav-item nav-item" data-page="vacaciones" aria-label="Vacaciones">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-      <span>Vacac.</span>
+      <span data-i18n="bnav.vacaciones">Vacac.</span>
     </button>
     <button type="button" class="bottom-nav-item nav-item" data-page="calendario" aria-label="Turnos">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      <span>Turnos</span>
+      <span data-i18n="bnav.calendario">Turnos</span>
     </button>
     <button type="button" class="bottom-nav-item nav-item admin-only" data-page="admin" aria-label="Administración" style="display:none">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-      <span>Admin</span>
+      <span data-i18n="bnav.admin">Admin</span>
     </button>
   </nav>
 </div>
@@ -1584,19 +1589,19 @@
 <div id="cambioPassModal" class="cp-wrap" style="display:none">
   <div class="cp-card">
     <div class="cp-icon">🔐</div>
-    <div class="cp-title">Nueva contraseña</div>
-    <p class="cp-sub">Por seguridad, debes establecer una contraseña propia antes de acceder al portal.</p>
+    <div class="cp-title" data-i18n="cp.titulo">Nueva contraseña</div>
+    <p class="cp-sub" data-i18n="cp.sub">Por seguridad, debes establecer una contraseña propia antes de acceder al portal.</p>
     <div class="divider" style="margin:1.5rem 0 1.25rem"></div>
     <div class="error-box" id="cpError"></div>
     <div class="form-group">
-      <label>Nueva contraseña</label>
-      <input type="password" id="cpNueva" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+      <label data-i18n="cp.nueva">Nueva contraseña</label>
+      <input type="password" id="cpNueva" placeholder="Mínimo 8 caracteres" data-i18n-ph="cp.nueva_ph" autocomplete="new-password">
     </div>
     <div class="form-group">
-      <label>Confirmar contraseña</label>
-      <input type="password" id="cpConfirma" placeholder="Repite la contraseña" autocomplete="new-password">
+      <label data-i18n="cp.confirma">Confirmar contraseña</label>
+      <input type="password" id="cpConfirma" placeholder="Repite la contraseña" data-i18n-ph="cp.confirma_ph" autocomplete="new-password">
     </div>
-    <button class="btn-primary" id="cpBtn" onclick="confirmarCambioPassword()">Cambiar contraseña y acceder</button>
+    <button class="btn-primary" id="cpBtn" onclick="confirmarCambioPassword()" data-i18n="cp.btn">Cambiar contraseña y acceder</button>
   </div>
 </div>
 
@@ -1605,8 +1610,8 @@
   <div class="modal-box" style="max-width:400px">
     <div class="modal-box-header">
       <div>
-        <div class="modal-eyebrow">Mi perfil</div>
-        <div class="modal-title">Cambiar contraseña</div>
+        <div class="modal-eyebrow" data-i18n="cpp.eyebrow">Mi perfil</div>
+        <div class="modal-title" data-i18n="cpp.titulo">Cambiar contraseña</div>
       </div>
       <button class="modal-close" onclick="cerrarCambioPassPerfil()" aria-label="Cerrar">✕</button>
     </div>
@@ -1614,16 +1619,16 @@
       <div class="error-box" id="cpPerfilError"></div>
       <div class="success-box" id="cpPerfilOk"></div>
       <div class="form-group">
-        <label>Nueva contraseña</label>
-        <input type="password" id="cpPerfilNueva" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+        <label data-i18n="cp.nueva">Nueva contraseña</label>
+        <input type="password" id="cpPerfilNueva" placeholder="Mínimo 8 caracteres" data-i18n-ph="cp.nueva_ph" autocomplete="new-password">
       </div>
       <div class="form-group">
-        <label>Confirmar contraseña</label>
-        <input type="password" id="cpPerfilConfirma" placeholder="Repite la contraseña" autocomplete="new-password">
+        <label data-i18n="cp.confirma">Confirmar contraseña</label>
+        <input type="password" id="cpPerfilConfirma" placeholder="Repite la contraseña" data-i18n-ph="cp.confirma_ph" autocomplete="new-password">
       </div>
       <div style="display:flex;gap:0.75rem;margin-top:1rem">
-        <button class="btn-sm primary" id="cpPerfilBtn" onclick="guardarCambioPassPerfil()" style="flex:1;padding:0.7rem;font-size:0.85rem">Actualizar contraseña</button>
-        <button class="btn-sm" onclick="cerrarCambioPassPerfil()" style="padding:0.7rem 1.25rem">Cancelar</button>
+        <button class="btn-sm primary" id="cpPerfilBtn" onclick="guardarCambioPassPerfil()" style="flex:1;padding:0.7rem;font-size:0.85rem" data-i18n="cpp.btn">Actualizar contraseña</button>
+        <button class="btn-sm" onclick="cerrarCambioPassPerfil()" style="padding:0.7rem 1.25rem" data-i18n="g.cancelar">Cancelar</button>
       </div>
     </div>
   </div>
@@ -1634,8 +1639,8 @@
   <div class="modal-box" style="max-width:480px">
     <div class="modal-box-header">
       <div>
-        <div class="modal-eyebrow">Administración</div>
-        <div class="modal-title" id="editEmpTitle">Editar empleado</div>
+        <div class="modal-eyebrow" data-i18n="edit.eyebrow">Administración</div>
+        <div class="modal-title" id="editEmpTitle" data-i18n="edit.titulo">Editar empleado</div>
       </div>
       <button class="modal-close" onclick="cerrarEditEmp()" aria-label="Cerrar">✕</button>
     </div>
@@ -1643,37 +1648,37 @@
       <div class="success-box" id="editEmpOk"></div>
       <div class="error-box"   id="editEmpError"></div>
       <input type="hidden" id="editEmpId">
-      <div class="form-group"><label>Nombre completo</label><input type="text" id="editEmpNombre" placeholder="Nombre completo"></div>
-      <div class="form-group"><label>Email corporativo</label><input type="email" id="editEmpEmail" placeholder="email@enerpro.com"></div>
-      <div class="form-group"><label>DNI</label><input type="text" id="editEmpDni" placeholder="12345678A"></div>
-      <div class="form-group"><label>Cargo</label>
+      <div class="form-group"><label data-i18n="edit.nombre">Nombre completo</label><input type="text" id="editEmpNombre" placeholder="Nombre completo"></div>
+      <div class="form-group"><label data-i18n="edit.email">Email corporativo</label><input type="email" id="editEmpEmail" placeholder="email@enerpro.com" data-i18n-ph="edit.email_ph"></div>
+      <div class="form-group"><label data-i18n="edit.dni">DNI</label><input type="text" id="editEmpDni" placeholder="12345678A"></div>
+      <div class="form-group"><label data-i18n="edit.cargo">Cargo</label>
         <select id="editEmpCargo">
-          <option>Vigilante de seguridad</option>
-          <option>Auxiliar de servicio</option>
-          <option>Coordinador</option>
-          <option>Administrativo</option>
+          <option data-i18n="emp.c_vig">Vigilante de seguridad</option>
+          <option data-i18n="emp.c_aux">Auxiliar de servicio</option>
+          <option data-i18n="emp.c_coo">Coordinador</option>
+          <option data-i18n="emp.c_adm">Administrativo</option>
         </select>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
         <div class="form-group" style="margin-bottom:0">
-          <label>Días vacaciones / año</label>
+          <label data-i18n="edit.dias">Días vacaciones / año</label>
           <input type="number" id="editEmpDias" min="0" max="60" placeholder="22">
         </div>
         <div class="form-group" style="margin-bottom:0">
-          <label>Estado</label>
+          <label data-i18n="edit.estado">Estado</label>
           <select id="editEmpActivo">
-            <option value="true">Activo</option>
-            <option value="false">Inactivo / Baja</option>
+            <option value="true" data-i18n="edit.activo">Activo</option>
+            <option value="false" data-i18n="edit.inactivo">Inactivo / Baja</option>
           </select>
         </div>
       </div>
       <div style="margin-bottom:1rem;padding:0.75rem 1rem;background:var(--surface2);border-radius:var(--r-sm);border:1px solid var(--border)">
-        <div style="font-size:0.65rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem">Acceso al portal</div>
-        <button class="btn-sm" id="editEmpResetBtn" onclick="forzarResetPassword()" style="color:var(--yellow);border-color:rgba(245,158,11,0.3);font-size:0.73rem;margin-left:0">🔄 Forzar cambio de contraseña en próximo acceso</button>
+        <div style="font-size:0.65rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem" data-i18n="edit.acceso">Acceso al portal</div>
+        <button class="btn-sm" id="editEmpResetBtn" onclick="forzarResetPassword()" style="color:var(--yellow);border-color:rgba(245,158,11,0.3);font-size:0.73rem;margin-left:0" data-i18n="edit.reset_btn">🔄 Forzar cambio de contraseña en próximo acceso</button>
       </div>
       <div style="display:flex;gap:0.75rem;margin-top:1.5rem">
-        <button class="btn-sm primary" id="editEmpBtn" onclick="guardarEmpleado()" style="flex:1;padding:0.7rem;font-size:0.85rem">Guardar cambios</button>
-        <button class="btn-sm" onclick="cerrarEditEmp()" style="padding:0.7rem 1.25rem">Cancelar</button>
+        <button class="btn-sm primary" id="editEmpBtn" onclick="guardarEmpleado()" style="flex:1;padding:0.7rem;font-size:0.85rem" data-i18n="edit.guardar">Guardar cambios</button>
+        <button class="btn-sm" onclick="cerrarEditEmp()" style="padding:0.7rem 1.25rem" data-i18n="edit.cancelar">Cancelar</button>
       </div>
     </div>
   </div>
@@ -1685,8 +1690,8 @@
     <div class="pdf-header">
       <span class="pdf-header-title" id="pdfModalTitle">Documento</span>
       <div class="pdf-header-actions">
-        <a id="pdfOpenLink" href="#" target="_blank" rel="noopener" class="btn-sm" style="text-decoration:none">↗ Nueva pestaña</a>
-        <button class="btn-sm" onclick="cerrarVisor()" aria-label="Cerrar visor">✕ Cerrar</button>
+        <a id="pdfOpenLink" href="#" target="_blank" rel="noopener" class="btn-sm" style="text-decoration:none" data-i18n="pdf.nueva">↗ Nueva pestaña</a>
+        <button class="btn-sm" onclick="cerrarVisor()" aria-label="Cerrar visor" data-i18n="pdf.cerrar">✕ Cerrar</button>
       </div>
     </div>
     <iframe id="pdfFrame" class="pdf-frame" src="" title="Visor de documento" allowfullscreen></iframe>

@@ -18,6 +18,865 @@ var adminSolicitudesChannel = null;
 var adminVacacionesChannel  = null;
 var calTurnos = [];
 var _docBadgeCount = 0;
+var currentAdminTab = 'dashboard';
+
+// ─── I18N ─────────────────────────────────────────────────
+
+var _lang = localStorage.getItem('enerpro_lang') || 'es';
+
+var I18N = {
+  es: {
+    meses:   ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
+    meses_c: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+    // Login
+    'login.subtitulo':   'Portal del Empleado · Acceso Privado',
+    'login.email':       'Email corporativo',
+    'login.email_ph':    'usuario@enerpro.com',
+    'login.pass':        'Contraseña',
+    'login.pass_ph':     '••••••••',
+    'login.btn':         'Acceder al portal',
+    'login.accediendo':  'Accediendo...',
+    'login.error':       'Credenciales incorrectas. Inténtalo de nuevo.',
+    // Cambio pass obligatorio
+    'cp.titulo':         'Nueva contraseña',
+    'cp.sub':            'Por seguridad, debes establecer una contraseña propia antes de acceder al portal.',
+    'cp.nueva':          'Nueva contraseña',
+    'cp.nueva_ph':       'Mínimo 8 caracteres',
+    'cp.confirma':       'Confirmar contraseña',
+    'cp.confirma_ph':    'Repite la contraseña',
+    'cp.btn':            'Cambiar contraseña y acceder',
+    'cp.guardando':      'Guardando...',
+    'cp.ok':             '✓ Contraseña actualizada',
+    'cp.err_corta':      'La contraseña debe tener al menos 8 caracteres.',
+    'cp.err_match':      'Las contraseñas no coinciden.',
+    // Cambio pass perfil
+    'cpp.eyebrow':       'Mi perfil',
+    'cpp.titulo':        'Cambiar contraseña',
+    'cpp.btn':           'Actualizar contraseña',
+    'cpp.guardando':     'Guardando...',
+    'cpp.ok':            '✓ Contraseña actualizada correctamente.',
+    // Sidebar
+    'sidebar.portal':    'Portal del Empleado',
+    'sidebar.admin_rol': 'Administrador',
+    'sidebar.emp_rol':   'Empleado',
+    'nav.principal':     'Principal',
+    'nav.miarea':        'Mi área',
+    'nav.inicio':        'Inicio',
+    'nav.documentos':    'Mis documentos',
+    'nav.solicitudes':   'Solicitudes',
+    'nav.calendario':    'Mis turnos',
+    'nav.vacaciones':    'Vacaciones',
+    'nav.admin':         'Administración',
+    'sidebar.logout':    'Cerrar sesión',
+    'sidebar.pass':      '🔑 Cambiar contraseña',
+    'sidebar.salir':     'Salir',
+    // Bottom nav
+    'bnav.inicio':       'Inicio',
+    'bnav.documentos':   'Documentos',
+    'bnav.solicitudes':  'Solicitudes',
+    'bnav.vacaciones':   'Vacac.',
+    'bnav.calendario':   'Turnos',
+    'bnav.admin':        'Admin',
+    // Inicio
+    'ini.eyebrow':       'Panel principal',
+    'ini.bienvenido':    'Bienvenido',
+    'ini.empleado':      'empleado',
+    'ini.stat_docs':     'Documentos disponibles',
+    'ini.stat_docs_sub': 'Nóminas y cuadrantes',
+    'ini.stat_unread':   'Sin leer',
+    'ini.stat_unread_sub':'Documentos nuevos',
+    'ini.stat_estado':   'Estado',
+    'ini.stat_estado_sub':'Servicio en curso',
+    'ini.cuadrante':     'Mi cuadrante del mes',
+    'ini.ultimos':       'Últimos documentos',
+    'ini.cargando':      'Cargando...',
+    // Documentos
+    'doc.eyebrow':       'Mi área',
+    'doc.titulo':        'Mis documentos',
+    'doc.sub':           'Nóminas, cuadrantes y documentación personal',
+    'doc.todos':         'Todos',
+    'doc.nominas':       'Nóminas',
+    'doc.cuadrantes':    'Cuadrantes',
+    'doc.contratos':     'Contratos',
+    'doc.ver':           '👁 Ver',
+    'doc.descargar':     '⬇ Descargar',
+    'doc.firmar':        '✍ Firmar',
+    'doc.ver_cuad':      '👁 Ver cuadrante',
+    'doc.confirmar':     '✍ Confirmar lectura',
+    'doc.firmado':       '✓ Firmado',
+    'doc.nuevo':         'Nuevo',
+    'doc.cuad_sub':      'Cuadrante de servicio',
+    'doc.no_cuad':       'No hay cuadrante disponible.',
+    'doc.empty':         'No hay documentos disponibles',
+    'doc.cargando':      'Cargando documentos...',
+    // Solicitudes empleado
+    'sol.eyebrow':       'Buzón',
+    'sol.titulo':        'Solicitudes',
+    'sol.sub':           'Envía una solicitud al coordinador',
+    'sol.tipo':          'Tipo de solicitud',
+    'sol.t_vac':         'Solicitud de vacaciones',
+    'sol.t_perm':        'Solicitud de permiso',
+    'sol.t_turno':       'Cambio de turno',
+    'sol.t_baja':        'Baja médica',
+    'sol.t_consulta':    'Consulta general',
+    'sol.fechas':        'Fechas (si aplica)',
+    'sol.fechas_ph':     'Ej: 15 al 20 de junio',
+    'sol.desc':          'Descripción',
+    'sol.desc_ph':       'Describe tu solicitud...',
+    'sol.btn':           'Enviar solicitud',
+    'sol.ok':            '✓ Solicitud enviada. El coordinador la revisará en breve.',
+    'sol.mis':           'Mis solicitudes',
+    'sol.empty':         'Aún no has enviado solicitudes',
+    'sol.cancelar':      '✕ Cancelar',
+    'sol.cancelar_ok':   '✓ Solicitud cancelada',
+    'sol.cancelar_msg':  'La solicitud ha sido cancelada.',
+    'sol.ts_vac':        'Vacaciones',
+    'sol.ts_perm':       'Permiso',
+    'sol.ts_turno':      'Cambio turno',
+    'sol.ts_baja':       'Baja médica',
+    'sol.ts_consulta':   'Consulta',
+    // Vacaciones empleado
+    'vac.eyebrow':       'Mi área',
+    'vac.titulo':        'Vacaciones y permisos',
+    'vac.sub':           'Solicita días libres y consulta el estado de tus peticiones',
+    'vac.dias_anual':    'Días anuales',
+    'vac.ano':           'Año',
+    'vac.usados':        'Días usados',
+    'vac.usados_sub':    'Vacaciones aprobadas',
+    'vac.restantes':     'Días restantes',
+    'vac.restantes_sub': 'Disponibles',
+    'vac.nueva':         'Nueva solicitud',
+    'vac.tipo':          'Tipo',
+    'vac.t_vac':         'Vacaciones',
+    'vac.t_perm':        'Permiso personal',
+    'vac.t_asuntos':     'Asuntos propios',
+    'vac.t_baja':        'Baja médica',
+    'vac.desde':         'Desde',
+    'vac.hasta':         'Hasta',
+    'vac.notas':         'Notas (opcional)',
+    'vac.notas_ph':      'Motivo o indicaciones...',
+    'vac.dias_sol':      'Días solicitados: ',
+    'vac.btn':           'Enviar solicitud',
+    'vac.mis':           'Mis solicitudes',
+    'vac.empty':         'No tienes solicitudes de vacaciones',
+    'vac.cancelar_ok':   '✓ Vacaciones canceladas',
+    'vac.cancelar_msg':  'La solicitud ha sido cancelada.',
+    'vac.l_vac':         'Vacaciones',
+    'vac.l_perm':        'Permiso',
+    'vac.l_asuntos':     'Asuntos propios',
+    'vac.l_baja':        'Baja médica',
+    // Calendario
+    'cal.eyebrow':       'Mi área',
+    'cal.titulo':        'Mis turnos',
+    'cal.sub':           'Calendario de turnos asignados',
+    'cal.ical':          'Exportar iCal',
+    'cal.detalle':       'Detalle del mes',
+    'cal.no_turnos':     'No hay turnos asignados este mes',
+    'cal.ical_ok':       '📅 iCal exportado',
+    'cal.ical_sin':      'No hay turnos en',
+    'cal.ical_sin2':     'para exportar.',
+    // Tipos turno
+    'tur.manana':        'Mañana',
+    'tur.tarde':         'Tarde',
+    'tur.noche':         'Noche',
+    'tur.guardia':       'Guardia',
+    'tur.libre':         'Libre',
+    'tur.turno':         'Turno',
+    // Admin general
+    'adm.eyebrow':       'Administración',
+    'adm.titulo':        'Panel de control',
+    'adm.sub':           'Gestión de empleados y documentos',
+    // Tabs admin
+    'tab.dashboard':     '📊 Dashboard',
+    'tab.empleados':     'Empleados',
+    'tab.subir':         'Subir documento',
+    'tab.masivo':        'Subida masiva ZIP',
+    'tab.solicitudes':   'Solicitudes',
+    'tab.turnos':        'Turnos',
+    'tab.importar':      'Importar Excel',
+    'tab.vacaciones':    'Vacaciones',
+    'tab.resumen':       '📋 Resumen vacacional',
+    'tab.docs':          '📂 Documentos',
+    // Dashboard
+    'dash.sin_firmar':   'Sin firmar cuadrante',
+    'dash.solicitudes':  'Solicitudes pendientes',
+    'dash.actualizar':   '↺ Actualizar',
+    'dash.emp_activos':  'Empleados activos',
+    'dash.plantilla':    'En plantilla',
+    'dash.sol_pend':     'Solicitudes pendientes',
+    'dash.revision':     'Requieren revisión',
+    'dash.vac_pend':     'Vacaciones pendientes',
+    'dash.cuad_firm':    'Cuadrantes firmados',
+    'dash.todos_firm':   '✓ Todos han firmado su cuadrante',
+    'dash.sin_sol':      '✓ Sin solicitudes pendientes',
+    'dash.gestionar':    'Gestionar →',
+    // Empleados admin
+    'emp.titulo':        'Empleados registrados',
+    'emp.exportar':      '⬇ Exportar Excel',
+    'emp.anadir':        '+ Añadir empleado',
+    'emp.buscar_ph':     'Buscar por nombre, email o DNI…',
+    'emp.f_todos':       'Todos',
+    'emp.f_vig':         'Vigilantes',
+    'emp.f_aux':         'Auxiliares',
+    'emp.f_coo':         'Coordinadores',
+    'emp.f_adm':         'Administrativos',
+    'emp.nuevo':         'Nuevo empleado',
+    'emp.nombre':        'Nombre completo',
+    'emp.nombre_ph':     'Carlos Martínez López',
+    'emp.email':         'Email corporativo',
+    'emp.email_ph':      'cmartinez@enerpro.com',
+    'emp.dni':           'DNI',
+    'emp.dni_ph':        '12345678A',
+    'emp.cargo':         'Cargo',
+    'emp.pass_ini':      'Contraseña inicial',
+    'emp.pass_ph':       'Mínimo 6 caracteres',
+    'emp.btn_crear':     'Crear empleado',
+    'emp.btn_cancel':    'Cancelar',
+    'emp.activo':        'Activo',
+    'emp.inactivo':      'Inactivo',
+    'emp.editar':        '✏ Editar',
+    'emp.ok':            '✓ Empleado creado correctamente.',
+    'emp.c_vig':         'Vigilante de seguridad',
+    'emp.c_aux':         'Auxiliar de servicio',
+    'emp.c_coo':         'Coordinador',
+    'emp.c_adm':         'Administrativo',
+    // Editar empleado
+    'edit.eyebrow':      'Administración',
+    'edit.titulo':       'Editar empleado',
+    'edit.nombre':       'Nombre completo',
+    'edit.email':        'Email corporativo',
+    'edit.email_ph':     'email@enerpro.com',
+    'edit.dni':          'DNI',
+    'edit.cargo':        'Cargo',
+    'edit.dias':         'Días vacaciones / año',
+    'edit.estado':       'Estado',
+    'edit.activo':       'Activo',
+    'edit.inactivo':     'Inactivo / Baja',
+    'edit.acceso':       'Acceso al portal',
+    'edit.reset_btn':    '🔄 Forzar cambio de contraseña en próximo acceso',
+    'edit.guardar':      'Guardar cambios',
+    'edit.cancelar':     'Cancelar',
+    'edit.guardando':    'Guardando…',
+    'edit.ok':           '✓ Datos actualizados correctamente.',
+    'edit.reset_ok':     '✓ Al próximo inicio de sesión se le pedirá cambiar su contraseña.',
+    // Subir doc
+    'sub.titulo':        'Subir documento a empleado',
+    'sub.empleado':      'Empleado',
+    'sub.empleado_ph':   'Selecciona empleado...',
+    'sub.tipo':          'Tipo de documento',
+    'sub.nombre':        'Nombre del documento',
+    'sub.nombre_ph':     'Ej: Nómina Mayo 2026',
+    'sub.archivo':       'Archivo PDF',
+    'sub.btn':           'Subir documento',
+    'sub.ok':            '✓ Documento subido y asignado correctamente.',
+    // Tipos doc
+    'tdoc.nomina':       'Nómina',
+    'tdoc.cuadrante':    'Cuadrante',
+    'tdoc.contrato':     'Contrato',
+    'tdoc.protocolo':    'Protocolo de seguridad',
+    'tdoc.otro':         'Otro',
+    // Subida masiva
+    'masi.titulo':       'Subida masiva por ZIP',
+    'masi.tipo':         'Tipo de documento',
+    'masi.nombre':       'Nombre base del documento',
+    'masi.nombre_ph':    'Ej: Nómina Mayo 2026',
+    'masi.archivo':      'Archivo ZIP',
+    'masi.btn':          'Procesar y subir ZIP',
+    'masi.proc':         'Procesando...',
+    // Solicitudes admin
+    'sa.titulo':         'Solicitudes de empleados',
+    'sa.exportar':       '⬇ Exportar Excel',
+    'sa.actualizar':     'Actualizar',
+    'sa.empty':          'No hay solicitudes',
+    'sa.aprobar':        'Aprobar',
+    'sa.rechazar':       'Rechazar',
+    'sa.aprobar_c':      '✓ Aprobar',
+    'sa.rechazar_c':     '✕ Rechazar',
+    'sa.cmt_ph':         'Comentario para el empleado (opcional)...',
+    'sa.cancelar':       'Cancelar',
+    // Turnos admin
+    'ta.titulo':         'Asignar turno',
+    'ta.empleado':       'Empleado',
+    'ta.empleado_ph':    'Selecciona empleado...',
+    'ta.fecha':          'Fecha',
+    'ta.tipo':           'Tipo de turno',
+    'ta.inicio':         'Hora inicio',
+    'ta.fin':            'Hora fin',
+    'ta.ubic':           'Ubicación (opcional)',
+    'ta.ubic_ph':        'Ej: Centro Comercial Norte',
+    'ta.notas':          'Notas (opcional)',
+    'ta.notas_ph':       'Indicaciones especiales...',
+    'ta.btn':            'Guardar turno',
+    'ta.proximos':       'Próximos turnos',
+    'ta.actualizar':     '↺ Actualizar',
+    'ta.ok':             '✓ Turno asignado correctamente.',
+    'ta.empty':          'No hay turnos próximos',
+    // Masiva
+    'am.titulo':         'Asignación masiva de turnos',
+    'am.tab_fecha':      '📅 Rango de fechas',
+    'am.tab_emp':        '👥 Varios empleados',
+    'am.desde':          'Desde',
+    'am.hasta':          'Hasta',
+    'am.inicio':         'Hora inicio',
+    'am.fin':            'Hora fin',
+    'am.ubic_ph':        'Ej: Centro Comercial Norte',
+    'am.excl':           'Excluir sábados y domingos',
+    'am.btn_fecha':      'Crear turnos en el rango',
+    'am.fecha':          'Fecha',
+    'am.emp_label':      'Empleados',
+    'am.sel_todos':      'Seleccionar todos',
+    'am.desel_todos':    'Deseleccionar todos',
+    'am.btn_emp':        'Crear turnos para seleccionados',
+    // Vacaciones admin
+    'va.titulo':         'Solicitudes de vacaciones',
+    'va.exportar':       '⬇ Exportar Excel',
+    'va.actualizar':     '↺ Actualizar',
+    'va.f_pend':         'Pendientes',
+    'va.f_apr':          'Aprobadas',
+    'va.f_rech':         'Rechazadas',
+    'va.f_can':          'Canceladas',
+    'va.f_todas':        'Todas',
+    'va.aprobar':        'Aprobar',
+    'va.rechazar':       'Rechazar',
+    'va.aprobar_c':      '✓ Aprobar',
+    'va.rechazar_c':     '✕ Rechazar',
+    'va.cmt_ph':         'Comentario para el empleado (opcional)...',
+    'va.cancelar':       'Cancelar',
+    'va.empty':          'Sin solicitudes de vacaciones',
+    // Resumen vacacional
+    'rv.titulo':         'Resumen vacacional',
+    'rv.c_todos':        'Todos los cargos',
+    'rv.c_vig':          'Vigilantes',
+    'rv.c_aux':          'Auxiliares',
+    'rv.c_coo':          'Coordinadores',
+    'rv.c_adm':          'Administrativos',
+    'rv.exportar':       '⬇ Exportar Excel',
+    'rv.actualizar':     '↺ Actualizar',
+    'rv.col_emp':        'Empleado',
+    'rv.col_anual':      'Días anuales',
+    'rv.col_usados':     'Usados',
+    'rv.col_rest':       'Restantes',
+    'rv.no_emp':         'No hay empleados activos',
+    'rv.chart':          'Días de vacaciones aprobadas por mes · ',
+    // Docs admin
+    'da.titulo':         'Todos los documentos',
+    'da.emp_ph':         'Todos los empleados',
+    'da.tipo_ph':        'Todos los tipos',
+    'da.firm_ph':        'Firmados y sin firmar',
+    'da.firm_si':        'Firmados',
+    'da.firm_no':        'Sin firmar',
+    'da.actualizar':     '↺ Actualizar',
+    'da.ver':            '👁 Ver',
+    'da.empty':          'Sin documentos con los filtros seleccionados',
+    'da.badge_firm':     '✓ Firmado',
+    'da.badge_nofirm':   'Sin firmar',
+    // Importar
+    'imp.titulo':        'Importar desde Excel',
+    'imp.archivo':       'Archivo Excel (.xlsx)',
+    'imp.plantilla':     '⬇ Descargar plantilla',
+    'imp.preview':       'Vista previa',
+    'imp.btn':           'Importar todos',
+    'imp.importando':    'Importando',
+    // Demo
+    'demo.titulo':       'Datos de demostración',
+    'demo.btn_ins':      'Insertar empleados demo',
+    'demo.btn_bor':      'Borrar empleados demo',
+    // PDF modal
+    'pdf.nueva':         '↗ Nueva pestaña',
+    'pdf.cerrar':        '✕ Cerrar',
+    // Toasts
+    'toast.doc_nuevo':   'Nuevo documento recibido',
+    'toast.firma_ok':    '✍ Lectura confirmada',
+    'toast.sol_cancel':  '✓ Solicitud cancelada',
+    'toast.sol_cancel_msg':'La solicitud ha sido cancelada.',
+    'toast.vac_cancel':  '✓ Vacaciones canceladas',
+    'toast.vac_cancel_msg':'La solicitud ha sido cancelada.',
+    'toast.doc_elim':    '🗑 Documento eliminado',
+    'toast.doc_elim_msg':'El documento ha sido eliminado correctamente.',
+    'toast.pass_ok':     '🔑 Contraseña actualizada',
+    'toast.pass_ok_msg': 'Tu contraseña ha sido cambiada correctamente.',
+    'toast.sin_datos':   'ℹ️ Sin datos',
+    'toast.no_emp':      'No hay empleados para exportar.',
+    'toast.no_sol':      'No hay solicitudes para exportar.',
+    'toast.no_vac_exp':  'No hay solicitudes de vacaciones para exportar.',
+    // Estados
+    'est.pendiente':     'pendiente',
+    'est.aprobada':      'aprobada',
+    'est.rechazada':     'rechazada',
+    'est.cancelada':     'cancelada',
+    // Genérico
+    'g.cargando':        'Cargando...',
+    'g.cancelar':        'Cancelar',
+    'g.dias':            'días',
+    'g.dia':             'día',
+    // Idioma
+    'lang.label':        '🌐 Idioma',
+  },
+  ca: {
+    meses:   ['Gener','Febrer','Març','Abril','Maig','Juny','Juliol','Agost','Setembre','Octubre','Novembre','Desembre'],
+    meses_c: ['Gen','Feb','Mar','Abr','Mai','Jun','Jul','Ago','Set','Oct','Nov','Des'],
+    // Login
+    'login.subtitulo':   "Portal de l'Empleat · Accés Privat",
+    'login.email':       'Correu corporatiu',
+    'login.email_ph':    'usuari@enerpro.com',
+    'login.pass':        'Contrasenya',
+    'login.pass_ph':     '••••••••',
+    'login.btn':         'Accedir al portal',
+    'login.accediendo':  'Accedint...',
+    'login.error':       'Credencials incorrectes. Torna-ho a intentar.',
+    // Cambio pass obligatorio
+    'cp.titulo':         'Nova contrasenya',
+    'cp.sub':            "Per seguretat, has d'establir una contrasenya pròpia abans d'accedir al portal.",
+    'cp.nueva':          'Nova contrasenya',
+    'cp.nueva_ph':       'Mínim 8 caràcters',
+    'cp.confirma':       'Confirmar contrasenya',
+    'cp.confirma_ph':    'Repeteix la contrasenya',
+    'cp.btn':            'Canviar contrasenya i accedir',
+    'cp.guardando':      'Desant...',
+    'cp.ok':             '✓ Contrasenya actualitzada',
+    'cp.err_corta':      'La contrasenya ha de tenir almenys 8 caràcters.',
+    'cp.err_match':      'Les contrasenyes no coincideixen.',
+    // Cambio pass perfil
+    'cpp.eyebrow':       'El meu perfil',
+    'cpp.titulo':        'Canviar contrasenya',
+    'cpp.btn':           'Actualitzar contrasenya',
+    'cpp.guardando':     'Desant...',
+    'cpp.ok':            '✓ Contrasenya actualitzada correctament.',
+    // Sidebar
+    'sidebar.portal':    "Portal de l'Empleat",
+    'sidebar.admin_rol': 'Administrador',
+    'sidebar.emp_rol':   'Empleat',
+    'nav.principal':     'Principal',
+    'nav.miarea':        'La meva àrea',
+    'nav.inicio':        'Inici',
+    'nav.documentos':    'Els meus documents',
+    'nav.solicitudes':   'Sol·licituds',
+    'nav.calendario':    'Els meus torns',
+    'nav.vacaciones':    'Vacances',
+    'nav.admin':         'Administració',
+    'sidebar.logout':    'Tancar sessió',
+    'sidebar.pass':      '🔑 Canviar contrasenya',
+    'sidebar.salir':     'Sortir',
+    // Bottom nav
+    'bnav.inicio':       'Inici',
+    'bnav.documentos':   'Documents',
+    'bnav.solicitudes':  'Sol·licituds',
+    'bnav.vacaciones':   'Vac.',
+    'bnav.calendario':   'Torns',
+    'bnav.admin':        'Admin',
+    // Inicio
+    'ini.eyebrow':       'Tauler principal',
+    'ini.bienvenido':    'Benvingut',
+    'ini.empleado':      'empleat',
+    'ini.stat_docs':     'Documents disponibles',
+    'ini.stat_docs_sub': 'Nòmines i quadrants',
+    'ini.stat_unread':   'Sense llegir',
+    'ini.stat_unread_sub':'Documents nous',
+    'ini.stat_estado':   'Estat',
+    'ini.stat_estado_sub':'Servei en curs',
+    'ini.cuadrante':     'El meu quadrant del mes',
+    'ini.ultimos':       'Últims documents',
+    'ini.cargando':      'Carregant...',
+    // Documentos
+    'doc.eyebrow':       'La meva àrea',
+    'doc.titulo':        'Els meus documents',
+    'doc.sub':           'Nòmines, quadrants i documentació personal',
+    'doc.todos':         'Tots',
+    'doc.nominas':       'Nòmines',
+    'doc.cuadrantes':    'Quadrants',
+    'doc.contratos':     'Contractes',
+    'doc.ver':           '👁 Veure',
+    'doc.descargar':     '⬇ Baixar',
+    'doc.firmar':        '✍ Signar',
+    'doc.ver_cuad':      '👁 Veure quadrant',
+    'doc.confirmar':     '✍ Confirmar lectura',
+    'doc.firmado':       '✓ Signat',
+    'doc.nuevo':         'Nou',
+    'doc.cuad_sub':      'Quadrant de servei',
+    'doc.no_cuad':       'No hi ha quadrant disponible.',
+    'doc.empty':         'No hi ha documents disponibles',
+    'doc.cargando':      'Carregant documents...',
+    // Solicitudes empleado
+    'sol.eyebrow':       'Bústia',
+    'sol.titulo':        'Sol·licituds',
+    'sol.sub':           'Envia una sol·licitud al coordinador',
+    'sol.tipo':          'Tipus de sol·licitud',
+    'sol.t_vac':         'Sol·licitud de vacances',
+    'sol.t_perm':        'Sol·licitud de permís',
+    'sol.t_turno':       'Canvi de torn',
+    'sol.t_baja':        'Baixa mèdica',
+    'sol.t_consulta':    'Consulta general',
+    'sol.fechas':        'Dates (si escau)',
+    'sol.fechas_ph':     'Ex: 15 al 20 de juny',
+    'sol.desc':          'Descripció',
+    'sol.desc_ph':       'Descriu la teva sol·licitud...',
+    'sol.btn':           'Enviar sol·licitud',
+    'sol.ok':            '✓ Sol·licitud enviada. El coordinador la revisarà en breu.',
+    'sol.mis':           'Les meves sol·licituds',
+    'sol.empty':         'Encara no has enviat sol·licituds',
+    'sol.cancelar':      '✕ Cancel·lar',
+    'sol.cancelar_ok':   '✓ Sol·licitud cancel·lada',
+    'sol.cancelar_msg':  'La sol·licitud ha estat cancel·lada.',
+    'sol.ts_vac':        'Vacances',
+    'sol.ts_perm':       'Permís',
+    'sol.ts_turno':      'Canvi torn',
+    'sol.ts_baja':       'Baixa mèdica',
+    'sol.ts_consulta':   'Consulta',
+    // Vacaciones empleado
+    'vac.eyebrow':       'La meva àrea',
+    'vac.titulo':        'Vacances i permisos',
+    'vac.sub':           "Sol·licita dies lliures i consulta l'estat de les teves peticions",
+    'vac.dias_anual':    'Dies anuals',
+    'vac.ano':           'Any',
+    'vac.usados':        'Dies usats',
+    'vac.usados_sub':    'Vacances aprovades',
+    'vac.restantes':     'Dies restants',
+    'vac.restantes_sub': 'Disponibles',
+    'vac.nueva':         'Nova sol·licitud',
+    'vac.tipo':          'Tipus',
+    'vac.t_vac':         'Vacances',
+    'vac.t_perm':        'Permís personal',
+    'vac.t_asuntos':     'Assumptes propis',
+    'vac.t_baja':        'Baixa mèdica',
+    'vac.desde':         'Des de',
+    'vac.hasta':         'Fins a',
+    'vac.notas':         'Notes (opcional)',
+    'vac.notas_ph':      'Motiu o indicacions...',
+    'vac.dias_sol':      'Dies sol·licitats: ',
+    'vac.btn':           'Enviar sol·licitud',
+    'vac.mis':           'Les meves sol·licituds',
+    'vac.empty':         'No tens sol·licituds de vacances',
+    'vac.cancelar_ok':   '✓ Vacances cancel·lades',
+    'vac.cancelar_msg':  'La sol·licitud ha estat cancel·lada.',
+    'vac.l_vac':         'Vacances',
+    'vac.l_perm':        'Permís',
+    'vac.l_asuntos':     'Assumptes propis',
+    'vac.l_baja':        'Baixa mèdica',
+    // Calendario
+    'cal.eyebrow':       'La meva àrea',
+    'cal.titulo':        'Els meus torns',
+    'cal.sub':           'Calendari de torns assignats',
+    'cal.ical':          'Exportar iCal',
+    'cal.detalle':       'Detall del mes',
+    'cal.no_turnos':     'No hi ha torns assignats aquest mes',
+    'cal.ical_ok':       '📅 iCal exportat',
+    'cal.ical_sin':      'No hi ha torns a',
+    'cal.ical_sin2':     'per exportar.',
+    // Tipos turno
+    'tur.manana':        'Matí',
+    'tur.tarde':         'Tarda',
+    'tur.noche':         'Nit',
+    'tur.guardia':       'Guàrdia',
+    'tur.libre':         'Lliure',
+    'tur.turno':         'Torn',
+    // Admin general
+    'adm.eyebrow':       'Administració',
+    'adm.titulo':        'Tauler de control',
+    'adm.sub':           "Gestió d'empleats i documents",
+    // Tabs admin
+    'tab.dashboard':     '📊 Dashboard',
+    'tab.empleados':     'Empleats',
+    'tab.subir':         'Pujar document',
+    'tab.masivo':        'Pujada massiva ZIP',
+    'tab.solicitudes':   'Sol·licituds',
+    'tab.turnos':        'Torns',
+    'tab.importar':      'Importar Excel',
+    'tab.vacaciones':    'Vacances',
+    'tab.resumen':       '📋 Resum vacacional',
+    'tab.docs':          '📂 Documents',
+    // Dashboard
+    'dash.sin_firmar':   'Sense signar quadrant',
+    'dash.solicitudes':  'Sol·licituds pendents',
+    'dash.actualizar':   '↺ Actualitzar',
+    'dash.emp_activos':  'Empleats actius',
+    'dash.plantilla':    'En plantilla',
+    'dash.sol_pend':     'Sol·licituds pendents',
+    'dash.revision':     'Requereixen revisió',
+    'dash.vac_pend':     'Vacances pendents',
+    'dash.cuad_firm':    'Quadrants signats',
+    'dash.todos_firm':   '✓ Tots han signat el seu quadrant',
+    'dash.sin_sol':      '✓ Sense sol·licituds pendents',
+    'dash.gestionar':    'Gestionar →',
+    // Empleados admin
+    'emp.titulo':        'Empleats registrats',
+    'emp.exportar':      '⬇ Exportar Excel',
+    'emp.anadir':        '+ Afegir empleat',
+    'emp.buscar_ph':     'Cercar per nom, correu o DNI…',
+    'emp.f_todos':       'Tots',
+    'emp.f_vig':         'Vigilants',
+    'emp.f_aux':         'Auxiliars',
+    'emp.f_coo':         'Coordinadors',
+    'emp.f_adm':         'Administratius',
+    'emp.nuevo':         'Nou empleat',
+    'emp.nombre':        'Nom complet',
+    'emp.nombre_ph':     'Carles Martínez López',
+    'emp.email':         'Correu corporatiu',
+    'emp.email_ph':      'cmartinez@enerpro.com',
+    'emp.dni':           'DNI',
+    'emp.dni_ph':        '12345678A',
+    'emp.cargo':         'Càrrec',
+    'emp.pass_ini':      'Contrasenya inicial',
+    'emp.pass_ph':       'Mínim 6 caràcters',
+    'emp.btn_crear':     'Crear empleat',
+    'emp.btn_cancel':    'Cancel·lar',
+    'emp.activo':        'Actiu',
+    'emp.inactivo':      'Inactiu',
+    'emp.editar':        '✏ Editar',
+    'emp.ok':            '✓ Empleat creat correctament.',
+    'emp.c_vig':         'Vigilant de seguretat',
+    'emp.c_aux':         'Auxiliar de servei',
+    'emp.c_coo':         'Coordinador',
+    'emp.c_adm':         'Administratiu',
+    // Editar empleado
+    'edit.eyebrow':      'Administració',
+    'edit.titulo':       'Editar empleat',
+    'edit.nombre':       'Nom complet',
+    'edit.email':        'Correu corporatiu',
+    'edit.email_ph':     'email@enerpro.com',
+    'edit.dni':          'DNI',
+    'edit.cargo':        'Càrrec',
+    'edit.dias':         'Dies vacances / any',
+    'edit.estado':       'Estat',
+    'edit.activo':       'Actiu',
+    'edit.inactivo':     'Inactiu / Baixa',
+    'edit.acceso':       "Accés al portal",
+    'edit.reset_btn':    '🔄 Forçar canvi de contrasenya en el proper accés',
+    'edit.guardar':      'Desar canvis',
+    'edit.cancelar':     'Cancel·lar',
+    'edit.guardando':    'Desant…',
+    'edit.ok':           '✓ Dades actualitzades correctament.',
+    'edit.reset_ok':     '✓ En el proper inici de sessió se li demanarà canviar la contrasenya.',
+    // Subir doc
+    'sub.titulo':        "Pujar document a empleat",
+    'sub.empleado':      'Empleat',
+    'sub.empleado_ph':   'Selecciona empleat...',
+    'sub.tipo':          'Tipus de document',
+    'sub.nombre':        'Nom del document',
+    'sub.nombre_ph':     'Ex: Nòmina Maig 2026',
+    'sub.archivo':       'Fitxer PDF',
+    'sub.btn':           'Pujar document',
+    'sub.ok':            '✓ Document pujat i assignat correctament.',
+    // Tipos doc
+    'tdoc.nomina':       'Nòmina',
+    'tdoc.cuadrante':    'Quadrant',
+    'tdoc.contrato':     'Contracte',
+    'tdoc.protocolo':    'Protocol de seguretat',
+    'tdoc.otro':         'Altre',
+    // Subida masiva
+    'masi.titulo':       'Pujada massiva per ZIP',
+    'masi.tipo':         'Tipus de document',
+    'masi.nombre':       'Nom base del document',
+    'masi.nombre_ph':    'Ex: Nòmina Maig 2026',
+    'masi.archivo':      'Fitxer ZIP',
+    'masi.btn':          'Processar i pujar ZIP',
+    'masi.proc':         'Processant...',
+    // Solicitudes admin
+    'sa.titulo':         "Sol·licituds d'empleats",
+    'sa.exportar':       '⬇ Exportar Excel',
+    'sa.actualizar':     'Actualitzar',
+    'sa.empty':          'No hi ha sol·licituds',
+    'sa.aprobar':        'Aprovar',
+    'sa.rechazar':       'Rebutjar',
+    'sa.aprobar_c':      '✓ Aprovar',
+    'sa.rechazar_c':     '✕ Rebutjar',
+    'sa.cmt_ph':         "Comentari per a l'empleat (opcional)...",
+    'sa.cancelar':       'Cancel·lar',
+    // Turnos admin
+    'ta.titulo':         'Assignar torn',
+    'ta.empleado':       'Empleat',
+    'ta.empleado_ph':    'Selecciona empleat...',
+    'ta.fecha':          'Data',
+    'ta.tipo':           'Tipus de torn',
+    'ta.inicio':         'Hora inici',
+    'ta.fin':            'Hora fi',
+    'ta.ubic':           'Ubicació (opcional)',
+    'ta.ubic_ph':        'Ex: Centre Comercial Nord',
+    'ta.notas':          'Notes (opcional)',
+    'ta.notas_ph':       'Indicacions especials...',
+    'ta.btn':            'Desar torn',
+    'ta.proximos':       'Propers torns',
+    'ta.actualizar':     '↺ Actualitzar',
+    'ta.ok':             '✓ Torn assignat correctament.',
+    'ta.empty':          'No hi ha torns propers',
+    // Masiva
+    'am.titulo':         'Assignació massiva de torns',
+    'am.tab_fecha':      '📅 Rang de dates',
+    'am.tab_emp':        '👥 Diversos empleats',
+    'am.desde':          'Des de',
+    'am.hasta':          'Fins a',
+    'am.inicio':         'Hora inici',
+    'am.fin':            'Hora fi',
+    'am.ubic_ph':        'Ex: Centre Comercial Nord',
+    'am.excl':           'Excloure dissabtes i diumenges',
+    'am.btn_fecha':      'Crear torns en el rang',
+    'am.fecha':          'Data',
+    'am.emp_label':      'Empleats',
+    'am.sel_todos':      'Seleccionar tots',
+    'am.desel_todos':    'Deseleccionar tots',
+    'am.btn_emp':        'Crear torns per als seleccionats',
+    // Vacaciones admin
+    'va.titulo':         'Sol·licituds de vacances',
+    'va.exportar':       '⬇ Exportar Excel',
+    'va.actualizar':     '↺ Actualitzar',
+    'va.f_pend':         'Pendents',
+    'va.f_apr':          'Aprovades',
+    'va.f_rech':         'Rebutjades',
+    'va.f_can':          'Cancel·lades',
+    'va.f_todas':        'Totes',
+    'va.aprobar':        'Aprovar',
+    'va.rechazar':       'Rebutjar',
+    'va.aprobar_c':      '✓ Aprovar',
+    'va.rechazar_c':     '✕ Rebutjar',
+    'va.cmt_ph':         "Comentari per a l'empleat (opcional)...",
+    'va.cancelar':       'Cancel·lar',
+    'va.empty':          'Sense sol·licituds de vacances',
+    // Resumen vacacional
+    'rv.titulo':         'Resum vacacional',
+    'rv.c_todos':        'Tots els càrrecs',
+    'rv.c_vig':          'Vigilants',
+    'rv.c_aux':          'Auxiliars',
+    'rv.c_coo':          'Coordinadors',
+    'rv.c_adm':          'Administratius',
+    'rv.exportar':       '⬇ Exportar Excel',
+    'rv.actualizar':     '↺ Actualitzar',
+    'rv.col_emp':        'Empleat',
+    'rv.col_anual':      'Dies anuals',
+    'rv.col_usados':     'Usats',
+    'rv.col_rest':       'Restants',
+    'rv.no_emp':         'No hi ha empleats actius',
+    'rv.chart':          'Dies de vacances aprovades per mes · ',
+    // Docs admin
+    'da.titulo':         'Tots els documents',
+    'da.emp_ph':         'Tots els empleats',
+    'da.tipo_ph':        'Tots els tipus',
+    'da.firm_ph':        'Signats i sense signar',
+    'da.firm_si':        'Signats',
+    'da.firm_no':        'Sense signar',
+    'da.actualizar':     '↺ Actualitzar',
+    'da.ver':            '👁 Veure',
+    'da.empty':          'Sense documents amb els filtres seleccionats',
+    'da.badge_firm':     '✓ Signat',
+    'da.badge_nofirm':   'Sense signar',
+    // Importar
+    'imp.titulo':        "Importar des d'Excel",
+    'imp.archivo':       'Fitxer Excel (.xlsx)',
+    'imp.plantilla':     '⬇ Baixar plantilla',
+    'imp.preview':       'Vista prèvia',
+    'imp.btn':           'Importar tots',
+    'imp.importando':    'Important',
+    // Demo
+    'demo.titulo':       'Dades de demostració',
+    'demo.btn_ins':      'Inserir empleats demo',
+    'demo.btn_bor':      'Esborrar empleats demo',
+    // PDF modal
+    'pdf.nueva':         '↗ Pestanya nova',
+    'pdf.cerrar':        '✕ Tancar',
+    // Toasts
+    'toast.doc_nuevo':   'Nou document rebut',
+    'toast.firma_ok':    '✍ Lectura confirmada',
+    'toast.sol_cancel':  '✓ Sol·licitud cancel·lada',
+    'toast.sol_cancel_msg':"La sol·licitud ha estat cancel·lada.",
+    'toast.vac_cancel':  '✓ Vacances cancel·lades',
+    'toast.vac_cancel_msg':"La sol·licitud ha estat cancel·lada.",
+    'toast.doc_elim':    '🗑 Document eliminat',
+    'toast.doc_elim_msg':'El document ha estat eliminat correctament.',
+    'toast.pass_ok':     '🔑 Contrasenya actualitzada',
+    'toast.pass_ok_msg': 'La teva contrasenya ha estat canviada correctament.',
+    'toast.sin_datos':   'ℹ️ Sense dades',
+    'toast.no_emp':      'No hi ha empleats per exportar.',
+    'toast.no_sol':      'No hi ha sol·licituds per exportar.',
+    'toast.no_vac_exp':  'No hi ha sol·licituds de vacances per exportar.',
+    // Estados
+    'est.pendiente':     'pendent',
+    'est.aprobada':      'aprovada',
+    'est.rechazada':     'rebutjada',
+    'est.cancelada':     'cancel·lada',
+    // Genérico
+    'g.cargando':        'Carregant...',
+    'g.cancelar':        'Cancel·lar',
+    'g.dias':            'dies',
+    'g.dia':             'dia',
+    // Idioma
+    'lang.label':        '🌐 Idioma',
+  }
+};
+
+function t(key) {
+  return (I18N[_lang] && I18N[_lang][key]) || (I18N.es && I18N.es[key]) || key;
+}
+function getMes(i)      { return (I18N[_lang].meses   || I18N.es.meses)[i];   }
+function getMesCorto(i) { return (I18N[_lang].meses_c || I18N.es.meses_c)[i]; }
+
+function getTipoTurno(tipo) {
+  var m = { manana:t('tur.manana'), tarde:t('tur.tarde'), noche:t('tur.noche'),
+            guardia:t('tur.guardia'), libre:t('tur.libre'), turno:t('tur.turno') };
+  return m[tipo] || tipo;
+}
+function getTipoVac(tipo) {
+  var m = { vacaciones:t('vac.l_vac'), permiso:t('vac.l_perm'),
+            asuntos_propios:t('vac.l_asuntos'), baja_medica:t('vac.l_baja') };
+  return m[tipo] || tipo;
+}
+function getSolTipoShort(tipo) {
+  var m = {
+    'Solicitud de vacaciones':t('sol.ts_vac'),  'Solicitud de permiso':t('sol.ts_perm'),
+    'Cambio de turno':t('sol.ts_turno'),         'Baja médica':t('sol.ts_baja'),
+    'Consulta general':t('sol.ts_consulta')
+  };
+  return m[tipo] || tipo;
+}
+function getEstadoBadge(estado) {
+  var cls = estado === 'aprobada' ? 'badge-green' : estado === 'rechazada' ? 'badge-red'
+          : estado === 'cancelada' ? 'badge-grey' : 'badge-yellow';
+  return { cls: cls, lbl: t('est.' + estado) || estado };
+}
+
+function cambiarIdioma(lang) {
+  if (lang === _lang) return;
+  _lang = lang;
+  localStorage.setItem('enerpro_lang', lang);
+  aplicarIdioma();
+}
+
+function aplicarIdioma() {
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') return;
+    el.textContent = t(el.getAttribute('data-i18n'));
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el) {
+    el.placeholder = t(el.getAttribute('data-i18n-ph'));
+  });
+  document.documentElement.lang = _lang;
+  // Resaltar botón de idioma activo
+  var btnEs = document.getElementById('langBtnEs');
+  var btnCa = document.getElementById('langBtnCa');
+  if (btnEs) btnEs.classList.toggle('primary', _lang === 'es');
+  if (btnCa) btnCa.classList.toggle('primary', _lang === 'ca');
+  var mobileToggle = document.getElementById('langToggleMobile');
+  if (mobileToggle) mobileToggle.textContent = _lang.toUpperCase();
+  // Re-renderizar contenido dinámico si el usuario está logueado
+  if (!currentUser) return;
+  var ap = document.querySelector('.page.active');
+  if (!ap) return;
+  var pid = ap.id;
+  if (pid === 'page-inicio' || pid === 'page-documentos') cargarDocumentos();
+  if (pid === 'page-solicitudes') cargarMisSolicitudes();
+  if (pid === 'page-vacaciones') cargarVacaciones();
+  if (pid === 'page-calendario') cargarCalendario();
+  if (pid === 'page-admin') {
+    if (currentAdminTab === 'dashboard')         cargarDashboard();
+    else if (currentAdminTab === 'empleados')    aplicarFiltrosEmpleados();
+    else if (currentAdminTab === 'solicitudes-admin') cargarSolicitudesAdmin();
+    else if (currentAdminTab === 'vacaciones-admin')  cargarVacacionesAdmin();
+    else if (currentAdminTab === 'turnos-admin') cargarTurnosAdmin();
+    else if (currentAdminTab === 'resumen-vac')  cargarResumenVacaciones();
+    else if (currentAdminTab === 'docs-admin')   cargarDocumentosAdmin();
+  }
+  var wmEl = document.getElementById('welcomeMsg');
+  if (wmEl && currentEmpleado) {
+    wmEl.textContent = t('ini.bienvenido') + ', ' + currentEmpleado.nombre.split(' ')[0];
+  }
+}
 
 // ─── UI HELPERS ──────────────────────────────────────────
 
@@ -111,9 +970,9 @@ async function doLogin() {
   var err   = document.getElementById('loginError');
   err.style.display = 'none';
   var btn = document.getElementById('btnLogin');
-  btn.textContent = 'Accediendo...'; btn.disabled = true;
+  btn.textContent = t('login.accediendo'); btn.disabled = true;
   var { data, error } = await sb.auth.signInWithPassword({ email: email, password: pass });
-  btn.textContent = 'Acceder al portal'; btn.disabled = false;
+  btn.textContent = t('login.btn'); btn.disabled = false;
   if (error) { err.style.display = 'block'; return; }
   currentUser = data.user;
   var { data: emp } = await sb.from('empleados').select('*').eq('email', email).single();
@@ -140,13 +999,13 @@ function iniciarApp() {
   document.getElementById('userAvatar').textContent = emp ? emp.nombre.charAt(0).toUpperCase() : '?';
   var mobileUser = document.getElementById('mobileUserName');
   if (mobileUser) mobileUser.textContent = emp ? emp.nombre.split(' ')[0] : email.split('@')[0];
-  document.getElementById('welcomeMsg').textContent = 'Bienvenido, ' + (emp ? emp.nombre.split(' ')[0] : 'empleado');
+  document.getElementById('welcomeMsg').textContent = t('ini.bienvenido') + ', ' + (emp ? emp.nombre.split(' ')[0] : t('ini.empleado'));
   var mesFmt = new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
   var mesLabel = mesFmt.charAt(0).toUpperCase() + mesFmt.slice(1);
   document.getElementById('welcomeSub').textContent = emp ? emp.cargo + ' · ' + mesLabel : mesLabel;
   if (isAdmin) {
-    document.getElementById('sidebarRole').textContent = 'Administrador';
-    document.getElementById('userRoleLabel').textContent = 'Administrador';
+    document.getElementById('sidebarRole').textContent = t('sidebar.admin_rol');
+    document.getElementById('userRoleLabel').textContent = t('sidebar.admin_rol');
     document.querySelectorAll('.admin-only, .admin-only-mobile').forEach(function(el){ el.style.display='flex'; });
     cargarEmpleados();
     cargarDashboard();
@@ -169,26 +1028,26 @@ async function confirmarCambioPassword() {
   var btn = document.getElementById('cpBtn');
   err.style.display = 'none';
   if (nueva.length < 8) {
-    err.style.display = 'block'; err.textContent = 'La contraseña debe tener al menos 8 caracteres.'; return;
+    err.style.display = 'block'; err.textContent = t('cp.err_corta'); return;
   }
   if (nueva !== confirma) {
-    err.style.display = 'block'; err.textContent = 'Las contraseñas no coinciden.'; return;
+    err.style.display = 'block'; err.textContent = t('cp.err_match'); return;
   }
-  btn.disabled = true; btn.textContent = 'Guardando...';
+  btn.disabled = true; btn.textContent = t('cp.guardando');
   var { error: updErr } = await sb.auth.updateUser({ password: nueva });
   if (updErr) {
     err.style.display = 'block'; err.textContent = 'Error: ' + updErr.message;
-    btn.disabled = false; btn.textContent = 'Cambiar contraseña y acceder';
+    btn.disabled = false; btn.textContent = t('cp.btn');
     return;
   }
   if (currentEmpleado) {
     await sb.from('empleados').update({ debe_cambiar_password: false }).eq('id', currentEmpleado.id);
     currentEmpleado.debe_cambiar_password = false;
   }
-  btn.textContent = '✓ Contraseña actualizada';
+  btn.textContent = t('cp.ok');
   setTimeout(function() {
     btn.disabled = false;
-    btn.textContent = 'Cambiar contraseña y acceder';
+    btn.textContent = t('cp.btn');
     document.getElementById('cpNueva').value = '';
     document.getElementById('cpConfirma').value = '';
     iniciarApp();
@@ -275,24 +1134,24 @@ async function cargarDocumentos() {
       var cFecha = cuadrante.fecha_firma
         ? new Date(cuadrante.fecha_firma).toLocaleDateString('es-ES', { day:'numeric', month:'long', year:'numeric' })
         : '';
-      cFirmaHtml = '<span class="badge badge-green">✓ Firmado' + (cFecha ? ' el ' + cFecha : '') + '</span>';
+      cFirmaHtml = '<span class="badge badge-green">' + t('doc.firmado') + (cFecha ? ' el ' + cFecha : '') + '</span>';
     } else {
-      cFirmaHtml = '<button class="btn-sm gold" onclick="firmarDoc(\'' + cuadrante.id + '\', \'' + cSafeName + '\')">✍ Confirmar lectura</button>';
+      cFirmaHtml = '<button class="btn-sm gold" onclick="firmarDoc(\'' + cuadrante.id + '\', \'' + cSafeName + '\')">' + t('doc.confirmar') + '</button>';
     }
     if (cuadranteDiv) cuadranteDiv.innerHTML =
       '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">' +
       '<div style="display:flex;align-items:center;gap:1rem">' +
       '<div style="width:48px;height:48px;background:var(--red-light);border:1px solid rgba(220,38,38,0.3);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">📅</div>' +
       '<div><div style="font-size:1rem;font-weight:600;color:var(--white)">' + cuadrante.nombre + '</div>' +
-      '<div style="font-size:0.8rem;color:var(--muted);margin-top:2px">' + (cuadrante.fecha||'') + ' · Cuadrante de servicio</div></div></div>' +
+      '<div style="font-size:0.8rem;color:var(--muted);margin-top:2px">' + (cuadrante.fecha||'') + ' · ' + t('doc.cuad_sub') + '</div></div></div>' +
       '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">' +
-      '<button class="btn-sm primary" onclick="verDoc(\'' + cSafeUrl + '\', \'' + cSafeName + '\')">👁 Ver cuadrante</button>' +
-      '<button class="btn-sm" onclick="descargarDoc(\'' + cuadrante.id + '\', \'' + cSafeUrl + '\', \'' + cSafeName + '\')">⬇ Descargar</button>' +
+      '<button class="btn-sm primary" onclick="verDoc(\'' + cSafeUrl + '\', \'' + cSafeName + '\')">' + t('doc.ver_cuad') + '</button>' +
+      '<button class="btn-sm" onclick="descargarDoc(\'' + cuadrante.id + '\', \'' + cSafeUrl + '\', \'' + cSafeName + '\')">' + t('doc.descargar') + '</button>' +
       cFirmaHtml +
       '</div></div>';
   } else {
     if (cuadranteMes) cuadranteMes.style.display = 'none';
-    if (cuadranteDiv) cuadranteDiv.innerHTML = '<div style="color:var(--muted);font-size:0.875rem">No hay cuadrante disponible.</div>';
+    if (cuadranteDiv) cuadranteDiv.innerHTML = '<div style="color:var(--muted);font-size:0.875rem">' + t('doc.no_cuad') + '</div>';
   }
 }
 
@@ -301,7 +1160,7 @@ function renderDocs(docs, containerId, limit) {
   if (!container) return;
   var list = limit ? docs.slice(0, limit) : docs;
   if (!list.length) {
-    container.innerHTML = '<div class="empty"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>No hay documentos disponibles</div>';
+    container.innerHTML = '<div class="empty"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' + t('doc.empty') + '</div>';
     return;
   }
   var delay = 0;
@@ -309,16 +1168,16 @@ function renderDocs(docs, containerId, limit) {
     var icon = doc.tipo === 'nomina' ? '📄' : doc.tipo === 'cuadrante' ? '📅' : doc.tipo === 'contrato' ? '📋' : '📁';
     var safeName = doc.nombre.replace(/'/g, "\\'");
     var safeUrl  = doc.url.replace(/'/g, "\\'");
-    var badgeNuevo  = doc.leido ? '' : '<span class="badge badge-red" style="margin-left:0.5rem">Nuevo</span>';
+    var badgeNuevo  = doc.leido ? '' : '<span class="badge badge-red" style="margin-left:0.5rem">' + t('doc.nuevo') + '</span>';
     var badgeFirma  = '';
     var btnFirma    = '';
     if (doc.firmado) {
       var fFecha = doc.fecha_firma
         ? new Date(doc.fecha_firma).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' })
         : '';
-      badgeFirma = '<span class="badge badge-green" style="margin-left:0.5rem">✓ Firmado' + (fFecha ? ' ' + fFecha : '') + '</span>';
+      badgeFirma = '<span class="badge badge-green" style="margin-left:0.5rem">' + t('doc.firmado') + (fFecha ? ' ' + fFecha : '') + '</span>';
     } else {
-      btnFirma = '<button class="btn-sm gold" onclick="firmarDoc(\'' + doc.id + '\', \'' + safeName + '\')">✍ Firmar</button>';
+      btnFirma = '<button class="btn-sm gold" onclick="firmarDoc(\'' + doc.id + '\', \'' + safeName + '\')">' + t('doc.firmar') + '</button>';
     }
     var d = delay;
     delay += 50;
@@ -327,8 +1186,8 @@ function renderDocs(docs, containerId, limit) {
       '<div><div class="doc-name">' + doc.nombre + badgeNuevo + badgeFirma + '</div>' +
       '<div class="doc-meta">' + (doc.fecha||'') + ' · ' + doc.tipo + '</div></div></div>' +
       '<div>' +
-      '<button class="btn-sm primary" onclick="verDoc(\'' + safeUrl + '\', \'' + safeName + '\')">👁 Ver</button>' +
-      '<button class="btn-sm" onclick="descargarDoc(\'' + doc.id + '\', \'' + safeUrl + '\', \'' + safeName + '\')">⬇ Descargar</button>' +
+      '<button class="btn-sm primary" onclick="verDoc(\'' + safeUrl + '\', \'' + safeName + '\')">' + t('doc.ver') + '</button>' +
+      '<button class="btn-sm" onclick="descargarDoc(\'' + doc.id + '\', \'' + safeUrl + '\', \'' + safeName + '\')">' + t('doc.descargar') + '</button>' +
       btnFirma +
       (currentIsAdmin ? '<button class="btn-sm" style="border-color:#dc2626;color:#dc2626" onclick="eliminarDoc(\'' + doc.id + '\', \'' + safeUrl + '\')">✕</button>' : '') +
       '</div></div>';
@@ -437,25 +1296,18 @@ async function cargarMisSolicitudes() {
     .eq('empleado_id', currentEmpleado.id)
     .order('created_at', { ascending: false });
   if (!data || !data.length) {
-    container.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Aún no has enviado solicitudes</div>';
+    container.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>' + t('sol.empty') + '</div>';
     return;
   }
-  var TIPO_SOL = {
-    'Solicitud de vacaciones':'Vacaciones', 'Solicitud de permiso':'Permiso',
-    'Cambio de turno':'Cambio turno', 'Baja médica':'Baja médica', 'Consulta general':'Consulta'
-  };
   var delay = 0;
   container.innerHTML = data.map(function(s) {
-    var bc = s.estado === 'aprobada' ? 'badge-green'
-           : s.estado === 'rechazada' ? 'badge-red'
-           : s.estado === 'cancelada' ? 'badge-grey'
-           : 'badge-yellow';
+    var eb = getEstadoBadge(s.estado);
     var fecha   = new Date(s.created_at).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' });
-    var tipoLbl = TIPO_SOL[s.tipo] || s.tipo;
+    var tipoLbl = getSolTipoShort(s.tipo);
     var btnCancelar = s.estado === 'pendiente'
       ? '<button class="btn-sm" onclick="cancelarSolicitud(\'' + s.id + '\')" ' +
         'style="margin-left:0.5rem;color:var(--muted);border-color:rgba(255,255,255,0.1);font-size:0.68rem" ' +
-        'title="Cancelar solicitud">✕ Cancelar</button>'
+        'title="Cancelar solicitud">' + t('sol.cancelar') + '</button>'
       : '';
     var d = delay; delay += 50;
     return '<div class="vac-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
@@ -464,7 +1316,7 @@ async function cargarMisSolicitudes() {
         (s.motivo    ? '<br><span style="font-size:0.72rem;color:var(--muted)">'  + s.motivo    + '</span>' : '') +
         (s.comentario ? '<br><span style="font-size:0.72rem;color:var(--gold)">💬 ' + s.comentario + '</span>' : '') + '</span>' +
       '<span class="vac-dias" style="min-width:5.5rem;font-size:0.75rem;color:var(--muted)">' + fecha + '</span>' +
-      '<span class="badge ' + bc + '">' + s.estado + '</span>' +
+      '<span class="badge ' + eb.cls + '">' + eb.lbl + '</span>' +
       btnCancelar +
       '</div>';
   }).join('');
@@ -477,15 +1329,12 @@ async function cargarSolicitudesAdmin() {
   container.innerHTML = skelDocs(4);
   var { data, error } = await sb.from('solicitudes').select('*, empleados(nombre)').order('created_at', { ascending: false });
   if (error || !data || !data.length) {
-    container.innerHTML = '<div class="empty"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>No hay solicitudes</div>';
+    container.innerHTML = '<div class="empty"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>' + t('sa.empty') + '</div>';
     return;
   }
   var delay = 0;
   container.innerHTML = data.map(function(s) {
-    var bc = s.estado === 'aprobada' ? 'badge-green'
-           : s.estado === 'rechazada' ? 'badge-red'
-           : s.estado === 'cancelada' ? 'badge-grey'
-           : 'badge-yellow';
+    var eb = getEstadoBadge(s.estado);
     var cmt = s.comentario ? '<div class="doc-meta" style="color:var(--gold);margin-top:3px">💬 ' + s.comentario + '</div>' : '';
     var d = delay; delay += 45;
     return '<div class="doc-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
@@ -495,10 +1344,10 @@ async function cargarSolicitudesAdmin() {
       '<div class="doc-meta">' + new Date(s.created_at).toLocaleDateString('es-ES') + '</div>' +
       cmt + '</div></div>' +
       '<div style="display:flex;gap:0.5rem;align-items:center" id="sol-act-' + s.id + '">' +
-      '<span class="badge ' + bc + '">' + s.estado + '</span>' +
+      '<span class="badge ' + eb.cls + '">' + eb.lbl + '</span>' +
       (s.estado === 'pendiente' ?
-        '<button class="btn-sm primary" onclick="mostrarAccionSolicitud(\'' + s.id + '\',\'aprobada\')">Aprobar</button>' +
-        '<button class="btn-sm" style="border-color:#dc2626;color:#dc2626" onclick="mostrarAccionSolicitud(\'' + s.id + '\',\'rechazada\')">Rechazar</button>'
+        '<button class="btn-sm primary" onclick="mostrarAccionSolicitud(\'' + s.id + '\',\'aprobada\')">' + t('sa.aprobar') + '</button>' +
+        '<button class="btn-sm" style="border-color:#dc2626;color:#dc2626" onclick="mostrarAccionSolicitud(\'' + s.id + '\',\'rechazada\')">' + t('sa.rechazar') + '</button>'
         : '') +
       '</div></div>';
   }).join('');
@@ -511,12 +1360,12 @@ function mostrarAccionSolicitud(id, estado) {
   var col = esBuena ? 'var(--green)' : 'var(--red)';
   el.innerHTML =
     '<div style="display:flex;flex-direction:column;gap:0.4rem;min-width:200px;max-width:280px">' +
-    '<textarea id="cmt-sol-' + id + '" rows="2" placeholder="Comentario para el empleado (opcional)..." ' +
+    '<textarea id="cmt-sol-' + id + '" rows="2" placeholder="' + t('sa.cmt_ph') + '" ' +
     'style="width:100%;padding:0.45rem 0.7rem;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--r-xs);color:var(--white);font-size:0.78rem;font-family:inherit;resize:none;outline:none"></textarea>' +
     '<div style="display:flex;gap:0.4rem">' +
     '<button class="btn-sm primary" style="background:' + col + ';border-color:' + col + '" ' +
-    'onclick="confirmarSolicitud(\'' + id + '\',\'' + estado + '\')">' + (esBuena ? '✓ Aprobar' : '✕ Rechazar') + '</button>' +
-    '<button class="btn-sm" onclick="cargarSolicitudesAdmin()">Cancelar</button>' +
+    'onclick="confirmarSolicitud(\'' + id + '\',\'' + estado + '\')">' + (esBuena ? t('sa.aprobar_c') : t('sa.rechazar_c')) + '</button>' +
+    '<button class="btn-sm" onclick="cargarSolicitudesAdmin()">' + t('sa.cancelar') + '</button>' +
     '</div></div>';
   el.querySelector('textarea').focus();
 }
@@ -533,6 +1382,7 @@ async function confirmarSolicitud(id, estado) {
 
 // TABS ADMIN
 function switchTab(tab, el) {
+  currentAdminTab = tab;
   document.querySelectorAll('.admin-tab').forEach(function(t){ t.classList.remove('active'); });
   document.querySelectorAll('.admin-tab-content').forEach(function(t){ t.style.display='none'; });
   if (el) el.classList.add('active');
@@ -623,14 +1473,14 @@ function renderEmpleadosTabla(data) {
   var hasFilter = data.length < allEmpleados.length;
   container.innerHTML =
     (hasFilter ? '<div style="padding:0.5rem 1.5rem;font-size:0.72rem;color:var(--muted);border-bottom:1px solid var(--border)">' + data.length + ' empleado' + (data.length !== 1 ? 's' : '') + ' encontrado' + (data.length !== 1 ? 's' : '') + '</div>' : '') +
-    '<table><thead><tr><th>Nombre</th><th>Email</th><th>Cargo</th><th>Estado</th><th></th></tr></thead><tbody>' +
+    '<table><thead><tr><th>Nombre</th><th>Email</th><th>Cargo</th><th>' + t('rv.col_emp').replace('Empleado','Estado') + '</th><th></th></tr></thead><tbody>' +
     data.map(function(e, i) {
       return '<tr style="animation:fadeIn 0.25s ease both;animation-delay:' + (i * 35) + 'ms">' +
         '<td><strong style="color:var(--white)">' + highlightMatch(e.nombre, q) + '</strong></td>' +
         '<td style="color:var(--text2)">' + highlightMatch(e.email, q) + '</td>' +
         '<td>' + e.cargo + '</td>' +
-        '<td><span class="badge ' + (e.activo ? 'badge-green">Activo' : 'badge-red">Inactivo') + '</span></td>' +
-        '<td><button class="btn-sm" onclick="abrirEditEmp(\'' + e.id + '\')" style="margin-left:0">✏ Editar</button></td>' +
+        '<td><span class="badge ' + (e.activo ? 'badge-green">' + t('emp.activo') : 'badge-red">' + t('emp.inactivo')) + '</span></td>' +
+        '<td><button class="btn-sm" onclick="abrirEditEmp(\'' + e.id + '\')" style="margin-left:0">' + t('emp.editar') + '</button></td>' +
         '</tr>';
     }).join('') + '</tbody></table>';
 }
@@ -677,14 +1527,14 @@ async function guardarEmpleado() {
   if (!nombre || !email || !dni) {
     err.style.display = 'block'; err.textContent = 'Nombre, email y DNI son obligatorios.'; return;
   }
-  btn.disabled = true; btn.textContent = 'Guardando…';
+  btn.disabled = true; btn.textContent = t('edit.guardando');
   var { error } = await sb.from('empleados').update({
     nombre: nombre, email: email, dni: dni, cargo: cargo,
     dias_vacaciones_anuales: dias, activo: activo
   }).eq('id', id);
-  btn.disabled = false; btn.textContent = 'Guardar cambios';
+  btn.disabled = false; btn.textContent = t('edit.guardar');
   if (error) { err.style.display = 'block'; err.textContent = 'Error: ' + error.message; return; }
-  ok.style.display = 'block'; ok.textContent = '✓ Datos actualizados correctamente.';
+  ok.style.display = 'block'; ok.textContent = t('edit.ok');
   cargarEmpleados();
   setTimeout(cerrarEditEmp, 1200);
 }
@@ -705,7 +1555,7 @@ function _descargarXlsx(filas, nombreHoja, anchos, nombreArchivo) {
 }
 
 function exportarEmpleadosExcel() {
-  if (!allEmpleados.length) { mostrarToast('ℹ️ Sin datos', 'No hay empleados para exportar.'); return; }
+  if (!allEmpleados.length) { mostrarToast(t('toast.sin_datos'), t('toast.no_emp')); return; }
   var datos = filtroCargoActivo === 'todos'
     ? allEmpleados
     : allEmpleados.filter(function(e){ return e.cargo === filtroCargoActivo; });
@@ -759,7 +1609,7 @@ async function crearEmpleado() {
   var { error: dbError } = await sb.from('empleados').insert({ nombre:nombre, email:email, dni:dni, cargo:cargo, activo:true, debe_cambiar_password:true });
   if (dbError) { err.style.display='block'; err.textContent='Error al guardar: '+dbError.message; return; }
 
-  ok.style.display='block'; ok.textContent='✓ Empleado creado correctamente.' + authMsg;
+  ok.style.display='block'; ok.textContent=t('emp.ok') + authMsg;
   document.getElementById('empNombre').value='';
   document.getElementById('empEmail').value='';
   document.getElementById('empDni').value='';
@@ -785,7 +1635,7 @@ async function subirDocumento() {
     fecha:new Date().toISOString().split('T')[0], leido:false
   });
   if (dbError) { err.style.display='block'; err.textContent='Error al guardar: '+dbError.message; return; }
-  ok.style.display='block'; ok.textContent='✓ Documento subido correctamente.';
+  ok.style.display='block'; ok.textContent=t('sub.ok');
   document.getElementById('subirNombre').value='';
   document.getElementById('subirArchivo').value='';
 }
@@ -819,7 +1669,7 @@ async function subirMasivo() {
       var filename = files[i];
       var dni = filename.replace(/\.pdf$/i,'').split('/').pop().toUpperCase();
       var empleado = dniMap[dni];
-      progressText.textContent = 'Procesando '+(i+1)+' de '+files.length+': '+filename;
+      progressText.textContent = t('masi.proc') + ' ' +(i+1)+' / '+files.length+': '+filename;
       progressBar.style.width = Math.round(((i+1)/files.length)*100)+'%';
       if (!empleado) { fail_count++; continue; }
       var blob = await zip.files[filename].async('blob');
@@ -927,7 +1777,7 @@ async function cargarVacaciones() {
     resumen.style.display = 'block';
   }
 
-  if (!data || !data.length) { lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>No tienes solicitudes de vacaciones</div>'; return; }
+  if (!data || !data.length) { lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' + t('vac.empty') + '</div>'; return; }
 
   // Animate counters after data loaded
   animateValue(document.getElementById('vacTotal'),     currentEmpleado.dias_vacaciones_anuales || 22, 600);
@@ -939,23 +1789,20 @@ async function cargarVacaciones() {
     var desde  = new Date(v.fecha_inicio+'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'});
     var hasta  = new Date(v.fecha_fin  +'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'});
     var dias   = diasEntre(v.fecha_inicio, v.fecha_fin);
-    var est = v.estado === 'aprobada' ? 'badge-green'
-            : v.estado === 'rechazada' ? 'badge-red'
-            : v.estado === 'cancelada' ? 'badge-grey'
-            : 'badge-yellow';
+    var eb = getEstadoBadge(v.estado);
     var btnCancelar = v.estado === 'pendiente'
       ? '<button class="btn-sm" onclick="cancelarVacacion(\'' + v.id + '\')" ' +
         'style="margin-left:0.25rem;color:var(--muted);border-color:rgba(255,255,255,0.1);font-size:0.68rem" ' +
-        'title="Cancelar solicitud">✕ Cancelar</button>'
+        'title="Cancelar solicitud">' + t('sol.cancelar') + '</button>'
       : '';
     var d = delay; delay += 50;
     return '<div class="vac-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
-      '<span class="badge ' + (VAC_TIPO_CLASS[v.tipo]||'badge-blue') + ' vac-tipo">' + (VAC_TIPO_LABEL[v.tipo]||v.tipo) + '</span>' +
+      '<span class="badge ' + (VAC_TIPO_CLASS[v.tipo]||'badge-blue') + ' vac-tipo">' + getTipoVac(v.tipo) + '</span>' +
       '<span class="vac-fechas">' + desde + ' → ' + hasta +
         (v.notas     ? '<br><span style="font-size:0.72rem;color:var(--muted)">' + v.notas      + '</span>' : '') +
         (v.comentario ? '<br><span style="font-size:0.72rem;color:var(--gold)">💬 ' + v.comentario + '</span>' : '') + '</span>' +
       '<span class="vac-dias">' + dias + ' d.</span>' +
-      '<span class="badge ' + est + '">' + v.estado + '</span>' +
+      '<span class="badge ' + eb.cls + '">' + eb.lbl + '</span>' +
       btnCancelar +
       '</div>';
   }).join('');
@@ -969,27 +1816,24 @@ async function cargarVacacionesAdmin() {
   var q = sb.from('vacaciones').select('*, empleados(nombre)').order('fecha_inicio');
   if (filtro !== 'todas') q = q.eq('estado', filtro);
   var { data } = await q;
-  if (!data || !data.length) { lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Sin solicitudes de vacaciones</div>'; return; }
+  if (!data || !data.length) { lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' + t('va.empty') + '</div>'; return; }
   var delay = 0;
   lista.innerHTML = data.map(function(v) {
     var nombre = v.empleados ? v.empleados.nombre : '—';
     var desde  = new Date(v.fecha_inicio+'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short'});
     var hasta  = new Date(v.fecha_fin  +'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'});
     var dias   = diasEntre(v.fecha_inicio, v.fecha_fin);
-    var est = v.estado === 'aprobada' ? 'badge-green'
-            : v.estado === 'rechazada' ? 'badge-red'
-            : v.estado === 'cancelada' ? 'badge-grey'
-            : 'badge-yellow';
+    var eb = getEstadoBadge(v.estado);
     var d = delay; delay += 45;
     return '<div class="doc-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<div class="doc-info"><div class="doc-icon">🏖️</div>' +
-      '<div><div class="doc-name">' + nombre + ' · <span style="color:var(--text2);font-weight:400">' + (VAC_TIPO_LABEL[v.tipo]||v.tipo) + '</span></div>' +
-      '<div class="doc-meta">' + desde + ' → ' + hasta + ' (' + dias + ' días)' + (v.notas ? ' · ' + v.notas : '') + '</div></div></div>' +
+      '<div><div class="doc-name">' + nombre + ' · <span style="color:var(--text2);font-weight:400">' + getTipoVac(v.tipo) + '</span></div>' +
+      '<div class="doc-meta">' + desde + ' → ' + hasta + ' (' + dias + ' ' + t('g.dias') + ')' + (v.notas ? ' · ' + v.notas : '') + '</div></div></div>' +
       '<div style="display:flex;align-items:center;gap:0.5rem" id="vac-act-' + v.id + '">' +
-      '<span class="badge ' + est + '">' + v.estado + '</span>' +
+      '<span class="badge ' + eb.cls + '">' + eb.lbl + '</span>' +
       (v.estado === 'pendiente' ?
-        '<button class="btn-sm primary" onclick="mostrarAccionVacacion(\'' + v.id + '\',\'aprobada\')">Aprobar</button>' +
-        '<button class="btn-sm" style="color:var(--red);border-color:rgba(220,38,38,0.3)" onclick="mostrarAccionVacacion(\'' + v.id + '\',\'rechazada\')">Rechazar</button>'
+        '<button class="btn-sm primary" onclick="mostrarAccionVacacion(\'' + v.id + '\',\'aprobada\')">' + t('va.aprobar') + '</button>' +
+        '<button class="btn-sm" style="color:var(--red);border-color:rgba(220,38,38,0.3)" onclick="mostrarAccionVacacion(\'' + v.id + '\',\'rechazada\')">' + t('va.rechazar') + '</button>'
         : (v.comentario ? '<span style="font-size:0.75rem;color:var(--gold);max-width:180px;overflow:hidden;text-overflow:ellipsis">💬 ' + v.comentario + '</span>' : '')) +
       '</div></div>';
   }).join('');
@@ -1002,12 +1846,12 @@ function mostrarAccionVacacion(id, estado) {
   var col = esBuena ? 'var(--green)' : 'var(--red)';
   el.innerHTML =
     '<div style="display:flex;flex-direction:column;gap:0.4rem;min-width:200px;max-width:280px">' +
-    '<textarea id="cmt-vac-' + id + '" rows="2" placeholder="Comentario para el empleado (opcional)..." ' +
+    '<textarea id="cmt-vac-' + id + '" rows="2" placeholder="' + t('va.cmt_ph') + '" ' +
     'style="width:100%;padding:0.45rem 0.7rem;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--r-xs);color:var(--white);font-size:0.78rem;font-family:inherit;resize:none;outline:none"></textarea>' +
     '<div style="display:flex;gap:0.4rem">' +
     '<button class="btn-sm primary" style="background:' + col + ';border-color:' + col + '" ' +
-    'onclick="confirmarVacacion(\'' + id + '\',\'' + estado + '\')">' + (esBuena ? '✓ Aprobar' : '✕ Rechazar') + '</button>' +
-    '<button class="btn-sm" onclick="cargarVacacionesAdmin()">Cancelar</button>' +
+    'onclick="confirmarVacacion(\'' + id + '\',\'' + estado + '\')">' + (esBuena ? t('va.aprobar_c') : t('va.rechazar_c')) + '</button>' +
+    '<button class="btn-sm" onclick="cargarVacacionesAdmin()">' + t('va.cancelar') + '</button>' +
     '</div></div>';
   el.querySelector('textarea').focus();
 }
@@ -1025,18 +1869,18 @@ async function confirmarVacacion(id, estado) {
 // ─── CANCELAR SOLICITUDES / VACACIONES (EMPLEADO) ────────
 
 async function cancelarSolicitud(id) {
-  if (!confirm('¿Cancelar esta solicitud?\nSi ya la revisó el coordinador, contacta con él directamente.')) return;
+  if (!confirm(t('sol.cancelar_ok') + '\n' + t('sol.cancelar_msg'))) return;
   var { error } = await sb.from('solicitudes').update({ estado: 'cancelada' }).eq('id', id);
   if (error) { mostrarToast('❌ Error', error.message); return; }
-  mostrarToast('✓ Solicitud cancelada', 'La solicitud ha sido cancelada.');
+  mostrarToast(t('toast.sol_cancel'), t('toast.sol_cancel_msg'));
   cargarMisSolicitudes();
 }
 
 async function cancelarVacacion(id) {
-  if (!confirm('¿Cancelar esta solicitud de vacaciones?')) return;
+  if (!confirm(t('vac.cancelar_ok') + '\n' + t('vac.cancelar_msg'))) return;
   var { error } = await sb.from('vacaciones').update({ estado: 'cancelada' }).eq('id', id);
   if (error) { mostrarToast('❌ Error', error.message); return; }
-  mostrarToast('✓ Vacaciones canceladas', 'La solicitud ha sido cancelada.');
+  mostrarToast(t('toast.vac_cancel'), t('toast.vac_cancel_msg'));
   cargarVacaciones();
 }
 
@@ -1058,6 +1902,7 @@ var DEMO_EMPLEADOS = [
 ];
 
 document.addEventListener('DOMContentLoaded', function() {
+  aplicarIdioma();
   var inputExcel = document.getElementById('importarArchivo');
   if (inputExcel) inputExcel.addEventListener('change', previsualizarExcel);
   generarPlantilla();
@@ -1208,7 +2053,7 @@ async function cargarCalendario() {
 }
 
 function renderCalendario(turnos) {
-  document.getElementById('calMesLabel').textContent = MESES[calMonth] + ' ' + calYear;
+  document.getElementById('calMesLabel').textContent = getMes(calMonth) + ' ' + calYear;
 
   var grid = document.getElementById('calGrid');
   grid.innerHTML = '';
@@ -1265,11 +2110,11 @@ function renderCalendario(turnos) {
 
     if (mapa[dateStr]) {
       cell.classList.add('has-shift');
-      mapa[dateStr].forEach(function(t) {
+      mapa[dateStr].forEach(function(turno) {
         var pill = document.createElement('div');
-        pill.className = 'cal-pill t-' + t.tipo;
-        var txt = TIPO_LABEL[t.tipo] || t.tipo;
-        if (t.hora_inicio) txt = t.hora_inicio.slice(0,5) + (t.hora_fin ? '–' + t.hora_fin.slice(0,5) : '');
+        pill.className = 'cal-pill t-' + turno.tipo;
+        var txt = getTipoTurno(turno.tipo);
+        if (turno.hora_inicio) txt = turno.hora_inicio.slice(0,5) + (turno.hora_fin ? '–' + turno.hora_fin.slice(0,5) : '');
         pill.textContent = txt;
         cell.appendChild(pill);
       });
@@ -1280,19 +2125,19 @@ function renderCalendario(turnos) {
   // Resumen lista de turnos del mes
   var resumen = document.getElementById('calResumen');
   if (!turnos.length) {
-    resumen.innerHTML = '<div class="empty">No hay turnos asignados este mes</div>';
+    resumen.innerHTML = '<div class="empty">' + t('cal.no_turnos') + '</div>';
     return;
   }
-  resumen.innerHTML = '<div class="card" style="padding:0"><div style="padding:0.875rem 1.25rem;border-bottom:1px solid var(--border);font-size:0.65rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)">Detalle del mes</div>' +
-    turnos.map(function(t) {
-      var fecha = new Date(t.fecha + 'T12:00:00');
+  resumen.innerHTML = '<div class="card" style="padding:0"><div style="padding:0.875rem 1.25rem;border-bottom:1px solid var(--border);font-size:0.65rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)">' + t('cal.detalle') + '</div>' +
+    turnos.map(function(turno) {
+      var fecha = new Date(turno.fecha + 'T12:00:00');
       var fechaStr = fecha.toLocaleDateString('es-ES', { weekday:'short', day:'numeric', month:'short' });
-      var horas = t.hora_inicio ? t.hora_inicio.slice(0,5) + (t.hora_fin ? ' – ' + t.hora_fin.slice(0,5) : '') : '—';
+      var horas = turno.hora_inicio ? turno.hora_inicio.slice(0,5) + (turno.hora_fin ? ' – ' + turno.hora_fin.slice(0,5) : '') : '—';
       return '<div class="cal-resumen-item">' +
-        '<span class="cal-pill t-' + t.tipo + '" style="min-width:4.5rem;text-align:center">' + (TIPO_LABEL[t.tipo] || t.tipo) + '</span>' +
+        '<span class="cal-pill t-' + turno.tipo + '" style="min-width:4.5rem;text-align:center">' + getTipoTurno(turno.tipo) + '</span>' +
         '<span class="cal-resumen-fecha">' + fechaStr + '</span>' +
         '<span class="cal-resumen-horas">' + horas + '</span>' +
-        '<span class="cal-resumen-lugar">' + (t.ubicacion || '') + '</span>' +
+        '<span class="cal-resumen-lugar">' + (turno.ubicacion || '') + '</span>' +
         '</div>';
     }).join('') + '</div>';
 }
@@ -1310,7 +2155,7 @@ function nextMes() {
 
 function exportarCalendarioICal() {
   if (!calTurnos || !calTurnos.length) {
-    mostrarToast('ℹ️ Sin turnos', 'No hay turnos en ' + MESES[calMonth] + ' para exportar.');
+    mostrarToast(t('toast.sin_datos'), t('cal.ical_sin') + ' ' + getMes(calMonth) + ' ' + t('cal.ical_sin2'));
     return;
   }
   var toIcalTime = function(hhmm) {
@@ -1338,8 +2183,8 @@ function exportarCalendarioICal() {
       nextDay.setDate(nextDay.getDate() + 1);
       dtEnd = 'DTEND;VALUE=DATE:' + nextDay.toISOString().split('T')[0].replace(/-/g, '');
     }
-    var label = TIPO_LABEL[t.tipo] || t.tipo;
-    var summary = 'SUMMARY:Turno ' + label;
+    var label = getTipoTurno(t.tipo);
+    var summary = 'SUMMARY:' + t('tur.turno') + ' ' + label;
     if (t.hora_inicio) {
       summary += ' \u2014 ' + t.hora_inicio.slice(0,5);
       if (t.hora_fin) summary += '\u2013' + t.hora_fin.slice(0,5);
@@ -1361,9 +2206,9 @@ function exportarCalendarioICal() {
   var blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
   var link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = 'turnos_enerpro_' + MESES[calMonth].toLowerCase() + '_' + calYear + '.ics';
+  link.download = 'turnos_enerpro_' + getMes(calMonth).toLowerCase() + '_' + calYear + '.ics';
   link.click();
-  mostrarToast('📅 iCal exportado', MESES[calMonth] + ' ' + calYear + ' \u2014 ' + calTurnos.length + ' turno' + (calTurnos.length !== 1 ? 's' : '') + '.');
+  mostrarToast(t('cal.ical_ok'), getMes(calMonth) + ' ' + calYear + ' \u2014 ' + calTurnos.length + ' turno' + (calTurnos.length !== 1 ? 's' : '') + '.');
 }
 
 // ─── DASHBOARD COORDINADOR ────────────────────────────────
@@ -1397,22 +2242,22 @@ async function cargarDashboard() {
   // Cards de stats
   statsEl.innerHTML =
     '<div class="card card-accent" style="margin:0;animation:scaleIn 0.3s ease both;animation-delay:0ms">' +
-      '<div class="card-label">Empleados activos</div>' +
+      '<div class="card-label">' + t('dash.emp_activos') + '</div>' +
       '<div class="card-value" id="d-emp">0</div>' +
-      '<div class="card-sub">En plantilla</div>' +
+      '<div class="card-sub">' + t('dash.plantilla') + '</div>' +
     '</div>' +
     '<div class="card" style="margin:0;cursor:pointer;animation:scaleIn 0.3s ease both;animation-delay:60ms" onclick="switchTab(\'solicitudes-admin\', document.querySelector(\'[onclick*=\\\"solicitudes-admin\\\"]\'))">' +
-      '<div class="card-label">Solicitudes pendientes</div>' +
+      '<div class="card-label">' + t('dash.sol_pend') + '</div>' +
       '<div class="card-value" id="d-sol" style="color:' + (totalSol > 0 ? 'var(--yellow)' : 'var(--green)') + '">0</div>' +
-      '<div class="card-sub">Requieren revisión</div>' +
+      '<div class="card-sub">' + t('dash.revision') + '</div>' +
     '</div>' +
     '<div class="card" style="margin:0;cursor:pointer;animation:scaleIn 0.3s ease both;animation-delay:120ms" onclick="switchTab(\'vacaciones-admin\', document.querySelector(\'[onclick*=\\\"vacaciones-admin\\\"]\'))">' +
-      '<div class="card-label">Vacaciones pendientes</div>' +
+      '<div class="card-label">' + t('dash.vac_pend') + '</div>' +
       '<div class="card-value" id="d-vac" style="color:' + (totalVac > 0 ? 'var(--yellow)' : 'var(--green)') + '">0</div>' +
-      '<div class="card-sub">Requieren revisión</div>' +
+      '<div class="card-sub">' + t('dash.revision') + '</div>' +
     '</div>' +
     '<div class="card" style="margin:0;animation:scaleIn 0.3s ease both;animation-delay:180ms">' +
-      '<div class="card-label">Cuadrantes firmados</div>' +
+      '<div class="card-label">' + t('dash.cuad_firm') + '</div>' +
       '<div class="card-value" style="color:var(--green)"><span id="d-firm">0</span><span style="font-size:1rem;color:var(--muted)"> / ' + cuadrantes.length + '</span></div>' +
       '<div class="card-sub" style="display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem">' +
         '<div style="flex:1;height:4px;background:var(--surface3);border-radius:2px">' +
@@ -1437,7 +2282,7 @@ async function cargarDashboard() {
   // Lista sin firmar
   if (sinFirmarEl) {
     if (!sinFirmar.length) {
-      sinFirmarEl.innerHTML = '<div class="empty" style="border:none;padding:2rem;color:var(--green)">✓ Todos han firmado su cuadrante</div>';
+      sinFirmarEl.innerHTML = '<div class="empty" style="border:none;padding:2rem;color:var(--green)">' + t('dash.todos_firm') + '</div>';
     } else {
       sinFirmarEl.innerHTML = sinFirmar.map(function(d) {
         var nombre = d.empleados ? d.empleados.nombre : '—';
@@ -1448,7 +2293,7 @@ async function cargarDashboard() {
             '<div><div class="doc-name" style="font-size:0.85rem">' + nombre + '</div>' +
             '<div class="doc-meta">' + cargo + '</div></div>' +
           '</div>' +
-          '<span class="badge badge-yellow">Pendiente</span>' +
+          '<span class="badge badge-yellow">' + t('est.pendiente') + '</span>' +
         '</div>';
       }).join('');
     }
@@ -1458,7 +2303,7 @@ async function cargarDashboard() {
   if (solicEl) {
     var sols = solListRes.data || [];
     if (!sols.length) {
-      solicEl.innerHTML = '<div class="empty" style="border:none;padding:2rem;color:var(--green)">✓ Sin solicitudes pendientes</div>';
+      solicEl.innerHTML = '<div class="empty" style="border:none;padding:2rem;color:var(--green)">' + t('dash.sin_sol') + '</div>';
     } else {
       solicEl.innerHTML = sols.map(function(s) {
         var nombre = s.empleados ? s.empleados.nombre : '—';
@@ -1469,7 +2314,7 @@ async function cargarDashboard() {
             '<div><div class="doc-name" style="font-size:0.85rem">' + nombre + '</div>' +
             '<div class="doc-meta">' + s.tipo + ' · ' + fecha + '</div></div>' +
           '</div>' +
-          '<button class="btn-sm" onclick="switchTab(\'solicitudes-admin\',document.querySelector(\'[onclick*=\\\"solicitudes-admin\\\"]\'))">Gestionar →</button>' +
+          '<button class="btn-sm" onclick="switchTab(\'solicitudes-admin\',document.querySelector(\'[onclick*=\\\"solicitudes-admin\\\"]\'))">' + t('dash.gestionar') + '</button>' +
         '</div>';
       }).join('');
     }
@@ -1486,22 +2331,22 @@ async function cargarTurnosAdmin() {
   var { data } = await sb.from('turnos').select('*, empleados(nombre)')
     .gte('fecha', hoy).order('fecha').order('hora_inicio').limit(30);
   if (!data || !data.length) {
-    container.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>No hay turnos próximos</div>';
+    container.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' + t('ta.empty') + '</div>';
     return;
   }
   var delay = 0;
-  container.innerHTML = data.map(function(t) {
-    var horas = t.hora_inicio ? t.hora_inicio.slice(0,5) + (t.hora_fin ? '–' + t.hora_fin.slice(0,5) : '') : '—';
-    var fecha = new Date(t.fecha + 'T12:00:00').toLocaleDateString('es-ES', { weekday:'short', day:'numeric', month:'short' });
+  container.innerHTML = data.map(function(turno) {
+    var horas = turno.hora_inicio ? turno.hora_inicio.slice(0,5) + (turno.hora_fin ? '–' + turno.hora_fin.slice(0,5) : '') : '—';
+    var fecha = new Date(turno.fecha + 'T12:00:00').toLocaleDateString('es-ES', { weekday:'short', day:'numeric', month:'short' });
     var d = delay; delay += 45;
     return '<div class="doc-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<div class="doc-info">' +
       '<div class="doc-icon" style="font-size:1.1rem">📅</div>' +
-      '<div><div class="doc-name">' + (t.empleados ? t.empleados.nombre : '—') + '</div>' +
-      '<div class="doc-meta">' + fecha + ' · ' + horas + (t.ubicacion ? ' · ' + t.ubicacion : '') + '</div></div></div>' +
+      '<div><div class="doc-name">' + (turno.empleados ? turno.empleados.nombre : '—') + '</div>' +
+      '<div class="doc-meta">' + fecha + ' · ' + horas + (turno.ubicacion ? ' · ' + turno.ubicacion : '') + '</div></div></div>' +
       '<div style="display:flex;align-items:center;gap:0.5rem">' +
-      '<span class="cal-pill t-' + t.tipo + '">' + (TIPO_LABEL[t.tipo] || t.tipo) + '</span>' +
-      '<button class="btn-sm" onclick="eliminarTurno(\'' + t.id + '\')" style="color:var(--red);border-color:rgba(220,38,38,0.3)">✕</button>' +
+      '<span class="cal-pill t-' + turno.tipo + '">' + getTipoTurno(turno.tipo) + '</span>' +
+      '<button class="btn-sm" onclick="eliminarTurno(\'' + turno.id + '\')" style="color:var(--red);border-color:rgba(220,38,38,0.3)">✕</button>' +
       '</div></div>';
   }).join('');
 }
@@ -1527,7 +2372,7 @@ async function crearTurno() {
   if (notas)  payload.notas       = notas;
   var { error } = await sb.from('turnos').insert(payload);
   if (error) { err.style.display = 'block'; err.textContent = 'Error: ' + error.message; return; }
-  ok.style.display = 'block'; ok.textContent = '✓ Turno asignado correctamente.';
+  ok.style.display = 'block'; ok.textContent = t('ta.ok');
   document.getElementById('turnoFecha').value = '';
   document.getElementById('turnoInicio').value = '';
   document.getElementById('turnoFin').value = '';
@@ -1552,7 +2397,7 @@ async function firmarDoc(docId, nombre) {
   }).eq('id', docId);
   if (error) { mostrarToast('❌ Error', 'No se pudo registrar la firma.'); return; }
   cargarDocumentos();
-  mostrarToast('✍ Lectura confirmada', nombre);
+  mostrarToast(t('toast.firma_ok'), nombre);
 }
 
 // NOTIFICACIONES
@@ -1640,7 +2485,7 @@ function suscribirDocumentosNuevos() {
     }, function(payload) {
       var nombre = payload.new.nombre || 'Nuevo documento';
       var tipo   = payload.new.tipo   || '';
-      mostrarToast('Nuevo documento recibido', nombre + (tipo ? ' · ' + tipo : ''));
+      mostrarToast(t('toast.doc_nuevo'), nombre + (tipo ? ' · ' + tipo : ''));
       if (Notification.permission === 'granted') {
         new Notification('ENERPRO — Nuevo documento', {
           body: nombre + (tipo ? ' (' + tipo + ')' : ''),
@@ -1683,7 +2528,7 @@ async function cargarResumenVacaciones() {
   });
 
   if (!empleados.length) {
-    lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>No hay empleados activos</div>';
+    lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' + t('rv.no_emp') + '</div>';
     return;
   }
 
@@ -1731,10 +2576,9 @@ async function cargarResumenVacaciones() {
     }
   });
   var maxDias = Math.max.apply(null, mensual) || 1;
-  var MESES_C = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   var chartHtml =
     '<div style="padding:1.25rem 1.5rem 1.5rem;border-top:1px solid var(--border)">' +
-    '<div style="font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem">Días de vacaciones aprobadas por mes · ' + ano + '</div>' +
+    '<div style="font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem">' + t('rv.chart') + ano + '</div>' +
     '<div style="display:flex;align-items:flex-end;gap:5px;height:68px">' +
     mensual.map(function(d, i) {
       var pxH = d > 0 ? Math.max(4, Math.round((d / maxDias) * 56)) : 2;
@@ -1745,7 +2589,7 @@ async function cargarResumenVacaciones() {
       var esActual = (i === hoy.getMonth() && ano === hoy.getFullYear());
       return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;height:68px">' +
         (d > 0 ? '<span style="font-size:0.5rem;color:var(--muted);line-height:1">' + d + '</span>' : '') +
-        '<div title="' + MESES[i] + ': ' + d + ' d\u00eda' + (d !== 1 ? 's' : '') + '"' +
+        '<div title="' + getMes(i) + ': ' + d + ' ' + (d !== 1 ? t('g.dias') : t('g.dia')) + '"' +
           ' style="width:100%;height:' + pxH + 'px;background:' + col + ';border-radius:3px 3px 0 0;' +
           (esActual && d > 0 ? 'box-shadow:0 0 8px ' + col + ';' : '') +
           'transition:height 0.6s cubic-bezier(0.22,1,0.36,1);animation:scaleIn 0.4s ease both;animation-delay:' + (i * 28) + 'ms"></div>' +
@@ -1753,10 +2597,10 @@ async function cargarResumenVacaciones() {
     }).join('') +
     '</div>' +
     '<div style="display:flex;gap:5px;margin-top:3px;border-top:1px solid rgba(255,255,255,0.05);padding-top:5px">' +
-    MESES_C.map(function(m, i) {
+    [0,1,2,3,4,5,6,7,8,9,10,11].map(function(i) {
       var hoy = new Date();
       var esActual = (i === hoy.getMonth() && ano === hoy.getFullYear());
-      return '<div style="flex:1;text-align:center;font-size:0.52rem;color:' + (esActual ? 'var(--gold)' : 'var(--muted)') + ';font-weight:' + (esActual ? '700' : '400') + '">' + m + '</div>';
+      return '<div style="flex:1;text-align:center;font-size:0.52rem;color:' + (esActual ? 'var(--gold)' : 'var(--muted)') + ';font-weight:' + (esActual ? '700' : '400') + '">' + getMesCorto(i) + '</div>';
     }).join('') +
     '</div>' +
     '</div>';
@@ -1764,10 +2608,10 @@ async function cargarResumenVacaciones() {
   lista.innerHTML =
     '<table style="font-size:0.85rem">' +
       '<thead><tr>' +
-        '<th>Empleado</th>' +
-        '<th style="text-align:center">D\u00edas anuales</th>' +
-        '<th style="text-align:center">Usados</th>' +
-        '<th style="text-align:center">Restantes</th>' +
+        '<th>' + t('rv.col_emp') + '</th>' +
+        '<th style="text-align:center">' + t('rv.col_anual') + '</th>' +
+        '<th style="text-align:center">' + t('rv.col_usados') + '</th>' +
+        '<th style="text-align:center">' + t('rv.col_rest') + '</th>' +
       '</tr></thead>' +
       '<tbody>' + rows.join('') + '</tbody>' +
     '</table>' +
@@ -1848,16 +2692,16 @@ async function crearTurnosPorFecha() {
   }
   if (!fechas.length) { err.style.display='block'; err.textContent='No hay días hábiles en el rango seleccionado.'; return; }
 
-  btn.disabled = true; btn.textContent = 'Creando ' + fechas.length + ' turnos…';
+  btn.disabled = true; btn.textContent = t('g.cargando');
   var payload = fechas.map(function(f) {
-    var t = { empleado_id: empId, fecha: f, tipo: tipo };
-    if (ini)  t.hora_inicio = ini;
-    if (fin)  t.hora_fin    = fin;
-    if (ubic) t.ubicacion   = ubic;
-    return t;
+    var p = { empleado_id: empId, fecha: f, tipo: tipo };
+    if (ini)  p.hora_inicio = ini;
+    if (fin)  p.hora_fin    = fin;
+    if (ubic) p.ubicacion   = ubic;
+    return p;
   });
   var { error } = await sb.from('turnos').insert(payload);
-  btn.disabled = false; btn.textContent = 'Crear turnos en el rango';
+  btn.disabled = false; btn.textContent = t('am.btn_fecha');
   if (error) { err.style.display='block'; err.textContent='Error: ' + error.message; return; }
   ok.style.display='block'; ok.textContent='✓ ' + fechas.length + ' turnos creados correctamente.';
   cargarTurnosAdmin();
@@ -1878,16 +2722,16 @@ async function crearTurnosPorEmpleados() {
   if (!fecha)          { err.style.display='block'; err.textContent='Selecciona una fecha.'; return; }
   if (!selIds.length)  { err.style.display='block'; err.textContent='Selecciona al menos un empleado.'; return; }
 
-  btn.disabled = true; btn.textContent = 'Creando ' + selIds.length + ' turnos…';
+  btn.disabled = true; btn.textContent = t('g.cargando');
   var payload = selIds.map(function(id) {
-    var t = { empleado_id: id, fecha: fecha, tipo: tipo };
-    if (ini)  t.hora_inicio = ini;
-    if (fin)  t.hora_fin    = fin;
-    if (ubic) t.ubicacion   = ubic;
-    return t;
+    var p = { empleado_id: id, fecha: fecha, tipo: tipo };
+    if (ini)  p.hora_inicio = ini;
+    if (fin)  p.hora_fin    = fin;
+    if (ubic) p.ubicacion   = ubic;
+    return p;
   });
   var { error } = await sb.from('turnos').insert(payload);
-  btn.disabled = false; btn.textContent = 'Crear turnos para seleccionados';
+  btn.disabled = false; btn.textContent = t('am.btn_emp');
   if (error) { err.style.display='block'; err.textContent='Error: ' + error.message; return; }
   ok.style.display='block'; ok.textContent='✓ ' + selIds.length + ' turnos creados para el ' + fecha + '.';
   seleccionarTodosEmp(false);
@@ -1965,21 +2809,21 @@ async function guardarCambioPassPerfil() {
   var btn = document.getElementById('cpPerfilBtn');
   err.style.display = 'none'; ok.style.display = 'none';
   if (nueva.length < 8) {
-    err.style.display = 'block'; err.textContent = 'La contraseña debe tener al menos 8 caracteres.'; return;
+    err.style.display = 'block'; err.textContent = t('cp.err_corta'); return;
   }
   if (nueva !== confirma) {
-    err.style.display = 'block'; err.textContent = 'Las contraseñas no coinciden.'; return;
+    err.style.display = 'block'; err.textContent = t('cp.err_match'); return;
   }
-  btn.disabled = true; btn.textContent = 'Guardando...';
+  btn.disabled = true; btn.textContent = t('cpp.guardando');
   var { error } = await sb.auth.updateUser({ password: nueva });
-  btn.disabled = false; btn.textContent = 'Actualizar contraseña';
+  btn.disabled = false; btn.textContent = t('cpp.btn');
   if (error) {
     err.style.display = 'block'; err.textContent = 'Error: ' + error.message; return;
   }
-  ok.style.display = 'block'; ok.textContent = '✓ Contraseña actualizada correctamente.';
+  ok.style.display = 'block'; ok.textContent = t('cpp.ok');
   document.getElementById('cpPerfilNueva').value    = '';
   document.getElementById('cpPerfilConfirma').value = '';
-  mostrarToast('🔑 Contraseña actualizada', 'Tu contraseña ha sido cambiada correctamente.');
+  mostrarToast(t('toast.pass_ok'), t('toast.pass_ok_msg'));
   setTimeout(cerrarCambioPassPerfil, 2200);
 }
 
@@ -2001,11 +2845,11 @@ async function forzarResetPassword() {
   var err = document.getElementById('editEmpError');
   var ok  = document.getElementById('editEmpOk');
   err.style.display = 'none'; ok.style.display = 'none';
-  btn.disabled = true; btn.textContent = '⏳ Procesando...';
+  btn.disabled = true; btn.textContent = '⏳ ' + t('g.cargando');
   var { error } = await sb.from('empleados').update({ debe_cambiar_password: true }).eq('id', id);
-  btn.disabled = false; btn.textContent = '🔄 Forzar cambio de contraseña en próximo acceso';
+  btn.disabled = false; btn.textContent = t('edit.reset_btn');
   if (error) { err.style.display = 'block'; err.textContent = 'Error: ' + error.message; return; }
-  ok.style.display = 'block'; ok.textContent = '✓ Al próximo inicio de sesión se le pedirá cambiar su contraseña.';
+  ok.style.display = 'block'; ok.textContent = t('edit.reset_ok');
   cargarEmpleados();
 }
 
@@ -2074,7 +2918,7 @@ function renderDocsAdmin(docs) {
   var lista = document.getElementById('docsAdminList');
   if (!lista) return;
   if (!docs.length) {
-    lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Sin documentos con los filtros seleccionados</div>';
+    lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' + t('da.empty') + '</div>';
     return;
   }
   var delay = 0;
@@ -2085,8 +2929,8 @@ function renderDocsAdmin(docs) {
     var safeName  = doc.nombre.replace(/'/g, "\\'");
     var safeUrl   = doc.url.replace(/'/g, "\\'");
     var badgeFirma = doc.firmado
-      ? '<span class="badge badge-green">✓ Firmado</span>'
-      : '<span class="badge badge-yellow">Sin firmar</span>';
+      ? '<span class="badge badge-green">' + t('da.badge_firm') + '</span>'
+      : '<span class="badge badge-yellow">' + t('da.badge_nofirm') + '</span>';
     var d = delay; delay += 40;
     return '<div class="doc-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<div class="doc-info">' +
@@ -2097,7 +2941,7 @@ function renderDocsAdmin(docs) {
       '</div></div>' +
       '<div style="display:flex;align-items:center;gap:0.5rem">' +
       badgeFirma +
-      '<button class="btn-sm primary" onclick="verDoc(\'' + safeUrl + '\', \'' + safeName + '\')">👁 Ver</button>' +
+      '<button class="btn-sm primary" onclick="verDoc(\'' + safeUrl + '\', \'' + safeName + '\')">' + t('da.ver') + '</button>' +
       '<button class="btn-sm" onclick="eliminarDocAdmin(\'' + doc.id + '\', \'' + safeUrl + '\')" style="color:var(--red);border-color:rgba(220,38,38,0.3)">✕</button>' +
       '</div></div>';
   }).join('');
@@ -2107,7 +2951,7 @@ async function eliminarDocAdmin(docId, url) {
   if (!confirm('¿Eliminar este documento?')) return;
   await sb.storage.from('documentos').remove([url]);
   await sb.from('documentos').delete().eq('id', docId);
-  mostrarToast('🗑 Documento eliminado', 'El documento ha sido eliminado correctamente.');
+  mostrarToast(t('toast.doc_elim'), t('toast.doc_elim_msg'));
   cargarDocumentosAdmin();
 }
 
@@ -2117,7 +2961,7 @@ async function exportarSolicitudesExcel() {
   var { data } = await sb.from('solicitudes')
     .select('*, empleados(nombre)')
     .order('created_at', { ascending: false });
-  if (!data || !data.length) { mostrarToast('ℹ️ Sin datos', 'No hay solicitudes para exportar.'); return; }
+  if (!data || !data.length) { mostrarToast(t('toast.sin_datos'), t('toast.no_sol')); return; }
   var filas = [['Empleado', 'Tipo', 'Fechas', 'Motivo', 'Estado', 'Comentario coordinador', 'Fecha solicitud']];
   data.forEach(function(s) {
     filas.push([
@@ -2140,7 +2984,7 @@ async function exportarVacacionesExcel() {
   var q = sb.from('vacaciones').select('*, empleados(nombre)').order('fecha_inicio');
   if (filtro !== 'todas') q = q.eq('estado', filtro);
   var { data } = await q;
-  if (!data || !data.length) { mostrarToast('ℹ️ Sin datos', 'No hay solicitudes de vacaciones para exportar.'); return; }
+  if (!data || !data.length) { mostrarToast(t('toast.sin_datos'), t('toast.no_vac_exp')); return; }
   var filas = [['Empleado', 'Tipo', 'Desde', 'Hasta', 'Días', 'Estado', 'Comentario coordinador', 'Notas']];
   data.forEach(function(v) {
     var nombre = v.empleados ? v.empleados.nombre : '—';
