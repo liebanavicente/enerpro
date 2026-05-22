@@ -16,6 +16,8 @@ var solicitudesChannel = null;
 var vacacionesChannel  = null;
 var adminSolicitudesChannel = null;
 var adminVacacionesChannel  = null;
+var calTurnos = [];
+var _docBadgeCount = 0;
 
 // ─── UI HELPERS ──────────────────────────────────────────
 
@@ -79,6 +81,24 @@ function animateValue(el, to, ms) {
     else el.textContent = to;
   }
   requestAnimationFrame(step);
+}
+
+// ─── BADGE DOCUMENTOS ─────────────────────────────────────
+
+function actualizarBadgeDocumentos(count) {
+  _docBadgeCount = count;
+  var badge       = document.getElementById('docBadge');
+  var badgeMobile = document.getElementById('docBadgeMobile');
+  var label = count > 99 ? '99+' : count > 0 ? String(count) : '0';
+  var mostrar = count > 0;
+  if (badge) {
+    badge.textContent = label;
+    badge.style.display = mostrar ? 'inline-flex' : 'none';
+  }
+  if (badgeMobile) {
+    badgeMobile.textContent = label;
+    badgeMobile.style.display = mostrar ? 'flex' : 'none';
+  }
 }
 
 // LOGIN
@@ -187,6 +207,7 @@ function navigateToPage(page) {
   if (page === 'calendario') cargarCalendario();
   if (page === 'vacaciones') cargarVacaciones();
   if (page === 'solicitudes') cargarMisSolicitudes();
+  if (page === 'documentos') actualizarBadgeDocumentos(0);
 }
 
 document.querySelectorAll('.nav-item').forEach(function(btn){
@@ -233,8 +254,13 @@ async function cargarDocumentos() {
   if (error || !data) { allDocs = []; return; }
   allDocs = data;
 
+  var unreadCount = data.filter(function(d){ return !d.leido; }).length;
   animateValue(document.getElementById('statDocs'),   data.length, 700);
-  animateValue(document.getElementById('statUnread'), data.filter(function(d){ return !d.leido; }).length, 700);
+  animateValue(document.getElementById('statUnread'), unreadCount, 700);
+  var activePage = document.querySelector('.page.active');
+  if (!activePage || activePage.id !== 'page-documentos') {
+    actualizarBadgeDocumentos(unreadCount);
+  }
   renderDocs(data, 'recentDocs', 3);
   renderDocs(data, 'docsList');
   var cuadrante = data.find(function(d){ return d.tipo === 'cuadrante'; });
@@ -1177,7 +1203,8 @@ async function cargarCalendario() {
   var q = sb.from('turnos').select('*').gte('fecha', primerDia).lte('fecha', ultimoDiaStr).order('fecha');
   if (currentEmpleado) q = q.eq('empleado_id', currentEmpleado.id);
   var { data } = await q;
-  renderCalendario(data || []);
+  calTurnos = data || [];
+  renderCalendario(calTurnos);
 }
 
 function renderCalendario(turnos) {
@@ -1277,6 +1304,66 @@ function prevMes() {
 function nextMes() {
   if (calMonth === 11) { calMonth = 0; calYear++; } else { calMonth++; }
   cargarCalendario();
+}
+
+// ─── EXPORTAR CALENDARIO A iCAL ───────────────────────────
+
+function exportarCalendarioICal() {
+  if (!calTurnos || !calTurnos.length) {
+    mostrarToast('ℹ️ Sin turnos', 'No hay turnos en ' + MESES[calMonth] + ' para exportar.');
+    return;
+  }
+  var toIcalTime = function(hhmm) {
+    return hhmm.slice(0, 5).replace(':', '') + '00';
+  };
+  var lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//ENERPRO//Portal del Empleado//ES',
+    'CALSCALE:GREGORIAN',
+    'X-WR-CALNAME:ENERPRO \u2014 Mis turnos',
+    'X-WR-TIMEZONE:Europe/Madrid'
+  ];
+  calTurnos.forEach(function(t) {
+    var dateStr = t.fecha.replace(/-/g, '');
+    var dtStart, dtEnd;
+    if (t.hora_inicio) {
+      dtStart = 'DTSTART;TZID=Europe/Madrid:' + dateStr + 'T' + toIcalTime(t.hora_inicio);
+      dtEnd   = t.hora_fin
+        ? 'DTEND;TZID=Europe/Madrid:'   + dateStr + 'T' + toIcalTime(t.hora_fin)
+        : 'DTEND;TZID=Europe/Madrid:'   + dateStr + 'T' + toIcalTime(t.hora_inicio);
+    } else {
+      dtStart = 'DTSTART;VALUE=DATE:' + dateStr;
+      var nextDay = new Date(t.fecha + 'T12:00:00');
+      nextDay.setDate(nextDay.getDate() + 1);
+      dtEnd = 'DTEND;VALUE=DATE:' + nextDay.toISOString().split('T')[0].replace(/-/g, '');
+    }
+    var label = TIPO_LABEL[t.tipo] || t.tipo;
+    var summary = 'SUMMARY:Turno ' + label;
+    if (t.hora_inicio) {
+      summary += ' \u2014 ' + t.hora_inicio.slice(0,5);
+      if (t.hora_fin) summary += '\u2013' + t.hora_fin.slice(0,5);
+    }
+    var desc = [];
+    if (t.ubicacion) desc.push('Ubicaci\u00f3n: ' + t.ubicacion);
+    if (t.notas) desc.push(t.notas);
+    lines.push('BEGIN:VEVENT');
+    lines.push('UID:enerpro-turno-' + (t.id || Date.now() + Math.random()) + '@enerpro.com');
+    lines.push(dtStart);
+    lines.push(dtEnd);
+    lines.push(summary);
+    if (desc.length) lines.push('DESCRIPTION:' + desc.join('\\n').replace(/,/g, '\\,'));
+    lines.push('END:VEVENT');
+  });
+  lines.push('END:VCALENDAR');
+
+  var icsContent = lines.join('\r\n');
+  var blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+  var link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'turnos_enerpro_' + MESES[calMonth].toLowerCase() + '_' + calYear + '.ics';
+  link.click();
+  mostrarToast('📅 iCal exportado', MESES[calMonth] + ' ' + calYear + ' \u2014 ' + calTurnos.length + ' turno' + (calTurnos.length !== 1 ? 's' : '') + '.');
 }
 
 // ─── DASHBOARD COORDINADOR ────────────────────────────────
@@ -1629,16 +1716,62 @@ async function cargarResumenVacaciones() {
       '</tr>';
   });
 
+  // Gráfico mensual: días de vacaciones aprobadas por mes (empleados filtrados)
+  var empIds = {};
+  empleados.forEach(function(e){ empIds[e.id] = true; });
+  var mensual = new Array(12).fill(0);
+  vacaciones.forEach(function(v) {
+    if (!empIds[v.empleado_id]) return;
+    var desde = new Date(v.fecha_inicio + 'T12:00:00');
+    var hasta = new Date(v.fecha_fin   + 'T12:00:00');
+    var cur = new Date(desde);
+    while (cur <= hasta) {
+      mensual[cur.getMonth()]++;
+      cur.setDate(cur.getDate() + 1);
+    }
+  });
+  var maxDias = Math.max.apply(null, mensual) || 1;
+  var MESES_C = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  var chartHtml =
+    '<div style="padding:1.25rem 1.5rem 1.5rem;border-top:1px solid var(--border)">' +
+    '<div style="font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem">Días de vacaciones aprobadas por mes · ' + ano + '</div>' +
+    '<div style="display:flex;align-items:flex-end;gap:5px;height:68px">' +
+    mensual.map(function(d, i) {
+      var pxH = d > 0 ? Math.max(4, Math.round((d / maxDias) * 56)) : 2;
+      var col = d === 0
+        ? 'rgba(255,255,255,0.04)'
+        : (d >= maxDias * 0.8 ? 'var(--red)' : d >= maxDias * 0.45 ? 'var(--yellow)' : 'var(--green)');
+      var hoy = new Date();
+      var esActual = (i === hoy.getMonth() && ano === hoy.getFullYear());
+      return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;height:68px">' +
+        (d > 0 ? '<span style="font-size:0.5rem;color:var(--muted);line-height:1">' + d + '</span>' : '') +
+        '<div title="' + MESES[i] + ': ' + d + ' d\u00eda' + (d !== 1 ? 's' : '') + '"' +
+          ' style="width:100%;height:' + pxH + 'px;background:' + col + ';border-radius:3px 3px 0 0;' +
+          (esActual && d > 0 ? 'box-shadow:0 0 8px ' + col + ';' : '') +
+          'transition:height 0.6s cubic-bezier(0.22,1,0.36,1);animation:scaleIn 0.4s ease both;animation-delay:' + (i * 28) + 'ms"></div>' +
+        '</div>';
+    }).join('') +
+    '</div>' +
+    '<div style="display:flex;gap:5px;margin-top:3px;border-top:1px solid rgba(255,255,255,0.05);padding-top:5px">' +
+    MESES_C.map(function(m, i) {
+      var hoy = new Date();
+      var esActual = (i === hoy.getMonth() && ano === hoy.getFullYear());
+      return '<div style="flex:1;text-align:center;font-size:0.52rem;color:' + (esActual ? 'var(--gold)' : 'var(--muted)') + ';font-weight:' + (esActual ? '700' : '400') + '">' + m + '</div>';
+    }).join('') +
+    '</div>' +
+    '</div>';
+
   lista.innerHTML =
     '<table style="font-size:0.85rem">' +
       '<thead><tr>' +
         '<th>Empleado</th>' +
-        '<th style="text-align:center">Días anuales</th>' +
+        '<th style="text-align:center">D\u00edas anuales</th>' +
         '<th style="text-align:center">Usados</th>' +
         '<th style="text-align:center">Restantes</th>' +
       '</tr></thead>' +
       '<tbody>' + rows.join('') + '</tbody>' +
-    '</table>';
+    '</table>' +
+    chartHtml;
 }
 
 function exportarResumenVacaciones() {
