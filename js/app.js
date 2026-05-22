@@ -10,6 +10,7 @@ var currentIsAdmin = false;
 var allDocs = [];
 var allEmpleados = [];
 var filtroCargoActivo = 'todos';
+var filtroBuscadorActivo = '';
 var realtimeChannel = null;
 var solicitudesChannel = null;
 var vacacionesChannel  = null;
@@ -507,6 +508,11 @@ function switchTab(tab, el) {
   if (tabEl) tabEl.style.display = 'block';
   if (tab === 'dashboard') cargarDashboard();
   if (tab === 'subir' || tab === 'masivo' || tab === 'turnos-admin' || tab === 'importar') cargarEmpleados();
+  if (tab !== 'empleados') {
+    filtroBuscadorActivo = '';
+    var buscador = document.getElementById('empBuscador');
+    if (buscador) buscador.value = '';
+  }
   if (tab === 'solicitudes-admin')  cargarSolicitudesAdmin();
   if (tab === 'vacaciones-admin')   cargarVacacionesAdmin();
   if (tab === 'turnos-admin') cargarTurnosAdmin();
@@ -535,18 +541,64 @@ function filtrarEmpleados(cargo, btn) {
     var activo = document.querySelector('.emp-filter[onclick*="\'' + cargo + '\'"]');
     if (activo) activo.classList.add('primary');
   }
-  var datos = cargo === 'todos' ? allEmpleados : allEmpleados.filter(function(e){ return e.cargo === cargo; });
+  aplicarFiltrosEmpleados();
+}
+
+function buscarEmpleados(q) {
+  filtroBuscadorActivo = q.trim().toLowerCase();
+  aplicarFiltrosEmpleados();
+}
+
+function aplicarFiltrosEmpleados() {
+  var datos = filtroCargoActivo === 'todos'
+    ? allEmpleados
+    : allEmpleados.filter(function(e){ return e.cargo === filtroCargoActivo; });
+
+  if (filtroBuscadorActivo) {
+    var q = filtroBuscadorActivo;
+    datos = datos.filter(function(e) {
+      return (e.nombre  && e.nombre.toLowerCase().includes(q)) ||
+             (e.email   && e.email.toLowerCase().includes(q))  ||
+             (e.dni     && e.dni.toLowerCase().includes(q));
+    });
+  }
   renderEmpleadosTabla(datos);
+}
+
+function highlightMatch(text, q) {
+  if (!q || !text) return text || '';
+  var idx = text.toLowerCase().indexOf(q);
+  if (idx === -1) return text;
+  return text.slice(0, idx) +
+    '<mark style="background:rgba(245,184,0,0.25);color:var(--gold);border-radius:2px;padding:0 1px">' +
+    text.slice(idx, idx + q.length) + '</mark>' +
+    text.slice(idx + q.length);
 }
 
 function renderEmpleadosTabla(data) {
   var container = document.getElementById('empleadosList');
   if (!container) return;
-  if (!data.length) { container.innerHTML = '<div class="empty">No hay empleados con ese filtro</div>'; return; }
-  container.innerHTML = '<table><thead><tr><th>Nombre</th><th>Email</th><th>Cargo</th><th>Estado</th></tr></thead><tbody>' +
-    data.map(function(e){
-      return '<tr><td>' + e.nombre + '</td><td style="color:var(--muted)">' + e.email + '</td><td>' + e.cargo + '</td>' +
-        '<td><span class="badge ' + (e.activo ? 'badge-green">Activo' : 'badge-red">Inactivo') + '</span></td></tr>';
+  if (!data.length) {
+    var msg = filtroBuscadorActivo
+      ? 'Sin resultados para "<strong style="color:var(--white)">' + filtroBuscadorActivo + '</strong>"'
+      : 'No hay empleados con ese filtro';
+    container.innerHTML = '<div class="empty" style="border:none;padding:2.5rem"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' + msg + '</div>';
+    return;
+  }
+  var q = filtroBuscadorActivo;
+  var countHtml = data.length < allEmpleados.length
+    ? '<span style="font-size:0.72rem;color:var(--muted);font-weight:400"> · ' + data.length + ' resultado' + (data.length !== 1 ? 's' : '') + '</span>'
+    : '';
+  container.innerHTML =
+    (countHtml ? '<div style="padding:0.5rem 1.5rem;font-size:0.7rem;color:var(--muted);border-bottom:1px solid var(--border)">' + data.length + ' empleado' + (data.length !== 1 ? 's' : '') + ' encontrado' + (data.length !== 1 ? 's' : '') + '</div>' : '') +
+    '<table><thead><tr><th>Nombre</th><th>Email</th><th>Cargo</th><th>Estado</th></tr></thead><tbody>' +
+    data.map(function(e, i) {
+      return '<tr style="animation:fadeIn 0.25s ease both;animation-delay:' + (i * 35) + 'ms">' +
+        '<td><strong style="color:var(--white)">' + highlightMatch(e.nombre, q) + '</strong></td>' +
+        '<td style="color:var(--text2)">' + highlightMatch(e.email, q) + '</td>' +
+        '<td>' + e.cargo + '</td>' +
+        '<td><span class="badge ' + (e.activo ? 'badge-green">Activo' : 'badge-red">Inactivo') + '</span></td>' +
+        '</tr>';
     }).join('') + '</tbody></table>';
 }
 

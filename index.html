@@ -985,6 +985,14 @@
               <button class="btn-sm primary" onclick="showAddEmpleado()">+ Añadir empleado</button>
             </div>
           </div>
+          <div style="padding:0.625rem 1.5rem;border-bottom:1px solid var(--border);position:relative">
+            <svg style="position:absolute;left:2.25rem;top:50%;transform:translateY(-50%);opacity:0.35;pointer-events:none" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="empBuscador" placeholder="Buscar por nombre, email o DNI…"
+              oninput="buscarEmpleados(this.value)"
+              style="width:100%;padding:0.55rem 1rem 0.55rem 2.25rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--white);font-size:0.875rem;font-family:inherit;outline:none;transition:border-color 0.18s,box-shadow 0.18s"
+              onfocus="this.style.borderColor='rgba(245,184,0,0.5)';this.style.boxShadow='0 0 0 3px rgba(245,184,0,0.08)'"
+              onblur="this.style.borderColor='';this.style.boxShadow=''">
+          </div>
           <div class="doc-filters" style="padding:0.75rem 1.5rem;border-bottom:1px solid var(--border)">
             <button class="btn-sm emp-filter primary" onclick="filtrarEmpleados('todos',this)">Todos</button>
             <button class="btn-sm emp-filter" onclick="filtrarEmpleados('Vigilante de seguridad',this)">Vigilantes</button>
