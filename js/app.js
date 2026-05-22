@@ -883,6 +883,29 @@ function t(key) {
 function getMes(i)      { return (I18N[_lang].meses   || I18N.es.meses)[i];   }
 function getMesCorto(i) { return (I18N[_lang].meses_c || I18N.es.meses_c)[i]; }
 
+// ─── AVATAR CON INICIALES ────────────────────────────────
+var _avatarColors = ['#e53935','#1e88e5','#43a047','#fb8c00','#8e24aa','#00acc1','#f4511e','#3949ab','#00897b','#c0ca33'];
+function avatarColor(nombre) {
+  var h = 0;
+  for (var i = 0; i < nombre.length; i++) h = (h * 31 + nombre.charCodeAt(i)) & 0x7fffffff;
+  return _avatarColors[h % _avatarColors.length];
+}
+function avatarIni(nombre, size) {
+  var parts = (nombre || '?').trim().split(/\s+/);
+  var ini   = parts[0].charAt(0).toUpperCase() + (parts[1] ? parts[1].charAt(0).toUpperCase() : '');
+  var s     = size || 36;
+  var fs    = Math.round(s * 0.36);
+  return '<div class="emp-avatar" style="width:' + s + 'px;height:' + s + 'px;font-size:' + fs + 'px;background:' + avatarColor(nombre) + '">' + ini + '</div>';
+}
+
+function copiarEmail(email, el) {
+  if (!navigator.clipboard) return;
+  navigator.clipboard.writeText(email).then(function() {
+    mostrarToast('📋 Email copiado', email);
+    if (el) { var prev = el.style.color; el.style.color = 'var(--gold)'; setTimeout(function(){ el.style.color = prev; }, 1200); }
+  });
+}
+
 function getTipoTurno(tipo) {
   var m = { manana:t('tur.manana'), tarde:t('tur.tarde'), noche:t('tur.noche'),
             guardia:t('tur.guardia'), libre:t('tur.libre'), turno:t('tur.turno') };
@@ -1606,11 +1629,13 @@ function renderEmpleadosTabla(data) {
   var hasFilter = data.length < allEmpleados.length;
   container.innerHTML =
     (hasFilter ? '<div style="padding:0.5rem 1.5rem;font-size:0.72rem;color:var(--muted);border-bottom:1px solid var(--border)">' + data.length + ' empleado' + (data.length !== 1 ? 's' : '') + ' encontrado' + (data.length !== 1 ? 's' : '') + '</div>' : '') +
-    '<table><thead><tr><th>Nombre</th><th>Email</th><th>Cargo</th><th>' + t('rv.col_emp').replace('Empleado','Estado') + '</th><th></th></tr></thead><tbody>' +
+    '<table><thead><tr><th style="width:2.5rem"></th><th>Nombre</th><th>Email</th><th>Cargo</th><th>' + t('edit.estado') + '</th><th></th></tr></thead><tbody>' +
     data.map(function(e, i) {
+      var emailSafe = e.email.replace(/'/g, "\\'");
       return '<tr style="animation:fadeIn 0.25s ease both;animation-delay:' + (i * 35) + 'ms">' +
+        '<td style="padding-right:0">' + avatarIni(e.nombre, 32) + '</td>' +
         '<td><strong style="color:var(--white)">' + highlightMatch(e.nombre, q) + '</strong></td>' +
-        '<td style="color:var(--text2)">' + highlightMatch(e.email, q) + '</td>' +
+        '<td><span class="email-copy" title="Clic para copiar" onclick="copiarEmail(\'' + emailSafe + '\',this)" style="color:var(--text2);font-size:0.82rem">' + highlightMatch(e.email, q) + '</span></td>' +
         '<td>' + e.cargo + '</td>' +
         '<td><span class="badge ' + (e.activo ? 'badge-green">' + t('emp.activo') : 'badge-red">' + t('emp.inactivo')) + '</span></td>' +
         '<td><button class="btn-sm" onclick="abrirEditEmp(\'' + e.id + '\')" style="margin-left:0">' + t('emp.editar') + '</button></td>' +
@@ -2843,10 +2868,23 @@ function renderCuadranteAdmin() {
   }
   thead += '</tr></thead>';
 
-  // Body
+  // Body — group by cargo when showing all
   var tbody = '<tbody>';
-  empleados.forEach(function(emp) {
-    tbody += '<tr><td title="' + emp.nombre + (emp.cargo ? ' · ' + emp.cargo : '') + '">' + emp.nombre + '</td>';
+  var ordenEmps = empleados.slice().sort(function(a, b) {
+    if (_cuadAdminCargo !== 'todos') return 0;
+    var cargoOrd = ['Coordinador','Vigilante de seguridad','Auxiliar de servicio','Administrativo'];
+    var ia = cargoOrd.indexOf(a.cargo); var ib = cargoOrd.indexOf(b.cargo);
+    if (ia < 0) ia = 99; if (ib < 0) ib = 99;
+    if (ia !== ib) return ia - ib;
+    return a.nombre.localeCompare(b.nombre);
+  });
+  var lastCargo = null;
+  ordenEmps.forEach(function(emp) {
+    if (_cuadAdminCargo === 'todos' && emp.cargo !== lastCargo) {
+      lastCargo = emp.cargo;
+      tbody += '<tr class="cua-cargo-sep"><td colspan="' + (diasMes + 1) + '">' + (emp.cargo || '—') + '</td></tr>';
+    }
+    tbody += '<tr><td title="' + emp.nombre + (emp.cargo ? ' · ' + emp.cargo : '') + '" style="display:flex;align-items:center;gap:0.5rem">' + avatarIni(emp.nombre, 24) + '<span>' + emp.nombre.split(' ').slice(0,2).join(' ') + '</span></td>';
     for (var d2 = 1; d2 <= diasMes; d2++) {
       var fechaCel = anio + '-' + String(mes + 1).padStart(2, '0') + '-' + String(d2).padStart(2, '0');
       var info     = mapa[emp.id] && mapa[emp.id][fechaCel];
