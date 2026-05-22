@@ -159,15 +159,29 @@ async function cargarDocumentos() {
   var cuadranteMes = document.getElementById('cuadranteMes');
   if (cuadrante) {
     if (cuadranteMes) cuadranteMes.textContent = cuadrante.fecha || 'Actual';
+    var cSafeName = cuadrante.nombre.replace(/'/g, "\\'");
+    var cSafeUrl  = cuadrante.url.replace(/'/g, "\\'");
+    var cFirmaHtml = '';
+    if (cuadrante.firmado) {
+      var cFecha = cuadrante.fecha_firma
+        ? new Date(cuadrante.fecha_firma).toLocaleDateString('es-ES', { day:'numeric', month:'long', year:'numeric' })
+        : '';
+      cFirmaHtml = '<span class="badge badge-green">✓ Firmado' + (cFecha ? ' el ' + cFecha : '') + '</span>';
+    } else {
+      cFirmaHtml = '<button class="btn-sm" style="border-color:rgba(245,184,0,0.45);color:var(--gold)" ' +
+        'onclick="firmarDoc(\'' + cuadrante.id + '\', \'' + cSafeName + '\')">✍ Confirmar lectura</button>';
+    }
     if (cuadranteDiv) cuadranteDiv.innerHTML =
       '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">' +
       '<div style="display:flex;align-items:center;gap:1rem">' +
       '<div style="width:48px;height:48px;background:var(--red-light);border:1px solid rgba(220,38,38,0.3);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">📅</div>' +
       '<div><div style="font-size:1rem;font-weight:600;color:var(--white)">' + cuadrante.nombre + '</div>' +
       '<div style="font-size:0.8rem;color:var(--muted);margin-top:2px">' + (cuadrante.fecha||'') + ' · Cuadrante de servicio</div></div></div>' +
-      '<button class="btn-sm primary" onclick="verDoc(\'' + cuadrante.url + '\', \'' + cuadrante.nombre + '\')">👁 Ver cuadrante</button>' +
-      '<button class="btn-sm" onclick="descargarDoc(\'' + cuadrante.id + '\', \'' + cuadrante.url + '\', \'' + cuadrante.nombre + '\')">⬇ Descargar</button>' +
-      '</div>';
+      '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">' +
+      '<button class="btn-sm primary" onclick="verDoc(\'' + cSafeUrl + '\', \'' + cSafeName + '\')">👁 Ver cuadrante</button>' +
+      '<button class="btn-sm" onclick="descargarDoc(\'' + cuadrante.id + '\', \'' + cSafeUrl + '\', \'' + cSafeName + '\')">⬇ Descargar</button>' +
+      cFirmaHtml +
+      '</div></div>';
   } else {
     if (cuadranteMes) cuadranteMes.style.display = 'none';
     if (cuadranteDiv) cuadranteDiv.innerHTML = '<div style="color:var(--muted);font-size:0.875rem">No hay cuadrante disponible.</div>';
@@ -181,16 +195,28 @@ function renderDocs(docs, containerId, limit) {
   if (!list.length) { container.innerHTML = '<div class="empty">No hay documentos disponibles</div>'; return; }
   container.innerHTML = list.map(function(doc) {
     var icon = doc.tipo === 'nomina' ? '📄' : doc.tipo === 'cuadrante' ? '📅' : doc.tipo === 'contrato' ? '📋' : '📁';
-    var badge = doc.leido ? '' : '<span class="badge badge-red" style="margin-left:0.5rem">Nuevo</span>';
     var safeName = doc.nombre.replace(/'/g, "\\'");
     var safeUrl  = doc.url.replace(/'/g, "\\'");
+    var badgeNuevo  = doc.leido ? '' : '<span class="badge badge-red" style="margin-left:0.5rem">Nuevo</span>';
+    var badgeFirma  = '';
+    var btnFirma    = '';
+    if (doc.firmado) {
+      var fFecha = doc.fecha_firma
+        ? new Date(doc.fecha_firma).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' })
+        : '';
+      badgeFirma = '<span class="badge badge-green" style="margin-left:0.5rem">✓ Firmado' + (fFecha ? ' ' + fFecha : '') + '</span>';
+    } else {
+      btnFirma = '<button class="btn-sm" style="border-color:rgba(245,184,0,0.45);color:var(--gold)" ' +
+        'onclick="firmarDoc(\'' + doc.id + '\', \'' + safeName + '\')">✍ Firmar</button>';
+    }
     return '<div class="doc-item">' +
       '<div class="doc-info"><div class="doc-icon">' + icon + '</div>' +
-      '<div><div class="doc-name">' + doc.nombre + badge + '</div>' +
+      '<div><div class="doc-name">' + doc.nombre + badgeNuevo + badgeFirma + '</div>' +
       '<div class="doc-meta">' + (doc.fecha||'') + ' · ' + doc.tipo + '</div></div></div>' +
       '<div>' +
       '<button class="btn-sm primary" onclick="verDoc(\'' + safeUrl + '\', \'' + safeName + '\')">👁 Ver</button>' +
       '<button class="btn-sm" onclick="descargarDoc(\'' + doc.id + '\', \'' + safeUrl + '\', \'' + safeName + '\')">⬇ Descargar</button>' +
+      btnFirma +
       '<button class="btn-sm" style="border-color:#dc2626;color:#dc2626" onclick="eliminarDoc(\'' + doc.id + '\', \'' + safeUrl + '\')">✕</button>' +
       '</div></div>';
   }).join('');
@@ -896,6 +922,19 @@ async function eliminarTurno(id) {
   if (!confirm('¿Eliminar este turno?')) return;
   await sb.from('turnos').delete().eq('id', id);
   cargarTurnosAdmin();
+}
+
+// FIRMA DE DOCUMENTOS
+async function firmarDoc(docId, nombre) {
+  if (!confirm('¿Confirmas que has leído "' + nombre + '"?\n\nEsta acción quedará registrada con la fecha y hora actual.')) return;
+  var { error } = await sb.from('documentos').update({
+    firmado: true,
+    fecha_firma: new Date().toISOString(),
+    leido: true
+  }).eq('id', docId);
+  if (error) { alert('Error al registrar la firma: ' + error.message); return; }
+  cargarDocumentos();
+  mostrarToast('✍ Lectura confirmada', nombre);
 }
 
 // NOTIFICACIONES
