@@ -67,8 +67,28 @@ var I18N = {
     'nav.calendario':    'Mis turnos',
     'nav.vacaciones':    'Vacaciones',
     'nav.admin':         'Administración',
+    'nav.perfil':        'Mi perfil',
     'sidebar.logout':    'Cerrar sesión',
     'sidebar.pass':      '🔑 Cambiar contraseña',
+    // Perfil
+    'prf.eyebrow':       'Mi área',
+    'prf.titulo':        'Mi perfil',
+    'prf.sub':           'Tu información personal y datos de cuenta',
+    'prf.info':          'Información personal',
+    'prf.nombre':        'Nombre completo',
+    'prf.email':         'Email corporativo',
+    'prf.cargo':         'Cargo',
+    'prf.dni':           'DNI',
+    'prf.vac':           'Vacaciones',
+    'prf.cuenta':        'Cuenta',
+    'prf.pass_btn':      '🔑 Cambiar contraseña',
+    'prf.ano':           'Año',
+    'prf.dias_anual':    'Días anuales',
+    'prf.usados':        'Días usados',
+    'prf.restantes':     'Días restantes',
+    'prf.disponibles':   'Disponibles',
+    'prf.estado':        'Estado',
+    'prf.activo':        'Activo',
     'sidebar.salir':     'Salir',
     // Bottom nav
     'bnav.inicio':       'Inicio',
@@ -454,8 +474,28 @@ var I18N = {
     'nav.calendario':    'Els meus torns',
     'nav.vacaciones':    'Vacances',
     'nav.admin':         'Administració',
+    'nav.perfil':        'El meu perfil',
     'sidebar.logout':    'Tancar sessió',
     'sidebar.pass':      '🔑 Canviar contrasenya',
+    // Perfil
+    'prf.eyebrow':       'La meva àrea',
+    'prf.titulo':        'El meu perfil',
+    'prf.sub':           'La teva informació personal i dades del compte',
+    'prf.info':          'Informació personal',
+    'prf.nombre':        'Nom complet',
+    'prf.email':         'Email corporatiu',
+    'prf.cargo':         'Càrrec',
+    'prf.dni':           'DNI',
+    'prf.vac':           'Vacances',
+    'prf.cuenta':        'Compte',
+    'prf.pass_btn':      '🔑 Canviar contrasenya',
+    'prf.ano':           'Any',
+    'prf.dias_anual':    'Dies anuals',
+    'prf.usados':        'Dies usats',
+    'prf.restantes':     'Dies restants',
+    'prf.disponibles':   'Disponibles',
+    'prf.estado':        'Estat',
+    'prf.activo':        'Actiu',
     'sidebar.salir':     'Sortir',
     // Bottom nav
     'bnav.inicio':       'Inici',
@@ -1071,6 +1111,7 @@ function navigateToPage(page) {
   if (page === 'vacaciones') cargarVacaciones();
   if (page === 'solicitudes') cargarMisSolicitudes();
   if (page === 'documentos') actualizarBadgeDocumentos(0);
+  if (page === 'perfil') cargarPerfil();
 }
 
 document.querySelectorAll('.nav-item').forEach(function(btn){
@@ -2216,6 +2257,54 @@ function exportarCalendarioICal() {
 }
 
 // ─── DASHBOARD COORDINADOR ────────────────────────────────
+
+async function cargarPerfil() {
+  var emp = currentEmpleado;
+  if (!emp) return;
+
+  var avatarEl = document.getElementById('prfAvatar');
+  var inicial = emp.nombre ? emp.nombre.charAt(0).toUpperCase() : '?';
+  if (avatarEl) avatarEl.textContent = inicial;
+
+  var setTxt = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val || '—'; };
+  setTxt('prfNombreHero', emp.nombre);
+  setTxt('prfCargoHero',  emp.cargo);
+  setTxt('prfEmailHero',  emp.email);
+  setTxt('prfNombre',     emp.nombre);
+  setTxt('prfEmail',      emp.email);
+  setTxt('prfCargo',      emp.cargo);
+  setTxt('prfDni',        emp.dni);
+
+  var year = new Date().getFullYear();
+  var anoEl = document.getElementById('prfAno');
+  if (anoEl) anoEl.textContent = year;
+
+  var anuales = emp.dias_vacaciones_anuales || 22;
+  setTxt('prfDiasAnual', anuales);
+  setTxt('prfDiasUsados', '…');
+  setTxt('prfDiasRest',   '…');
+
+  var { data: vacs } = await sb.from('vacaciones')
+    .select('fecha_inicio, fecha_fin')
+    .eq('empleado_id', emp.id)
+    .eq('estado', 'aprobada')
+    .gte('fecha_inicio', year + '-01-01')
+    .lte('fecha_fin', year + '-12-31');
+
+  var usados = 0;
+  (vacs || []).forEach(function(v) {
+    if (!v.fecha_inicio || !v.fecha_fin) return;
+    var d1 = new Date(v.fecha_inicio), d2 = new Date(v.fecha_fin);
+    usados += Math.round((d2 - d1) / 86400000) + 1;
+  });
+  var restantes = Math.max(0, anuales - usados);
+  var pct = anuales > 0 ? Math.min(100, Math.round((usados / anuales) * 100)) : 0;
+
+  setTxt('prfDiasUsados', usados);
+  setTxt('prfDiasRest',   restantes);
+  var bar = document.getElementById('prfVacBar');
+  if (bar) setTimeout(function() { bar.style.width = pct + '%'; }, 100);
+}
 
 async function cargarDashboard() {
   var statsEl      = document.getElementById('dashStats');
