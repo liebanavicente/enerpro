@@ -214,6 +214,8 @@ async function doLogout() {
   document.getElementById('cpNueva').value = '';
   document.getElementById('cpConfirma').value = '';
   document.getElementById('cpError').style.display = 'none';
+  var cpPerfilModal = document.getElementById('cambioPassPerfilModal');
+  if (cpPerfilModal) cpPerfilModal.style.display = 'none';
   document.querySelectorAll('.admin-only, .admin-only-mobile').forEach(function(el){ el.style.display='none'; });
   navigateToPage('inicio');
 }
@@ -529,6 +531,7 @@ function switchTab(tab, el) {
   if (tab === 'vacaciones-admin')   cargarVacacionesAdmin();
   if (tab === 'turnos-admin') { cargarTurnosAdmin(); poblarMasivaEmpleados(); }
   if (tab === 'resumen-vac')        cargarResumenVacaciones();
+  if (tab === 'docs-admin')         cargarDocumentosAdmin();
 }
 
 // ADMIN - EMPLEADOS
@@ -1817,4 +1820,222 @@ function suscribirVacacionesAdmin() {
       if (document.getElementById('dashStats')) cargarDashboard();
     })
     .subscribe();
+}
+
+// ─── CAMBIO DE CONTRASEÑA DESDE PERFIL ───────────────────
+
+function abrirCambioPassPerfil() {
+  document.getElementById('cpPerfilNueva').value    = '';
+  document.getElementById('cpPerfilConfirma').value = '';
+  document.getElementById('cpPerfilError').style.display = 'none';
+  document.getElementById('cpPerfilOk').style.display    = 'none';
+  var modal = document.getElementById('cambioPassPerfilModal');
+  modal.style.display = 'flex';
+  setTimeout(function() { document.getElementById('cpPerfilNueva').focus(); }, 80);
+}
+
+function cerrarCambioPassPerfil() {
+  document.getElementById('cambioPassPerfilModal').style.display = 'none';
+}
+
+async function guardarCambioPassPerfil() {
+  var nueva    = document.getElementById('cpPerfilNueva').value;
+  var confirma = document.getElementById('cpPerfilConfirma').value;
+  var err = document.getElementById('cpPerfilError');
+  var ok  = document.getElementById('cpPerfilOk');
+  var btn = document.getElementById('cpPerfilBtn');
+  err.style.display = 'none'; ok.style.display = 'none';
+  if (nueva.length < 8) {
+    err.style.display = 'block'; err.textContent = 'La contraseña debe tener al menos 8 caracteres.'; return;
+  }
+  if (nueva !== confirma) {
+    err.style.display = 'block'; err.textContent = 'Las contraseñas no coinciden.'; return;
+  }
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  var { error } = await sb.auth.updateUser({ password: nueva });
+  btn.disabled = false; btn.textContent = 'Actualizar contraseña';
+  if (error) {
+    err.style.display = 'block'; err.textContent = 'Error: ' + error.message; return;
+  }
+  ok.style.display = 'block'; ok.textContent = '✓ Contraseña actualizada correctamente.';
+  document.getElementById('cpPerfilNueva').value    = '';
+  document.getElementById('cpPerfilConfirma').value = '';
+  mostrarToast('🔑 Contraseña actualizada', 'Tu contraseña ha sido cambiada correctamente.');
+  setTimeout(cerrarCambioPassPerfil, 2200);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('cambioPassPerfilModal') &&
+      document.getElementById('cambioPassPerfilModal').style.display === 'flex') cerrarCambioPassPerfil();
+});
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.id === 'cambioPassPerfilModal') cerrarCambioPassPerfil();
+});
+
+// ─── FORZAR RESET DE CONTRASEÑA (ADMIN) ──────────────────
+
+async function forzarResetPassword() {
+  var id     = document.getElementById('editEmpId').value;
+  var nombre = document.getElementById('editEmpNombre').value.trim() || 'este empleado';
+  if (!confirm('¿Forzar cambio de contraseña a ' + nombre + '?\n\nSe le pedirá establecer una nueva contraseña la próxima vez que inicie sesión.')) return;
+  var btn = document.getElementById('editEmpResetBtn');
+  var err = document.getElementById('editEmpError');
+  var ok  = document.getElementById('editEmpOk');
+  err.style.display = 'none'; ok.style.display = 'none';
+  btn.disabled = true; btn.textContent = '⏳ Procesando...';
+  var { error } = await sb.from('empleados').update({ debe_cambiar_password: true }).eq('id', id);
+  btn.disabled = false; btn.textContent = '🔄 Forzar cambio de contraseña en próximo acceso';
+  if (error) { err.style.display = 'block'; err.textContent = 'Error: ' + error.message; return; }
+  ok.style.display = 'block'; ok.textContent = '✓ Al próximo inicio de sesión se le pedirá cambiar su contraseña.';
+  cargarEmpleados();
+}
+
+// ─── DOCUMENTOS ADMIN ─────────────────────────────────────
+
+var allDocsAdmin = [];
+
+async function cargarDocumentosAdmin() {
+  var lista = document.getElementById('docsAdminList');
+  if (!lista) return;
+  lista.innerHTML = skelDocs(6);
+
+  var { data, error } = await sb.from('documentos')
+    .select('*, empleados(nombre, cargo)')
+    .order('fecha', { ascending: false });
+
+  if (error || !data) {
+    lista.innerHTML = '<div class="empty" style="border:none">Error al cargar documentos</div>';
+    return;
+  }
+  allDocsAdmin = data;
+
+  var countEl = document.getElementById('docsAdminCount');
+  if (countEl) countEl.textContent = '· ' + data.length + ' documentos';
+
+  var empSel = document.getElementById('docsAdminEmp');
+  if (empSel) {
+    var empMap = {};
+    data.forEach(function(d) {
+      if (d.empleados) empMap[d.empleado_id] = d.empleados.nombre;
+    });
+    var optsHtml = '<option value="">Todos los empleados</option>';
+    var sortedIds = Object.keys(empMap).sort(function(a, b) {
+      return empMap[a].localeCompare(empMap[b]);
+    });
+    sortedIds.forEach(function(id) {
+      optsHtml += '<option value="' + id + '">' + empMap[id] + '</option>';
+    });
+    var prevVal = empSel.value;
+    empSel.innerHTML = optsHtml;
+    if (prevVal) empSel.value = prevVal;
+  }
+
+  filtrarDocsAdmin();
+}
+
+function filtrarDocsAdmin() {
+  var empId   = document.getElementById('docsAdminEmp')    ? document.getElementById('docsAdminEmp').value    : '';
+  var tipo    = document.getElementById('docsAdminTipo')   ? document.getElementById('docsAdminTipo').value   : '';
+  var firmado = document.getElementById('docsAdminFirmado')? document.getElementById('docsAdminFirmado').value: '';
+
+  var filtered = allDocsAdmin.filter(function(d) {
+    if (empId && d.empleado_id !== empId) return false;
+    if (tipo  && d.tipo !== tipo) return false;
+    if (firmado !== '' && String(d.firmado) !== firmado) return false;
+    return true;
+  });
+
+  var countEl = document.getElementById('docsAdminCount');
+  if (countEl) countEl.textContent = '· ' + filtered.length + ' de ' + allDocsAdmin.length;
+
+  renderDocsAdmin(filtered);
+}
+
+function renderDocsAdmin(docs) {
+  var lista = document.getElementById('docsAdminList');
+  if (!lista) return;
+  if (!docs.length) {
+    lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Sin documentos con los filtros seleccionados</div>';
+    return;
+  }
+  var delay = 0;
+  lista.innerHTML = docs.map(function(doc) {
+    var icon      = doc.tipo === 'nomina' ? '📄' : doc.tipo === 'cuadrante' ? '📅' : doc.tipo === 'contrato' ? '📋' : '📁';
+    var nombreEmp = doc.empleados ? doc.empleados.nombre : '—';
+    var cargo     = doc.empleados ? doc.empleados.cargo  : '';
+    var safeName  = doc.nombre.replace(/'/g, "\\'");
+    var safeUrl   = doc.url.replace(/'/g, "\\'");
+    var badgeFirma = doc.firmado
+      ? '<span class="badge badge-green">✓ Firmado</span>'
+      : '<span class="badge badge-yellow">Sin firmar</span>';
+    var d = delay; delay += 40;
+    return '<div class="doc-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
+      '<div class="doc-info">' +
+      '<div class="doc-icon">' + icon + '</div>' +
+      '<div>' +
+        '<div class="doc-name"><strong style="color:var(--gold)">' + nombreEmp + '</strong> — ' + doc.nombre + '</div>' +
+        '<div class="doc-meta">' + (doc.fecha || '') + ' · ' + doc.tipo + (cargo ? ' · <span style="color:var(--muted)">' + cargo + '</span>' : '') + '</div>' +
+      '</div></div>' +
+      '<div style="display:flex;align-items:center;gap:0.5rem">' +
+      badgeFirma +
+      '<button class="btn-sm primary" onclick="verDoc(\'' + safeUrl + '\', \'' + safeName + '\')">👁 Ver</button>' +
+      '<button class="btn-sm" onclick="eliminarDocAdmin(\'' + doc.id + '\', \'' + safeUrl + '\')" style="color:var(--red);border-color:rgba(220,38,38,0.3)">✕</button>' +
+      '</div></div>';
+  }).join('');
+}
+
+async function eliminarDocAdmin(docId, url) {
+  if (!confirm('¿Eliminar este documento?')) return;
+  await sb.storage.from('documentos').remove([url]);
+  await sb.from('documentos').delete().eq('id', docId);
+  mostrarToast('🗑 Documento eliminado', 'El documento ha sido eliminado correctamente.');
+  cargarDocumentosAdmin();
+}
+
+// ─── EXPORTAR SOLICITUDES A EXCEL ────────────────────────
+
+async function exportarSolicitudesExcel() {
+  var { data } = await sb.from('solicitudes')
+    .select('*, empleados(nombre)')
+    .order('created_at', { ascending: false });
+  if (!data || !data.length) { mostrarToast('ℹ️ Sin datos', 'No hay solicitudes para exportar.'); return; }
+  var filas = [['Empleado', 'Tipo', 'Fechas', 'Motivo', 'Estado', 'Comentario coordinador', 'Fecha solicitud']];
+  data.forEach(function(s) {
+    filas.push([
+      s.empleados ? s.empleados.nombre : '—',
+      s.tipo       || '',
+      s.fechas     || '',
+      s.motivo     || '',
+      s.estado     || '',
+      s.comentario || '',
+      new Date(s.created_at).toLocaleDateString('es-ES')
+    ]);
+  });
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.aoa_to_sheet(filas);
+  ws['!cols'] = [{wch:28},{wch:22},{wch:18},{wch:40},{wch:12},{wch:30},{wch:16}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Solicitudes');
+  XLSX.writeFile(wb, 'solicitudes_enerpro_' + new Date().toISOString().split('T')[0] + '.xlsx');
+}
+
+// ─── EXPORTAR VACACIONES A EXCEL ─────────────────────────
+
+async function exportarVacacionesExcel() {
+  var filtro = document.getElementById('vacAdminFiltro') ? document.getElementById('vacAdminFiltro').value : 'todas';
+  var q = sb.from('vacaciones').select('*, empleados(nombre)').order('fecha_inicio');
+  if (filtro !== 'todas') q = q.eq('estado', filtro);
+  var { data } = await q;
+  if (!data || !data.length) { mostrarToast('ℹ️ Sin datos', 'No hay solicitudes de vacaciones para exportar.'); return; }
+  var filas = [['Empleado', 'Tipo', 'Desde', 'Hasta', 'Días', 'Estado', 'Comentario coordinador', 'Notas']];
+  data.forEach(function(v) {
+    var nombre = v.empleados ? v.empleados.nombre : '—';
+    var tipo   = VAC_TIPO_LABEL[v.tipo] || v.tipo;
+    var dias   = diasEntre(v.fecha_inicio, v.fecha_fin);
+    filas.push([nombre, tipo, v.fecha_inicio, v.fecha_fin, dias, v.estado, v.comentario || '', v.notas || '']);
+  });
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.aoa_to_sheet(filas);
+  ws['!cols'] = [{wch:28},{wch:16},{wch:12},{wch:12},{wch:8},{wch:12},{wch:30},{wch:30}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Vacaciones');
+  XLSX.writeFile(wb, 'vacaciones_enerpro_' + new Date().toISOString().split('T')[0] + '.xlsx');
 }

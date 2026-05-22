@@ -825,6 +825,7 @@
         </div>
       </div>
       <button class="btn-logout" id="btnLogout">Cerrar sesión</button>
+      <button class="btn-logout" onclick="abrirCambioPassPerfil()" style="margin-top:0.5rem;border-color:rgba(245,184,0,0.2);color:var(--muted)">🔑 Cambiar contraseña</button>
     </div>
   </aside>
 
@@ -956,6 +957,7 @@
         <button class="admin-tab" onclick="switchTab('importar', this)">Importar Excel</button>
         <button class="admin-tab" onclick="switchTab('vacaciones-admin', this)">Vacaciones</button>
         <button class="admin-tab" onclick="switchTab('resumen-vac', this)">📋 Resumen vacacional</button>
+        <button class="admin-tab" onclick="switchTab('docs-admin', this)">📂 Documentos</button>
       </div>
 
       <!-- TAB DASHBOARD -->
@@ -1087,9 +1089,12 @@
 
     <div class="admin-tab-content" id="tab-solicitudes-admin" style="display:none">
       <div class="card" style="padding:0">
-        <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem">
           <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">Solicitudes de empleados</span>
-          <button class="btn-sm primary" onclick="cargarSolicitudesAdmin()">Actualizar</button>
+          <div style="display:flex;gap:0.5rem">
+            <button class="btn-sm" style="border-color:rgba(245,184,0,0.4);color:var(--gold)" onclick="exportarSolicitudesExcel()">⬇ Exportar Excel</button>
+            <button class="btn-sm primary" onclick="cargarSolicitudesAdmin()">Actualizar</button>
+          </div>
         </div>
         <div id="solicitudesAdminList"><div class="loading">Cargando...</div></div>
       </div>
@@ -1214,6 +1219,7 @@
               <option value="cancelada">Canceladas</option>
               <option value="todas">Todas</option>
             </select>
+            <button class="btn-sm" style="border-color:rgba(245,184,0,0.4);color:var(--gold)" onclick="exportarVacacionesExcel()">⬇ Exportar Excel</button>
             <button class="btn-sm" onclick="cargarVacacionesAdmin()">↺ Actualizar</button>
           </div>
         </div>
@@ -1242,6 +1248,38 @@
           </div>
         </div>
         <div id="resumenVacLista"><div class="loading">Cargando...</div></div>
+      </div>
+    </div>
+
+    <!-- TAB DOCUMENTOS ADMIN -->
+    <div class="admin-tab-content" id="tab-docs-admin" style="display:none">
+      <div class="card" style="padding:0">
+        <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem">
+          <div>
+            <span class="card-label" style="margin:0">Todos los documentos</span>
+            <span id="docsAdminCount" style="font-size:0.72rem;color:var(--muted);margin-left:0.5rem"></span>
+          </div>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+            <select id="docsAdminEmp" class="btn-sm" style="padding:0 0.75rem;height:36px;border-radius:var(--r-xs);background:var(--surface2);color:var(--text2);border:1px solid var(--border2)" onchange="filtrarDocsAdmin()">
+              <option value="">Todos los empleados</option>
+            </select>
+            <select id="docsAdminTipo" class="btn-sm" style="padding:0 0.75rem;height:36px;border-radius:var(--r-xs);background:var(--surface2);color:var(--text2);border:1px solid var(--border2)" onchange="filtrarDocsAdmin()">
+              <option value="">Todos los tipos</option>
+              <option value="nomina">Nóminas</option>
+              <option value="cuadrante">Cuadrantes</option>
+              <option value="contrato">Contratos</option>
+              <option value="protocolo">Protocolos</option>
+              <option value="otro">Otros</option>
+            </select>
+            <select id="docsAdminFirmado" class="btn-sm" style="padding:0 0.75rem;height:36px;border-radius:var(--r-xs);background:var(--surface2);color:var(--text2);border:1px solid var(--border2)" onchange="filtrarDocsAdmin()">
+              <option value="">Firmados y sin firmar</option>
+              <option value="true">Firmados</option>
+              <option value="false">Sin firmar</option>
+            </select>
+            <button class="btn-sm" onclick="cargarDocumentosAdmin()">↺ Actualizar</button>
+          </div>
+        </div>
+        <div id="docsAdminList"><div class="loading">Cargando...</div></div>
       </div>
     </div>
 
@@ -1443,6 +1481,35 @@
   </div>
 </div>
 
+<!-- MODAL CAMBIO DE CONTRASEÑA DESDE PERFIL -->
+<div id="cambioPassPerfilModal" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1rem">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-top:2px solid var(--gold);border-radius:var(--r);width:100%;max-width:400px;box-shadow:0 32px 80px rgba(0,0,0,0.7);animation:fadeUp 0.28s cubic-bezier(0.22,1,0.36,1)">
+    <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);margin-bottom:2px">Mi perfil</div>
+        <div style="font-size:1rem;font-weight:600;color:var(--white)">Cambiar contraseña</div>
+      </div>
+      <button onclick="cerrarCambioPassPerfil()" style="background:none;border:none;color:var(--muted);font-size:1.25rem;cursor:pointer;line-height:1;padding:0.25rem">✕</button>
+    </div>
+    <div style="padding:1.5rem">
+      <div class="error-box" id="cpPerfilError"></div>
+      <div class="success-box" id="cpPerfilOk"></div>
+      <div class="form-group">
+        <label>Nueva contraseña</label>
+        <input type="password" id="cpPerfilNueva" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label>Confirmar contraseña</label>
+        <input type="password" id="cpPerfilConfirma" placeholder="Repite la contraseña" autocomplete="new-password">
+      </div>
+      <div style="display:flex;gap:0.75rem;margin-top:1rem">
+        <button class="btn-sm primary" id="cpPerfilBtn" onclick="guardarCambioPassPerfil()" style="flex:1;padding:0.7rem;font-size:0.85rem">Actualizar contraseña</button>
+        <button class="btn-sm" onclick="cerrarCambioPassPerfil()" style="padding:0.7rem 1.25rem">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL EDITAR EMPLEADO -->
 <div id="editEmpModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:1rem;animation:fadeIn 0.2s ease">
   <div style="background:var(--surface);border:1px solid var(--border2);border-top:2px solid var(--gold);border-radius:var(--r);width:100%;max-width:480px;box-shadow:0 32px 80px rgba(0,0,0,0.7);animation:fadeUp 0.28s cubic-bezier(0.22,1,0.36,1)">
@@ -1480,6 +1547,10 @@
             <option value="false">Inactivo / Baja</option>
           </select>
         </div>
+      </div>
+      <div style="margin-bottom:1rem;padding:0.75rem 1rem;background:var(--surface2);border-radius:var(--r-sm);border:1px solid var(--border)">
+        <div style="font-size:0.65rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem">Acceso al portal</div>
+        <button class="btn-sm" id="editEmpResetBtn" onclick="forzarResetPassword()" style="color:var(--yellow);border-color:rgba(245,158,11,0.3);font-size:0.73rem;margin-left:0">🔄 Forzar cambio de contraseña en próximo acceso</button>
       </div>
       <div style="display:flex;gap:0.75rem;margin-top:1.5rem">
         <button class="btn-sm primary" id="editEmpBtn" onclick="guardarEmpleado()" style="flex:1;padding:0.7rem;font-size:0.85rem">Guardar cambios</button>
