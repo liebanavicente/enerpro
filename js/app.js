@@ -9,6 +9,7 @@ var currentEmpleado = null;
 var allDocs = [];
 var realtimeChannel = null;
 var solicitudesChannel = null;
+var vacacionesChannel  = null;
 
 // LOGIN
 document.getElementById('btnLogin').addEventListener('click', doLogin);
@@ -48,6 +49,7 @@ async function doLogin() {
   pedirPermisoNotificaciones();
   suscribirDocumentosNuevos();
   suscribirSolicitudesEmpleado();
+  suscribirVacacionesEmpleado();
 }
 
 // NAVEGACIÓN
@@ -60,6 +62,7 @@ function navigateToPage(page) {
   var pageEl = document.getElementById('page-' + page);
   if (pageEl) pageEl.classList.add('active');
   if (page === 'calendario') cargarCalendario();
+  if (page === 'vacaciones') cargarVacaciones();
 }
 
 document.querySelectorAll('.nav-item').forEach(function(btn){
@@ -72,6 +75,7 @@ function navTo(page) { navigateToPage(page); }
 async function doLogout() {
   if (realtimeChannel)    { sb.removeChannel(realtimeChannel);    realtimeChannel    = null; }
   if (solicitudesChannel) { sb.removeChannel(solicitudesChannel); solicitudesChannel = null; }
+  if (vacacionesChannel)  { sb.removeChannel(vacacionesChannel);  vacacionesChannel  = null; }
   await sb.auth.signOut();
   currentUser = null; currentEmpleado = null; allDocs = [];
   document.getElementById('app').style.display = 'none';
@@ -244,7 +248,8 @@ function switchTab(tab, el) {
   var tabEl = document.getElementById('tab-' + tab);
   if (tabEl) tabEl.style.display = 'block';
   if (tab === 'subir' || tab === 'masivo' || tab === 'turnos-admin' || tab === 'importar') cargarEmpleados();
-  if (tab === 'solicitudes-admin') cargarSolicitudesAdmin();
+  if (tab === 'solicitudes-admin')  cargarSolicitudesAdmin();
+  if (tab === 'vacaciones-admin')   cargarVacacionesAdmin();
   if (tab === 'turnos-admin') cargarTurnosAdmin();
 }
 
@@ -376,6 +381,110 @@ sb.auth.onAuthStateChange(function(event, session) {
     document.getElementById('loginWrap').style.display = 'flex';
   }
 });
+
+// ─── VACACIONES ──────────────────────────────────────────
+
+var VAC_TIPO_LABEL = { vacaciones:'Vacaciones', permiso:'Permiso', asuntos_propios:'Asuntos propios', baja_medica:'Baja médica' };
+var VAC_TIPO_CLASS = { vacaciones:'badge-blue', permiso:'badge-yellow', asuntos_propios:'badge-yellow', baja_medica:'badge-red' };
+
+function diasEntre(desde, hasta) {
+  var d1 = new Date(desde + 'T12:00:00'), d2 = new Date(hasta + 'T12:00:00');
+  return Math.max(1, Math.round((d2 - d1) / 86400000) + 1);
+}
+
+(function() {
+  function actualizarDias() {
+    var d = document.getElementById('vacDesde'), h = document.getElementById('vacHasta');
+    if (!d || !h) return;
+    if (d.value && h.value && h.value >= d.value) {
+      document.getElementById('vacDias').textContent = diasEntre(d.value, h.value) + ' días';
+      document.getElementById('vacDiasCont').style.display = 'block';
+    } else {
+      document.getElementById('vacDiasCont').style.display = 'none';
+    }
+  }
+  document.addEventListener('change', function(e) {
+    if (e.target.id === 'vacDesde' || e.target.id === 'vacHasta') actualizarDias();
+  });
+})();
+
+async function solicitarVacaciones() {
+  var tipo   = document.getElementById('vacTipo').value;
+  var desde  = document.getElementById('vacDesde').value;
+  var hasta  = document.getElementById('vacHasta').value;
+  var notas  = document.getElementById('vacNotas').value.trim();
+  var ok  = document.getElementById('vacOk');
+  var err = document.getElementById('vacError');
+  ok.style.display = 'none'; err.style.display = 'none';
+  if (!desde || !hasta) { err.style.display='block'; err.textContent='Selecciona las fechas.'; return; }
+  if (hasta < desde)    { err.style.display='block'; err.textContent='La fecha fin debe ser posterior al inicio.'; return; }
+  if (!currentEmpleado) { err.style.display='block'; err.textContent='Sesión no identificada.'; return; }
+  var payload = { empleado_id: currentEmpleado.id, tipo, fecha_inicio: desde, fecha_fin: hasta, estado: 'pendiente' };
+  if (notas) payload.notas = notas;
+  var { error } = await sb.from('vacaciones').insert(payload);
+  if (error) { err.style.display='block'; err.textContent='Error: '+error.message; return; }
+  ok.style.display='block'; ok.textContent='✓ Solicitud enviada. El coordinador la revisará en breve.';
+  document.getElementById('vacDesde').value = '';
+  document.getElementById('vacHasta').value = '';
+  document.getElementById('vacNotas').value = '';
+  document.getElementById('vacDiasCont').style.display = 'none';
+  cargarVacaciones();
+}
+
+async function cargarVacaciones() {
+  var lista = document.getElementById('vacLista');
+  if (!lista || !currentEmpleado) return;
+  lista.innerHTML = '<div class="loading">Cargando...</div>';
+  var { data } = await sb.from('vacaciones').select('*')
+    .eq('empleado_id', currentEmpleado.id).order('fecha_inicio', { ascending: false });
+  if (!data || !data.length) { lista.innerHTML = '<div class="empty" style="border:none;padding:2rem">No tienes solicitudes</div>'; return; }
+  lista.innerHTML = data.map(function(v) {
+    var desde  = new Date(v.fecha_inicio+'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'});
+    var hasta  = new Date(v.fecha_fin  +'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'});
+    var dias   = diasEntre(v.fecha_inicio, v.fecha_fin);
+    var est    = v.estado === 'aprobada' ? 'badge-green' : v.estado === 'rechazada' ? 'badge-red' : 'badge-yellow';
+    return '<div class="vac-item">' +
+      '<span class="badge ' + (VAC_TIPO_CLASS[v.tipo]||'badge-blue') + ' vac-tipo">' + (VAC_TIPO_LABEL[v.tipo]||v.tipo) + '</span>' +
+      '<span class="vac-fechas">' + desde + ' → ' + hasta + (v.notas ? '<br><span style="font-size:0.72rem">' + v.notas + '</span>' : '') + '</span>' +
+      '<span class="vac-dias">' + dias + ' d.</span>' +
+      '<span class="badge ' + est + '">' + v.estado + '</span>' +
+      '</div>';
+  }).join('');
+}
+
+async function cargarVacacionesAdmin() {
+  var lista = document.getElementById('vacAdminLista');
+  if (!lista) return;
+  lista.innerHTML = '<div class="loading">Cargando...</div>';
+  var filtro = document.getElementById('vacAdminFiltro').value;
+  var q = sb.from('vacaciones').select('*, empleados(nombre)').order('fecha_inicio');
+  if (filtro !== 'todas') q = q.eq('estado', filtro);
+  var { data } = await q;
+  if (!data || !data.length) { lista.innerHTML = '<div class="empty" style="border:none;padding:2rem">Sin solicitudes</div>'; return; }
+  lista.innerHTML = data.map(function(v) {
+    var nombre = v.empleados ? v.empleados.nombre : '—';
+    var desde  = new Date(v.fecha_inicio+'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short'});
+    var hasta  = new Date(v.fecha_fin  +'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'});
+    var dias   = diasEntre(v.fecha_inicio, v.fecha_fin);
+    var est    = v.estado === 'aprobada' ? 'badge-green' : v.estado === 'rechazada' ? 'badge-red' : 'badge-yellow';
+    return '<div class="doc-item">' +
+      '<div class="doc-info"><div class="doc-icon">🏖️</div>' +
+      '<div><div class="doc-name">' + nombre + ' · <span style="color:var(--text2);font-weight:400">' + (VAC_TIPO_LABEL[v.tipo]||v.tipo) + '</span></div>' +
+      '<div class="doc-meta">' + desde + ' → ' + hasta + ' (' + dias + ' días)' + (v.notas ? ' · ' + v.notas : '') + '</div></div></div>' +
+      '<div style="display:flex;align-items:center;gap:0.5rem">' +
+      '<span class="badge ' + est + '">' + v.estado + '</span>' +
+      (v.estado === 'pendiente' ?
+        '<button class="btn-sm primary" onclick="gestionarVacacion(\'' + v.id + '\',\'aprobada\')">Aprobar</button>' +
+        '<button class="btn-sm" style="color:var(--red);border-color:rgba(220,38,38,0.3)" onclick="gestionarVacacion(\'' + v.id + '\',\'rechazada\')">Rechazar</button>'
+        : '') +
+      '</div></div>';
+  }).join('');
+}
+
+async function gestionarVacacion(id, estado) {
+  await sb.from('vacaciones').update({ estado }).eq('id', id);
+  cargarVacacionesAdmin();
+}
 
 // ─── IMPORTAR EXCEL ──────────────────────────────────────
 
@@ -728,6 +837,30 @@ function suscribirSolicitudesEmpleado() {
           icon: 'enerprologo.jpg'
         });
       }
+    })
+    .subscribe();
+}
+
+function suscribirVacacionesEmpleado() {
+  if (!currentEmpleado) return;
+  if (vacacionesChannel) { sb.removeChannel(vacacionesChannel); }
+  vacacionesChannel = sb.channel('vacaciones-' + currentEmpleado.id)
+    .on('postgres_changes', {
+      event: 'UPDATE', schema: 'public', table: 'vacaciones',
+      filter: 'empleado_id=eq.' + currentEmpleado.id
+    }, function(payload) {
+      var estado = payload.new.estado;
+      if (estado !== 'aprobada' && estado !== 'rechazada') return;
+      var tipo   = VAC_TIPO_LABEL[payload.new.tipo] || 'Vacaciones';
+      var emoji  = estado === 'aprobada' ? '✅' : '❌';
+      var titulo = tipo + ' ' + estado;
+      var desde  = payload.new.fecha_inicio, hasta = payload.new.fecha_fin;
+      var cuerpo = desde + ' → ' + hasta + ' (' + diasEntre(desde, hasta) + ' días)';
+      mostrarToast(emoji + ' ' + titulo, cuerpo);
+      if (Notification.permission === 'granted') {
+        new Notification('ENERPRO — ' + titulo, { body: cuerpo, icon: 'enerprologo.jpg' });
+      }
+      cargarVacaciones();
     })
     .subscribe();
 }
