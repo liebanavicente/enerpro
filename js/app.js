@@ -337,7 +337,8 @@ async function cargarMisSolicitudes() {
     return '<div class="vac-item">' +
       '<span class="badge badge-blue vac-tipo" style="min-width:6rem;justify-content:center">' + tipoLbl + '</span>' +
       '<span class="vac-fechas">' + (s.fechas || '—') +
-        (s.motivo ? '<br><span style="font-size:0.72rem;color:var(--muted)">' + s.motivo + '</span>' : '') + '</span>' +
+        (s.motivo    ? '<br><span style="font-size:0.72rem;color:var(--muted)">'  + s.motivo    + '</span>' : '') +
+        (s.comentario ? '<br><span style="font-size:0.72rem;color:var(--gold)">💬 ' + s.comentario + '</span>' : '') + '</span>' +
       '<span class="vac-dias" style="min-width:5.5rem;font-size:0.75rem;color:var(--muted)">' + fecha + '</span>' +
       '<span class="badge ' + bc + '">' + s.estado + '</span>' +
       '</div>';
@@ -356,20 +357,48 @@ async function cargarSolicitudesAdmin() {
   }
   container.innerHTML = data.map(function(s) {
     var bc = s.estado === 'aprobada' ? 'badge-green' : s.estado === 'rechazada' ? 'badge-red' : 'badge-yellow';
+    var cmt = s.comentario ? '<div class="doc-meta" style="color:var(--gold);margin-top:3px">💬 ' + s.comentario + '</div>' : '';
     return '<div class="doc-item">' +
       '<div class="doc-info"><div class="doc-icon">📋</div>' +
       '<div><div class="doc-name">' + (s.empleados ? s.empleados.nombre : 'Empleado') + ' — ' + s.tipo + '</div>' +
       '<div class="doc-meta">' + (s.fechas||'') + (s.motivo ? ' · ' + s.motivo : '') + '</div>' +
       '<div class="doc-meta">' + new Date(s.created_at).toLocaleDateString('es-ES') + '</div>' +
-      '</div></div>' +
-      '<div style="display:flex;gap:0.5rem;align-items:center">' +
+      cmt + '</div></div>' +
+      '<div style="display:flex;gap:0.5rem;align-items:center" id="sol-act-' + s.id + '">' +
       '<span class="badge ' + bc + '">' + s.estado + '</span>' +
       (s.estado === 'pendiente' ?
-        '<button class="btn-sm primary" onclick="gestionarSolicitud(\'' + s.id + '\',\'aprobada\')">Aprobar</button>' +
-        '<button class="btn-sm" style="border-color:#dc2626;color:#dc2626" onclick="gestionarSolicitud(\'' + s.id + '\',\'rechazada\')">Rechazar</button>'
+        '<button class="btn-sm primary" onclick="mostrarAccionSolicitud(\'' + s.id + '\',\'aprobada\')">Aprobar</button>' +
+        '<button class="btn-sm" style="border-color:#dc2626;color:#dc2626" onclick="mostrarAccionSolicitud(\'' + s.id + '\',\'rechazada\')">Rechazar</button>'
         : '') +
       '</div></div>';
   }).join('');
+}
+
+function mostrarAccionSolicitud(id, estado) {
+  var el = document.getElementById('sol-act-' + id);
+  if (!el) return;
+  var esBuena = estado === 'aprobada';
+  var col = esBuena ? 'var(--green)' : 'var(--red)';
+  el.innerHTML =
+    '<div style="display:flex;flex-direction:column;gap:0.4rem;min-width:200px;max-width:280px">' +
+    '<textarea id="cmt-sol-' + id + '" rows="2" placeholder="Comentario para el empleado (opcional)..." ' +
+    'style="width:100%;padding:0.45rem 0.7rem;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--r-xs);color:var(--white);font-size:0.78rem;font-family:inherit;resize:none;outline:none"></textarea>' +
+    '<div style="display:flex;gap:0.4rem">' +
+    '<button class="btn-sm primary" style="background:' + col + ';border-color:' + col + '" ' +
+    'onclick="confirmarSolicitud(\'' + id + '\',\'' + estado + '\')">' + (esBuena ? '✓ Aprobar' : '✕ Rechazar') + '</button>' +
+    '<button class="btn-sm" onclick="cargarSolicitudesAdmin()">Cancelar</button>' +
+    '</div></div>';
+  el.querySelector('textarea').focus();
+}
+
+async function confirmarSolicitud(id, estado) {
+  var cmt = document.getElementById('cmt-sol-' + id);
+  var comentario = cmt ? cmt.value.trim() : '';
+  var payload = { estado: estado };
+  if (comentario) payload.comentario = comentario;
+  await sb.from('solicitudes').update(payload).eq('id', id);
+  cargarSolicitudesAdmin();
+  if (document.getElementById('dashStats')) cargarDashboard();
 }
 
 async function gestionarSolicitud(id, estado) {
@@ -634,7 +663,9 @@ async function cargarVacaciones() {
     var est    = v.estado === 'aprobada' ? 'badge-green' : v.estado === 'rechazada' ? 'badge-red' : 'badge-yellow';
     return '<div class="vac-item">' +
       '<span class="badge ' + (VAC_TIPO_CLASS[v.tipo]||'badge-blue') + ' vac-tipo">' + (VAC_TIPO_LABEL[v.tipo]||v.tipo) + '</span>' +
-      '<span class="vac-fechas">' + desde + ' → ' + hasta + (v.notas ? '<br><span style="font-size:0.72rem">' + v.notas + '</span>' : '') + '</span>' +
+      '<span class="vac-fechas">' + desde + ' → ' + hasta +
+        (v.notas     ? '<br><span style="font-size:0.72rem;color:var(--muted)">' + v.notas      + '</span>' : '') +
+        (v.comentario ? '<br><span style="font-size:0.72rem;color:var(--gold)">💬 ' + v.comentario + '</span>' : '') + '</span>' +
       '<span class="vac-dias">' + dias + ' d.</span>' +
       '<span class="badge ' + est + '">' + v.estado + '</span>' +
       '</div>';
@@ -660,14 +691,41 @@ async function cargarVacacionesAdmin() {
       '<div class="doc-info"><div class="doc-icon">🏖️</div>' +
       '<div><div class="doc-name">' + nombre + ' · <span style="color:var(--text2);font-weight:400">' + (VAC_TIPO_LABEL[v.tipo]||v.tipo) + '</span></div>' +
       '<div class="doc-meta">' + desde + ' → ' + hasta + ' (' + dias + ' días)' + (v.notas ? ' · ' + v.notas : '') + '</div></div></div>' +
-      '<div style="display:flex;align-items:center;gap:0.5rem">' +
+      '<div style="display:flex;align-items:center;gap:0.5rem" id="vac-act-' + v.id + '">' +
       '<span class="badge ' + est + '">' + v.estado + '</span>' +
       (v.estado === 'pendiente' ?
-        '<button class="btn-sm primary" onclick="gestionarVacacion(\'' + v.id + '\',\'aprobada\')">Aprobar</button>' +
-        '<button class="btn-sm" style="color:var(--red);border-color:rgba(220,38,38,0.3)" onclick="gestionarVacacion(\'' + v.id + '\',\'rechazada\')">Rechazar</button>'
-        : '') +
+        '<button class="btn-sm primary" onclick="mostrarAccionVacacion(\'' + v.id + '\',\'aprobada\')">Aprobar</button>' +
+        '<button class="btn-sm" style="color:var(--red);border-color:rgba(220,38,38,0.3)" onclick="mostrarAccionVacacion(\'' + v.id + '\',\'rechazada\')">Rechazar</button>'
+        : (v.comentario ? '<span style="font-size:0.75rem;color:var(--gold);max-width:180px;overflow:hidden;text-overflow:ellipsis">💬 ' + v.comentario + '</span>' : '')) +
       '</div></div>';
   }).join('');
+}
+
+function mostrarAccionVacacion(id, estado) {
+  var el = document.getElementById('vac-act-' + id);
+  if (!el) return;
+  var esBuena = estado === 'aprobada';
+  var col = esBuena ? 'var(--green)' : 'var(--red)';
+  el.innerHTML =
+    '<div style="display:flex;flex-direction:column;gap:0.4rem;min-width:200px;max-width:280px">' +
+    '<textarea id="cmt-vac-' + id + '" rows="2" placeholder="Comentario para el empleado (opcional)..." ' +
+    'style="width:100%;padding:0.45rem 0.7rem;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--r-xs);color:var(--white);font-size:0.78rem;font-family:inherit;resize:none;outline:none"></textarea>' +
+    '<div style="display:flex;gap:0.4rem">' +
+    '<button class="btn-sm primary" style="background:' + col + ';border-color:' + col + '" ' +
+    'onclick="confirmarVacacion(\'' + id + '\',\'' + estado + '\')">' + (esBuena ? '✓ Aprobar' : '✕ Rechazar') + '</button>' +
+    '<button class="btn-sm" onclick="cargarVacacionesAdmin()">Cancelar</button>' +
+    '</div></div>';
+  el.querySelector('textarea').focus();
+}
+
+async function confirmarVacacion(id, estado) {
+  var cmt = document.getElementById('cmt-vac-' + id);
+  var comentario = cmt ? cmt.value.trim() : '';
+  var payload = { estado: estado };
+  if (comentario) payload.comentario = comentario;
+  await sb.from('vacaciones').update(payload).eq('id', id);
+  cargarVacacionesAdmin();
+  if (document.getElementById('dashStats')) cargarDashboard();
 }
 
 async function gestionarVacacion(id, estado) {
