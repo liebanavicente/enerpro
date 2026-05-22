@@ -6,6 +6,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 var currentUser = null;
 var currentEmpleado = null;
+var currentIsAdmin = false;
 var allDocs = [];
 var realtimeChannel = null;
 var solicitudesChannel = null;
@@ -28,8 +29,23 @@ async function doLogin() {
   currentUser = data.user;
   var { data: emp } = await sb.from('empleados').select('*').eq('email', email).single();
   currentEmpleado = emp;
-  var isAdmin = email.includes('admin') || (emp && emp.cargo === 'Coordinador');
+  currentIsAdmin = email.includes('admin') || (emp && emp.cargo === 'Coordinador');
+
+  if (emp && emp.debe_cambiar_password) {
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('cambioPassModal').style.display = 'flex';
+    document.getElementById('cpNueva').focus();
+    return;
+  }
+  iniciarApp();
+}
+
+function iniciarApp() {
+  var emp    = currentEmpleado;
+  var email  = currentUser ? currentUser.email : '';
+  var isAdmin = currentIsAdmin;
   document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('cambioPassModal').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   document.getElementById('userName').textContent = emp ? emp.nombre : email;
   document.getElementById('userAvatar').textContent = emp ? emp.nombre.charAt(0).toUpperCase() : '?';
@@ -50,6 +66,39 @@ async function doLogin() {
   suscribirDocumentosNuevos();
   suscribirSolicitudesEmpleado();
   suscribirVacacionesEmpleado();
+}
+
+async function confirmarCambioPassword() {
+  var nueva    = document.getElementById('cpNueva').value;
+  var confirma = document.getElementById('cpConfirma').value;
+  var err = document.getElementById('cpError');
+  var btn = document.getElementById('cpBtn');
+  err.style.display = 'none';
+  if (nueva.length < 8) {
+    err.style.display = 'block'; err.textContent = 'La contraseña debe tener al menos 8 caracteres.'; return;
+  }
+  if (nueva !== confirma) {
+    err.style.display = 'block'; err.textContent = 'Las contraseñas no coinciden.'; return;
+  }
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  var { error: updErr } = await sb.auth.updateUser({ password: nueva });
+  if (updErr) {
+    err.style.display = 'block'; err.textContent = 'Error: ' + updErr.message;
+    btn.disabled = false; btn.textContent = 'Cambiar contraseña y acceder';
+    return;
+  }
+  if (currentEmpleado) {
+    await sb.from('empleados').update({ debe_cambiar_password: false }).eq('id', currentEmpleado.id);
+    currentEmpleado.debe_cambiar_password = false;
+  }
+  btn.textContent = '✓ Contraseña actualizada';
+  setTimeout(function() {
+    btn.disabled = false;
+    btn.textContent = 'Cambiar contraseña y acceder';
+    document.getElementById('cpNueva').value = '';
+    document.getElementById('cpConfirma').value = '';
+    iniciarApp();
+  }, 900);
 }
 
 // NAVEGACIÓN
@@ -77,11 +126,15 @@ async function doLogout() {
   if (solicitudesChannel) { sb.removeChannel(solicitudesChannel); solicitudesChannel = null; }
   if (vacacionesChannel)  { sb.removeChannel(vacacionesChannel);  vacacionesChannel  = null; }
   await sb.auth.signOut();
-  currentUser = null; currentEmpleado = null; allDocs = [];
+  currentUser = null; currentEmpleado = null; currentIsAdmin = false; allDocs = [];
   document.getElementById('app').style.display = 'none';
+  document.getElementById('cambioPassModal').style.display = 'none';
   document.getElementById('loginWrap').style.display = 'flex';
   document.getElementById('loginEmail').value = '';
   document.getElementById('loginPassword').value = '';
+  document.getElementById('cpNueva').value = '';
+  document.getElementById('cpConfirma').value = '';
+  document.getElementById('cpError').style.display = 'none';
   document.querySelectorAll('.admin-only, .admin-only-mobile').forEach(function(el){ el.style.display='none'; });
   navigateToPage('inicio');
 }
@@ -339,7 +392,7 @@ async function crearEmpleado() {
   }
 
   // Insertar en tabla empleados
-  var { error: dbError } = await sb.from('empleados').insert({ nombre:nombre, email:email, dni:dni, cargo:cargo, activo:true });
+  var { error: dbError } = await sb.from('empleados').insert({ nombre:nombre, email:email, dni:dni, cargo:cargo, activo:true, debe_cambiar_password:true });
   if (dbError) { err.style.display='block'; err.textContent='Error en BD: '+dbError.message; return; }
 
   ok.style.display='block'; ok.textContent='✓ Empleado creado correctamente.' + authMsg;

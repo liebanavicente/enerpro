@@ -511,6 +511,41 @@
   /* Legacy aliases para JS que usa --bg2 / --bg3 en inline styles */
   :root { --bg2: var(--surface); --bg3: var(--surface2); }
 
+  /* ─── CAMBIO DE CONTRASEÑA ──────────────────────────── */
+  .cp-wrap {
+    position: fixed; inset: 0; z-index: 10000;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    padding: 1.5rem;
+    animation: fadeUp 0.35s cubic-bezier(0.22,1,0.36,1);
+  }
+  .cp-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--gold);
+    border-radius: var(--r);
+    padding: 2.5rem 2.25rem;
+    width: 100%; max-width: 420px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 32px 64px rgba(0,0,0,0.6);
+  }
+  .cp-icon {
+    width: 48px; height: 48px; margin: 0 auto 1.25rem;
+    background: var(--gold-light); border: 1px solid rgba(245,184,0,0.25);
+    border-radius: var(--r-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+  }
+  .cp-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.6rem; font-weight: 800; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--white);
+    text-align: center; margin-bottom: 0.5rem;
+  }
+  .cp-sub {
+    font-size: 0.8rem; color: var(--text2); text-align: center;
+    line-height: 1.55; margin-bottom: 0;
+  }
+
   /* ─── PDF MODAL ──────────────────────────────────────── */
   .pdf-overlay {
     position: fixed; inset: 0; z-index: 9998;
@@ -1060,6 +1095,26 @@
   </nav>
 </div>
 
+
+<!-- CAMBIO OBLIGATORIO DE CONTRASEÑA -->
+<div id="cambioPassModal" class="cp-wrap" style="display:none">
+  <div class="cp-card">
+    <div class="cp-icon">🔐</div>
+    <div class="cp-title">Nueva contraseña</div>
+    <p class="cp-sub">Por seguridad, debes establecer una contraseña propia antes de acceder al portal.</p>
+    <div class="divider" style="margin:1.5rem 0 1.25rem"></div>
+    <div class="error-box" id="cpError"></div>
+    <div class="form-group">
+      <label>Nueva contraseña</label>
+      <input type="password" id="cpNueva" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+    </div>
+    <div class="form-group">
+      <label>Confirmar contraseña</label>
+      <input type="password" id="cpConfirma" placeholder="Repite la contraseña" autocomplete="new-password">
+    </div>
+    <button class="btn-primary" id="cpBtn" onclick="confirmarCambioPassword()">Cambiar contraseña y acceder</button>
+  </div>
+</div>
 
 <!-- MODAL VISOR PDF -->
 <div id="pdfModal" class="pdf-overlay" style="display:none">
