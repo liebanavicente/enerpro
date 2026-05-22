@@ -510,6 +510,46 @@
 
   /* Legacy aliases para JS que usa --bg2 / --bg3 en inline styles */
   :root { --bg2: var(--surface); --bg3: var(--surface2); }
+
+  /* ─── PDF MODAL ──────────────────────────────────────── */
+  .pdf-overlay {
+    position: fixed; inset: 0; z-index: 9998;
+    background: rgba(0,0,0,0.88);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 1rem;
+    animation: fadeIn 0.2s ease;
+  }
+  .pdf-box {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--r);
+    width: 100%; max-width: 940px;
+    height: 90vh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.75);
+    animation: fadeUp 0.28s cubic-bezier(0.22,1,0.36,1);
+    overflow: hidden;
+  }
+  .pdf-header {
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    flex-shrink: 0;
+    background: var(--surface2);
+  }
+  .pdf-header-title { font-size: 0.875rem; font-weight: 600; color: var(--white); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+  .pdf-header-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+  .pdf-frame { flex: 1; border: none; min-height: 0; background: #fff; }
+  .pdf-fallback {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1rem; color: var(--muted); font-size: 0.875rem;
+  }
+
+  @media (max-width: 767px) {
+    .pdf-box { height: 100dvh; max-height: 100dvh; border-radius: 0; }
+    .pdf-overlay { padding: 0; }
+  }
   </style>
 </head>
 <body>
@@ -1020,6 +1060,20 @@
   </nav>
 </div>
 
+
+<!-- MODAL VISOR PDF -->
+<div id="pdfModal" class="pdf-overlay" style="display:none">
+  <div class="pdf-box">
+    <div class="pdf-header">
+      <span class="pdf-header-title" id="pdfModalTitle">Documento</span>
+      <div class="pdf-header-actions">
+        <a id="pdfOpenLink" href="#" target="_blank" rel="noopener" class="btn-sm" style="text-decoration:none">↗ Nueva pestaña</a>
+        <button class="btn-sm" onclick="cerrarVisor()" aria-label="Cerrar visor">✕ Cerrar</button>
+      </div>
+    </div>
+    <iframe id="pdfFrame" class="pdf-frame" src="" title="Visor de documento" allowfullscreen></iframe>
+  </div>
+</div>
 
 <script src="js/app.js"></script>
 </body>

@@ -129,13 +129,16 @@ function renderDocs(docs, containerId, limit) {
   container.innerHTML = list.map(function(doc) {
     var icon = doc.tipo === 'nomina' ? '📄' : doc.tipo === 'cuadrante' ? '📅' : doc.tipo === 'contrato' ? '📋' : '📁';
     var badge = doc.leido ? '' : '<span class="badge badge-red" style="margin-left:0.5rem">Nuevo</span>';
+    var safeName = doc.nombre.replace(/'/g, "\\'");
+    var safeUrl  = doc.url.replace(/'/g, "\\'");
     return '<div class="doc-item">' +
       '<div class="doc-info"><div class="doc-icon">' + icon + '</div>' +
       '<div><div class="doc-name">' + doc.nombre + badge + '</div>' +
       '<div class="doc-meta">' + (doc.fecha||'') + ' · ' + doc.tipo + '</div></div></div>' +
       '<div>' +
-      '<button class="btn-sm primary" onclick="descargarDoc(\'' + doc.id + '\', \'' + doc.url + '\', \'' + doc.nombre + '\')">Descargar</button>' +
-      '<button class="btn-sm" style="margin-left:0.5rem;border-color:#dc2626;color:#dc2626" onclick="eliminarDoc(\'' + doc.id + '\', \'' + doc.url + '\')">Eliminar</button>' +
+      '<button class="btn-sm primary" onclick="verDoc(\'' + safeUrl + '\', \'' + safeName + '\')">👁 Ver</button>' +
+      '<button class="btn-sm" onclick="descargarDoc(\'' + doc.id + '\', \'' + safeUrl + '\', \'' + safeName + '\')">⬇ Descargar</button>' +
+      '<button class="btn-sm" style="border-color:#dc2626;color:#dc2626" onclick="eliminarDoc(\'' + doc.id + '\', \'' + safeUrl + '\')">✕</button>' +
       '</div></div>';
   }).join('');
 }
@@ -165,19 +168,41 @@ async function descargarDoc(docId, url, nombre) {
 
 // VISOR PDF
 async function verDoc(url, nombre) {
+  var modal = document.getElementById('pdfModal');
+  var frame = document.getElementById('pdfFrame');
+  var title = document.getElementById('pdfModalTitle');
+  var link  = document.getElementById('pdfOpenLink');
+  title.textContent = nombre || 'Documento';
+  frame.src = '';
+  if (link) link.href = '#';
+  modal.style.display = 'flex';
+
   var { data, error } = await sb.storage.from('documentos').createSignedUrl(url, 3600);
-  if (error || !data) { alert('No se pudo cargar el documento.'); return; }
-  document.getElementById('pdfModalTitle').textContent = nombre;
-  document.getElementById('pdfFrame').src = data.signedUrl;
-  document.getElementById('pdfModal').style.display = 'flex';
+  if (error || !data) {
+    frame.style.display = 'none';
+    modal.querySelector('.pdf-header').insertAdjacentHTML('afterend',
+      '<div class="pdf-fallback"><span>No se pudo cargar el documento.</span>' +
+      '<button class="btn-sm" onclick="cerrarVisor()">Cerrar</button></div>');
+    return;
+  }
+  frame.style.display = 'block';
+  frame.src = data.signedUrl;
+  if (link) link.href = data.signedUrl;
 }
 
 function cerrarVisor() {
-  document.getElementById('pdfModal').style.display = 'none';
-  document.getElementById('pdfFrame').src = '';
+  var modal = document.getElementById('pdfModal');
+  var frame = document.getElementById('pdfFrame');
+  modal.style.display = 'none';
+  frame.src = '';
+  var fallback = modal.querySelector('.pdf-fallback');
+  if (fallback) fallback.remove();
 }
 
 document.addEventListener('keydown', function(e){ if(e.key === 'Escape') cerrarVisor(); });
+document.addEventListener('click', function(e){
+  if (e.target && e.target.id === 'pdfModal') cerrarVisor();
+});
 
 // SOLICITUDES - EMPLEADO
 var solicitudForm = document.getElementById('solicitudForm');
@@ -287,9 +312,37 @@ async function crearEmpleado() {
   var err = document.getElementById('empleadoError');
   ok.style.display = 'none'; err.style.display = 'none';
   if (!nombre || !email || !dni || !pass) { err.style.display='block'; err.textContent='Rellena todos los campos.'; return; }
+  if (pass.length < 6) { err.style.display='block'; err.textContent='La contraseña debe tener mínimo 6 caracteres.'; return; }
+
+  // Guardar sesión del admin antes de signUp (signUp puede crear nueva sesión si el proyecto tiene email confirm desactivado)
+  var { data: sessionData } = await sb.auth.getSession();
+  var adminSession = sessionData && sessionData.session;
+
+  // Crear usuario en Supabase Auth
+  var { data: authData, error: authError } = await sb.auth.signUp({ email: email, password: pass });
+
+  // Restaurar sesión del admin si signUp la reemplazó
+  if (adminSession && authData && authData.session) {
+    await sb.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token });
+  }
+
+  var authMsg = '';
+  if (authError) {
+    var msg = authError.message.toLowerCase();
+    if (msg.includes('already registered') || msg.includes('already been registered')) {
+      authMsg = ' (el email ya tenía cuenta de acceso)';
+    } else {
+      err.style.display='block'; err.textContent='Error al crear acceso: '+authError.message; return;
+    }
+  } else if (authData && !authData.session) {
+    authMsg = ' · Se envió email de confirmación al empleado.';
+  }
+
+  // Insertar en tabla empleados
   var { error: dbError } = await sb.from('empleados').insert({ nombre:nombre, email:email, dni:dni, cargo:cargo, activo:true });
-  if (dbError) { err.style.display='block'; err.textContent='Error: '+dbError.message; return; }
-  ok.style.display='block'; ok.textContent='✓ Empleado creado correctamente.';
+  if (dbError) { err.style.display='block'; err.textContent='Error en BD: '+dbError.message; return; }
+
+  ok.style.display='block'; ok.textContent='✓ Empleado creado correctamente.' + authMsg;
   document.getElementById('empNombre').value='';
   document.getElementById('empEmail').value='';
   document.getElementById('empDni').value='';
