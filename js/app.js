@@ -19,6 +19,8 @@ var adminVacacionesChannel  = null;
 var calTurnos = [];
 var _docBadgeCount = 0;
 var currentAdminTab = 'dashboard';
+var _solAdminData = [];
+var _vacAdminData = [];
 
 // ─── I18N ─────────────────────────────────────────────────
 
@@ -1392,7 +1394,24 @@ async function cargarSolicitudesAdmin() {
   if (!container) return;
   container.innerHTML = skelDocs(4);
   var { data, error } = await sb.from('solicitudes').select('*, empleados(nombre)').order('created_at', { ascending: false });
-  if (error || !data || !data.length) {
+  _solAdminData = data || [];
+  if (error || !_solAdminData.length) {
+    container.innerHTML = '<div class="empty"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>' + t('sa.empty') + '</div>';
+    return;
+  }
+  filtrarSolicitudesAdmin();
+}
+
+function filtrarSolicitudesAdmin() {
+  var container = document.getElementById('solicitudesAdminList');
+  if (!container) return;
+  var q = (document.getElementById('solAdminBuscador') || {}).value || '';
+  q = q.toLowerCase().trim();
+  var data = q ? _solAdminData.filter(function(s) {
+    var nombre = s.empleados ? s.empleados.nombre.toLowerCase() : '';
+    return nombre.includes(q);
+  }) : _solAdminData;
+  if (!data.length) {
     container.innerHTML = '<div class="empty"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>' + t('sa.empty') + '</div>';
     return;
   }
@@ -1400,10 +1419,11 @@ async function cargarSolicitudesAdmin() {
   container.innerHTML = data.map(function(s) {
     var eb = getEstadoBadge(s.estado);
     var cmt = s.comentario ? '<div class="doc-meta" style="color:var(--gold);margin-top:3px">💬 ' + s.comentario + '</div>' : '';
+    var nombre = s.empleados ? s.empleados.nombre : 'Empleado';
     var d = delay; delay += 45;
     return '<div class="doc-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<div class="doc-info"><div class="doc-icon">📋</div>' +
-      '<div><div class="doc-name">' + (s.empleados ? s.empleados.nombre : 'Empleado') + ' — ' + s.tipo + '</div>' +
+      '<div><div class="doc-name">' + highlightMatch(nombre, q) + ' — ' + s.tipo + '</div>' +
       '<div class="doc-meta">' + (s.fechas||'') + (s.motivo ? ' · ' + s.motivo : '') + '</div>' +
       '<div class="doc-meta">' + new Date(s.created_at).toLocaleDateString('es-ES') + '</div>' +
       cmt + '</div></div>' +
@@ -1881,7 +1901,27 @@ async function cargarVacacionesAdmin() {
   var q = sb.from('vacaciones').select('*, empleados(nombre)').order('fecha_inicio');
   if (filtro !== 'todas') q = q.eq('estado', filtro);
   var { data } = await q;
-  if (!data || !data.length) { lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' + t('va.empty') + '</div>'; return; }
+  _vacAdminData = data || [];
+  if (!_vacAdminData.length) {
+    lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' + t('va.empty') + '</div>';
+    return;
+  }
+  filtrarVacacionesAdmin();
+}
+
+function filtrarVacacionesAdmin() {
+  var lista = document.getElementById('vacAdminLista');
+  if (!lista) return;
+  var q = (document.getElementById('vacAdminBuscador') || {}).value || '';
+  q = q.toLowerCase().trim();
+  var data = q ? _vacAdminData.filter(function(v) {
+    var nombre = v.empleados ? v.empleados.nombre.toLowerCase() : '';
+    return nombre.includes(q);
+  }) : _vacAdminData;
+  if (!data.length) {
+    lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' + t('va.empty') + '</div>';
+    return;
+  }
   var delay = 0;
   lista.innerHTML = data.map(function(v) {
     var nombre = v.empleados ? v.empleados.nombre : '—';
@@ -1892,7 +1932,7 @@ async function cargarVacacionesAdmin() {
     var d = delay; delay += 45;
     return '<div class="doc-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<div class="doc-info"><div class="doc-icon">🏖️</div>' +
-      '<div><div class="doc-name">' + nombre + ' · <span style="color:var(--text2);font-weight:400">' + getTipoVac(v.tipo) + '</span></div>' +
+      '<div><div class="doc-name">' + highlightMatch(nombre, q) + ' · <span style="color:var(--text2);font-weight:400">' + getTipoVac(v.tipo) + '</span></div>' +
       '<div class="doc-meta">' + desde + ' → ' + hasta + ' (' + dias + ' ' + t('g.dias') + ')' + (v.notas ? ' · ' + v.notas : '') + '</div></div></div>' +
       '<div style="display:flex;align-items:center;gap:0.5rem" id="vac-act-' + v.id + '">' +
       '<span class="badge ' + eb.cls + '">' + eb.lbl + '</span>' +
