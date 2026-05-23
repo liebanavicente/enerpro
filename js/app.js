@@ -234,7 +234,8 @@ var I18N = {
     // Calendario
     'cal.eyebrow':       'Mi área',
     'cal.titulo':        'Mis turnos',
-    'cal.sub':           'Calendario de turnos asignados',
+    'cal.sub':           'Tus cuadrantes mensuales',
+    'cal.ver_cal':       'Ver en calendario',
     'cal.ical':          'Exportar iCal',
     'cal.detalle':       'Detalle del mes',
     'cal.no_turnos':     'No hay turnos asignados este mes',
@@ -696,7 +697,8 @@ var I18N = {
     // Calendario
     'cal.eyebrow':       'La meva àrea',
     'cal.titulo':        'Els meus torns',
-    'cal.sub':           'Calendari de torns assignats',
+    'cal.sub':           'Els teus quadrants mensuals',
+    'cal.ver_cal':       'Veure al calendari',
     'cal.ical':          'Exportar iCal',
     'cal.detalle':       'Detall del mes',
     'cal.no_turnos':     'No hi ha torns assignats aquest mes',
@@ -1046,7 +1048,7 @@ function aplicarIdioma() {
   var ap = document.querySelector('.page.active');
   if (!ap) return;
   var pid = ap.id;
-  if (pid === 'page-inicio' || pid === 'page-documentos') cargarDocumentos();
+  if (pid === 'page-inicio' || pid === 'page-documentos' || pid === 'page-calendario') cargarDocumentos();
   if (pid === 'page-solicitudes') cargarMisSolicitudes();
   if (pid === 'page-vacaciones') cargarVacaciones();
   if (pid === 'page-calendario') cargarCalendario();
@@ -1559,7 +1561,7 @@ function navigateToPage(page) {
   var mainEl = document.querySelector('.main');
   if (mainEl) mainEl.scrollTop = 0;
   window.scrollTo(0, 0);
-  if (page === 'calendario') cargarCalendario();
+  if (page === 'calendario') { cargarCalendario(); cargarDocumentos(); }
   if (page === 'vacaciones') cargarVacaciones();
   if (page === 'solicitudes') cargarMisSolicitudes();
   if (page === 'documentos') actualizarBadgeDocumentos(0);
@@ -1675,6 +1677,38 @@ async function cargarDocumentos() {
     if (cuadranteMes) cuadranteMes.style.display = 'none';
     if (cuadranteDiv) cuadranteDiv.innerHTML = '<div style="color:var(--muted);font-size:var(--text-base);padding:1.5rem">' + t('doc.no_cuad') + '</div>';
   }
+  _renderCuadrantesEnTurnos(cuadrantes);
+}
+
+function _renderCuadrantesEnTurnos(cuadrantes) {
+  var el = document.getElementById('cuadrantesListTurnos');
+  if (!el) return;
+  var list = cuadrantes || (allDocs || []).filter(function(d){ return d.tipo === 'cuadrante'; });
+  if (!list.length) {
+    el.innerHTML = '<div style="padding:2.5rem 1.5rem;text-align:center;color:var(--muted);font-size:var(--text-base)">' + t('doc.no_cuad') + '</div>';
+    return;
+  }
+  el.innerHTML = list.map(function(c, i) {
+    var safeName  = c.nombre.replace(/'/g, "\\'");
+    var safeUrl   = c.url.replace(/'/g, "\\'");
+    var mesLabel  = _formatFechaCuadrante(c.fecha, c.nombre);
+    var firmaHtml = c.firmado
+      ? '<span class="badge badge-green">' + t('doc.firmado') + '</span>'
+      : '<button class="btn-sm gold" style="white-space:nowrap" onclick="firmarDoc(\'' + c.id + '\', \'' + safeName + '\', this)">' + t('doc.confirmar') + '</button>';
+    var unread = c.leido ? '' : '<span class="dt-badge-new" style="vertical-align:middle;margin-left:0.375rem">' + t('doc.nuevo') + '</span>';
+    var border = i < list.length - 1 ? 'border-bottom:1px solid var(--border);' : '';
+    return '<div style="display:flex;align-items:center;gap:1.25rem;padding:1.125rem 1.5rem;' + border + '">' +
+      '<div style="width:44px;height:44px;flex-shrink:0;border-radius:var(--r-sm);background:var(--gold-light);color:var(--gold-dark);display:flex;align-items:center;justify-content:center">' + docIconSVG('cuadrante') + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+      '<div style="font-size:var(--text-md);font-weight:600;color:var(--text)">' + mesLabel + unread + '</div>' +
+      '<div style="font-size:var(--text-xs);color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + c.nombre + '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:0.5rem;align-items:center;flex-shrink:0">' +
+      firmaHtml +
+      '<button class="btn-sm primary" onclick="verDoc(\'' + safeUrl + '\', \'' + safeName + '\')">' + t('doc.ver_cuad') + '</button>' +
+      '<button class="btn-sm" onclick="descargarDoc(\'' + c.id + '\', \'' + safeUrl + '\', \'' + safeName + '\')">' + t('doc.descargar') + '</button>' +
+      '</div></div>';
+  }).join('');
 }
 
 function renderDocs(docs, containerId, limit) {
