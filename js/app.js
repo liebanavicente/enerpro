@@ -2235,6 +2235,7 @@ var DEMO_EMPLEADOS = [
 
 document.addEventListener('DOMContentLoaded', function() {
   aplicarIdioma();
+  registrarServiceWorker();
   var hash = window.location.hash || '';
   if (hash.indexOf('error=') !== -1) {
     document.getElementById('loginError').style.display = 'block';
@@ -3463,6 +3464,15 @@ async function crearTurnosPorEmpleados() {
   seleccionarTodosEmp(false);
   cargarTurnosAdmin();
   cargarCuadranteAdmin();
+}
+
+// ─── PWA ─────────────────────────────────────────────────
+
+function registrarServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js').catch(function() {});
+  });
 }
 
 // ─── EMAIL NOTIFICATIONS SCAFFOLD ────────────────────────
