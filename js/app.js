@@ -3961,6 +3961,8 @@ async function parsearPDFCuadrante(arrayBuffer) {
   var minDiaX = diaXMap[diasKeys[0]];
 
   var turnos = [];
+  var debugRows = []; // raw text of data rows for diagnostics
+
   for (var i = diaHeaderRowIdx + 1; i < rows.length; i++) {
     var row = rows[i];
     if (!row.length) continue;
@@ -3971,42 +3973,60 @@ async function parsearPDFCuadrante(arrayBuffer) {
 
     var ubicacion = nameItems.map(function(it) { return it.str; }).join(' ').trim() || null;
 
-    // Merge fragment items at almost the same x (PDF.js sometimes splits "07" and "/19")
+    // Collect raw strings for debug panel
+    if (debugRows.length < 6) {
+      debugRows.push((ubicacion ? '[' + ubicacion + '] ' : '') +
+        dataItems.map(function(it) { return '"' + it.str + '"'; }).join(' '));
+    }
+
+    // Build cells: merge items within 10pt of each other (handles "07" + "/" + "19" splits)
     var cells = [];
     dataItems.forEach(function(it) {
-      if (cells.length && Math.abs(it.x - cells[cells.length - 1].x) < 6) {
+      if (cells.length && Math.abs(it.x - cells[cells.length - 1].x) < 10) {
         cells[cells.length - 1].str += it.str;
       } else {
         cells.push({ str: it.str, x: it.x });
       }
     });
 
-    cells.forEach(function(cell) {
-      var s = cell.str.replace(/\s/g, '');
+    // Multi-fragment window scan: try 1, 2 or 3 consecutive cells combined
+    var ci = 0;
+    while (ci < cells.length) {
+      var matched = false;
+      for (var win = 3; win >= 1; win--) {
+        if (ci + win > cells.length) continue;
+        var combined = '';
+        for (var w = 0; w < win; w++) combined += cells[ci + w].str;
+        combined = combined.replace(/\s/g, '');
 
-      // Main format: "07/19" or "7/19" or "07:00/19:00"
-      var mTime = s.match(/^(\d{1,2})(?::00)?\/(\d{1,2})(?::00)?$/);
-      if (!mTime) return;
-
-      var dia = _pdfXADia(cell.x, diaXMap, colTol);
-      if (!dia) return;
-
-      var hi = ('0' + parseInt(mTime[1], 10)).slice(-2) + ':00';
-      var hf = ('0' + parseInt(mTime[2], 10)).slice(-2) + ':00';
-      var mm = ('0' + mes).slice(-2);
-      var dd = ('0' + dia).slice(-2);
-
-      turnos.push({
-        fecha:       anio + '-' + mm + '-' + dd,
-        hora_inicio: hi,
-        hora_fin:    hf,
-        tipo:        _pdfInferirTipo(hi),
-        ubicacion:   ubicacion
-      });
-    });
+        // Accept: "07/19"  "07:00/19:00"  "07-19"  "07 19" (any separator between two numbers)
+        var mTime = combined.match(/^(\d{1,2})(?::00)?[\/\-:](\d{1,2})(?::00)?$/) ||
+                    combined.match(/^(\d{2})(\d{2})$/);
+        if (mTime) {
+          var dia = _pdfXADia(cells[ci].x, diaXMap, colTol);
+          if (dia) {
+            var hi = ('0' + parseInt(mTime[1], 10)).slice(-2) + ':00';
+            var hf = ('0' + parseInt(mTime[2], 10)).slice(-2) + ':00';
+            var mm2 = ('0' + mes).slice(-2);
+            var dd2 = ('0' + dia).slice(-2);
+            turnos.push({
+              fecha:       anio + '-' + mm2 + '-' + dd2,
+              hora_inicio: hi,
+              hora_fin:    hf,
+              tipo:        _pdfInferirTipo(hi),
+              ubicacion:   ubicacion
+            });
+          }
+          ci += win;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) ci++;
+    }
   }
 
-  return { nombre: nombre, mes: mes, anio: anio, turnos: turnos };
+  return { nombre: nombre, mes: mes, anio: anio, turnos: turnos, debugRows: debugRows };
 }
 
 async function handlePDFCuadrante(e) {
@@ -4071,9 +4091,24 @@ async function handlePDFCuadrante(e) {
       html += '<p style="font-size:var(--text-xs);color:var(--muted);margin-top:0.625rem">'
         + '⚠ Los turnos existentes de ' + emp.nombre + ' en ' + mesStr + ' se reemplazarán.</p>';
     } else {
-      html += '<div class="empty-state"><div class="empty-state-title">'
-        + 'No se encontraron celdas de turno en el PDF</div>'
-        + '<div class="empty-state-sub">Verifica que el PDF es un cuadrante Beta10 con formato HH/HH.</div></div>';
+      html += '<div style="background:var(--yellow-light);border:1px solid rgba(245,184,0,0.3);'
+        + 'border-radius:var(--r-xs);padding:0.875rem 1rem;margin-bottom:0.75rem">'
+        + '<div style="font-size:var(--text-sm);font-weight:600;color:var(--yellow);margin-bottom:0.375rem">'
+        + '0 turnos encontrados</div>'
+        + '<div style="font-size:var(--text-xs);color:var(--text2)">El PDF se procesó correctamente (empleado y mes detectados) '
+        + 'pero ninguna celda coincide con el formato esperado.<br>'
+        + 'Revisa el texto extraído a continuación para ver el formato real del PDF.</div></div>';
+      if (datos.debugRows && datos.debugRows.length) {
+        html += '<div style="font-size:var(--text-xs);font-weight:600;color:var(--muted);margin-bottom:0.375rem">'
+          + '🔍 Texto extraído de las primeras filas de datos:</div>'
+          + '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-xs);'
+          + 'padding:0.75rem;font-family:monospace;font-size:11px;color:var(--text2);'
+          + 'white-space:pre-wrap;word-break:break-all;max-height:180px;overflow-y:auto">'
+          + datos.debugRows.map(function(r) { return r; }).join('\n')
+          + '</div>'
+          + '<p style="font-size:var(--text-xs);color:var(--muted);margin-top:0.5rem">'
+          + 'Copia este texto y compártelo para ajustar el parser al formato exacto de tu PDF.</p>';
+      }
     }
     prev.innerHTML = html;
 
