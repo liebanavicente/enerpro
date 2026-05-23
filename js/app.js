@@ -46,6 +46,7 @@ var I18N = {
     'login.btn':         'Acceder al portal',
     'login.accediendo':  'Accediendo...',
     'login.error':       'Credenciales incorrectas. Inténtalo de nuevo.',
+    'login.inactivo':    'Tu cuenta está desactivada. Contacta con coordinación.',
     'login.forgot':      '¿Has olvidado tu contraseña?',
     // Recuperar contraseña
     'rp.titulo':         'Recuperar contraseña',
@@ -202,6 +203,8 @@ var I18N = {
     'vac.btn':           'Enviar solicitud',
     'vac.mis':           'Mis solicitudes',
     'vac.empty':         'No tienes solicitudes de vacaciones',
+    'vac.err_solap':     'Ya tienes una solicitud activa que coincide con esas fechas.',
+    'vac.err_sin_dias':  'Solo te quedan {n} días de vacaciones disponibles (solicitas {s}).',
     'vac.cancelar_ok':   '✓ Vacaciones canceladas',
     'vac.cancelar_msg':  'La solicitud ha sido cancelada.',
     'vac.l_vac':         'Vacaciones',
@@ -481,6 +484,7 @@ var I18N = {
     'login.btn':         'Accedir al portal',
     'login.accediendo':  'Accedint...',
     'login.error':       'Credencials incorrectes. Torna-ho a intentar.',
+    'login.inactivo':    'El teu compte està desactivat. Contacta amb coordinació.',
     'login.forgot':      'Has oblidat la contrasenya?',
     // Recuperar contraseña
     'rp.titulo':         'Recuperar contrasenya',
@@ -637,6 +641,8 @@ var I18N = {
     'vac.btn':           'Enviar sol·licitud',
     'vac.mis':           'Les meves sol·licituds',
     'vac.empty':         'No tens sol·licituds de vacances',
+    'vac.err_solap':     'Ja tens una sol·licitud activa que coincideix amb aquestes dates.',
+    'vac.err_sin_dias':  'Només et queden {n} dies de vacances disponibles (en sol·licites {s}).',
     'vac.cancelar_ok':   '✓ Vacances cancel·lades',
     'vac.cancelar_msg':  'La sol·licitud ha estat cancel·lada.',
     'vac.l_vac':         'Vacances',
@@ -1228,6 +1234,23 @@ async function confirmarResetPassRecuperacion() {
   volverAlLogin();
 }
 
+async function rechazarEmpleadoInactivo() {
+  currentUser = null;
+  currentEmpleado = null;
+  currentIsAdmin = false;
+  await sb.auth.signOut();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('cambioPassModal').style.display = 'none';
+  document.getElementById('resetPassRecuperacionModal').style.display = 'none';
+  document.getElementById('loginWrap').style.display = 'flex';
+  var err = document.getElementById('loginError');
+  if (err) {
+    err.style.display = 'block';
+    err.textContent = t('login.inactivo');
+  }
+  volverAlLogin();
+}
+
 async function aplicarSesionDesdeUser(user) {
   if (!user || !user.email || _modoRecuperacionPass) return;
   currentUser = user;
@@ -1235,6 +1258,11 @@ async function aplicarSesionDesdeUser(user) {
   var { data: emp } = await sb.from('empleados').select('*').eq('email', email).single();
   currentEmpleado = emp;
   currentIsAdmin = email.includes('admin') || (emp && emp.cargo === 'Coordinador');
+
+  if (emp && emp.activo === false) {
+    await rechazarEmpleadoInactivo();
+    return;
+  }
 
   if (emp && emp.debe_cambiar_password) {
     document.getElementById('loginWrap').style.display = 'none';
@@ -2036,6 +2064,32 @@ function diasEntre(desde, hasta) {
   return Math.max(1, Math.round((d2 - d1) / 86400000) + 1);
 }
 
+function fechasSolapan(desdeA, hastaA, desdeB, hastaB) {
+  return desdeA <= hastaB && desdeB <= hastaA;
+}
+
+function calcVacacionesAnuales(emp, data, ano) {
+  ano = ano || new Date().getFullYear();
+  var total = emp.dias_vacaciones_anuales || 22;
+  var usados = 0, pendientes = 0;
+  if (data) {
+    data.forEach(function(v) {
+      if (v.tipo !== 'vacaciones') return;
+      if (new Date(v.fecha_inicio + 'T12:00:00').getFullYear() !== ano) return;
+      var d = diasEntre(v.fecha_inicio, v.fecha_fin);
+      if (v.estado === 'aprobada') usados += d;
+      else if (v.estado === 'pendiente') pendientes += d;
+    });
+  }
+  return {
+    total: total,
+    usados: usados,
+    pendientes: pendientes,
+    restantes: Math.max(0, total - usados),
+    disponibles: Math.max(0, total - usados - pendientes)
+  };
+}
+
 (function() {
   function actualizarDias() {
     var d = document.getElementById('vacDesde'), h = document.getElementById('vacHasta');
@@ -2063,6 +2117,31 @@ async function solicitarVacaciones() {
   if (!desde || !hasta) { err.style.display='block'; err.textContent='Selecciona las fechas.'; return; }
   if (hasta < desde)    { err.style.display='block'; err.textContent='La fecha fin debe ser posterior al inicio.'; return; }
   if (!currentEmpleado) { err.style.display='block'; err.textContent='Sesión no identificada.'; return; }
+
+  var { data: existentes } = await sb.from('vacaciones').select('*')
+    .eq('empleado_id', currentEmpleado.id);
+
+  var haySolape = (existentes || []).some(function(v) {
+    if (v.estado !== 'pendiente' && v.estado !== 'aprobada') return false;
+    return fechasSolapan(desde, hasta, v.fecha_inicio, v.fecha_fin);
+  });
+  if (haySolape) {
+    err.style.display = 'block';
+    err.textContent = t('vac.err_solap');
+    return;
+  }
+
+  if (tipo === 'vacaciones') {
+    var anoSol = new Date(desde + 'T12:00:00').getFullYear();
+    var stats  = calcVacacionesAnuales(currentEmpleado, existentes, anoSol);
+    var pedidos = diasEntre(desde, hasta);
+    if (pedidos > stats.disponibles) {
+      err.style.display = 'block';
+      err.textContent = t('vac.err_sin_dias').replace('{n}', stats.disponibles).replace('{s}', pedidos);
+      return;
+    }
+  }
+
   var payload = { empleado_id: currentEmpleado.id, tipo, fecha_inicio: desde, fecha_fin: hasta, estado: 'pendiente' };
   if (notas) payload.notas = notas;
   var { error } = await sb.from('vacaciones').insert(payload);
@@ -2084,17 +2163,10 @@ async function cargarVacaciones() {
 
   // Contador de días
   var anoActual = new Date().getFullYear();
-  var total     = currentEmpleado.dias_vacaciones_anuales || 22;
-  var usados    = 0;
-  if (data) {
-    data.forEach(function(v) {
-      if (v.estado === 'aprobada' && v.tipo === 'vacaciones') {
-        var desdeAno = new Date(v.fecha_inicio + 'T12:00:00').getFullYear();
-        if (desdeAno === anoActual) usados += diasEntre(v.fecha_inicio, v.fecha_fin);
-      }
-    });
-  }
-  var restantes = Math.max(0, total - usados);
+  var stats     = calcVacacionesAnuales(currentEmpleado, data, anoActual);
+  var total     = stats.total;
+  var usados    = stats.usados;
+  var restantes = stats.restantes;
   var resumen = document.getElementById('vacResumen');
   if (resumen) {
     document.getElementById('vacAno').textContent = anoActual;
