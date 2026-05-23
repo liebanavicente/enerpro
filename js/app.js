@@ -163,6 +163,7 @@ var I18N = {
     'doc.cuad_sub':      'Cuadrante de servicio',
     'doc.no_cuad':       'No hay cuadrante disponible.',
     'doc.empty':         'No hay documentos disponibles',
+    'doc.empty_sub':     'Cuando el coordinador suba documentos, aparecerán aquí',
     'doc.cargando':      'Cargando documentos...',
     // Solicitudes empleado
     'sol.eyebrow':       'Buzón',
@@ -182,6 +183,7 @@ var I18N = {
     'sol.ok':            '✓ Solicitud enviada. El coordinador la revisará en breve.',
     'sol.mis':           'Mis solicitudes',
     'sol.empty':         'Aún no has enviado solicitudes',
+    'sol.empty_sub':     'Usa el formulario de arriba para enviar una solicitud al coordinador',
     'sol.cancelar':      '✕ Cancelar',
     'sol.cancelar_ok':   '✓ Solicitud cancelada',
     'sol.cancelar_msg':  'La solicitud ha sido cancelada.',
@@ -214,6 +216,7 @@ var I18N = {
     'vac.btn':           'Enviar solicitud',
     'vac.mis':           'Mis solicitudes',
     'vac.empty':         'No tienes solicitudes de vacaciones',
+    'vac.empty_sub':     'Usa el formulario para solicitar vacaciones o permisos',
     'vac.err_solap':     'Ya tienes una solicitud activa que coincide con esas fechas.',
     'vac.err_sin_dias':  'Solo te quedan {n} días de vacaciones disponibles (solicitas {s}).',
     'vac.cancelar_ok':   '✓ Vacaciones canceladas',
@@ -349,6 +352,7 @@ var I18N = {
     'sa.exportar':       '⬇ Exportar Excel',
     'sa.actualizar':     'Actualizar',
     'sa.empty':          'No hay solicitudes',
+    'sa.empty_sub':      'Las solicitudes de los empleados aparecerán aquí',
     'sa.aprobar':        'Aprobar',
     'sa.rechazar':       'Rechazar',
     'sa.aprobar_c':      '✓ Aprobar',
@@ -372,6 +376,7 @@ var I18N = {
     'ta.actualizar':     '↺ Actualizar',
     'ta.ok':             '✓ Turno asignado correctamente.',
     'ta.empty':          'No hay turnos próximos',
+    'ta.empty_sub':      'El coordinador asignará turnos cuando sea necesario',
     // Cuadrante mensual admin
     'cua.titulo':        'Cuadrante del mes',
     'cua.sin_turnos':    'Sin turnos asignados',
@@ -414,6 +419,7 @@ var I18N = {
     'va.cmt_ph':         'Comentario para el empleado (opcional)...',
     'va.cancelar':       'Cancelar',
     'va.empty':          'Sin solicitudes de vacaciones',
+    'va.empty_sub':      'Las solicitudes de vacaciones de los empleados aparecerán aquí',
     // Resumen vacacional
     'rv.titulo':         'Resumen vacacional',
     'rv.c_todos':        'Todos los cargos',
@@ -428,6 +434,7 @@ var I18N = {
     'rv.col_usados':     'Usados',
     'rv.col_rest':       'Restantes',
     'rv.no_emp':         'No hay empleados activos',
+    'rv.no_emp_sub':     'Los empleados activos aparecerán aquí cuando estén dados de alta',
     'rv.chart':          'Días de vacaciones aprobadas por mes · ',
     // Docs admin
     'da.titulo':         'Todos los documentos',
@@ -439,6 +446,7 @@ var I18N = {
     'da.actualizar':     '↺ Actualizar',
     'da.ver':            '👁 Ver',
     'da.empty':          'Sin documentos con los filtros seleccionados',
+    'da.empty_sub':      'Prueba con otros filtros o espera a que haya documentos',
     'da.badge_firm':     '✓ Firmado',
     'da.badge_nofirm':   'Sin firmar',
     // Importar
@@ -611,6 +619,7 @@ var I18N = {
     'doc.cuad_sub':      'Quadrant de servei',
     'doc.no_cuad':       'No hi ha quadrant disponible.',
     'doc.empty':         'No hi ha documents disponibles',
+    'doc.empty_sub':     'Quan el coordinador pugi documents, apareixeran aquí',
     'doc.cargando':      'Carregant documents...',
     // Solicitudes empleado
     'sol.eyebrow':       'Bústia',
@@ -630,6 +639,7 @@ var I18N = {
     'sol.ok':            '✓ Sol·licitud enviada. El coordinador la revisarà en breu.',
     'sol.mis':           'Les meves sol·licituds',
     'sol.empty':         'Encara no has enviat sol·licituds',
+    'sol.empty_sub':     'Fes servir el formulari de dalt per enviar una sol·licitud al coordinador',
     'sol.cancelar':      '✕ Cancel·lar',
     'sol.cancelar_ok':   '✓ Sol·licitud cancel·lada',
     'sol.cancelar_msg':  'La sol·licitud ha estat cancel·lada.',
@@ -662,6 +672,7 @@ var I18N = {
     'vac.btn':           'Enviar sol·licitud',
     'vac.mis':           'Les meves sol·licituds',
     'vac.empty':         'No tens sol·licituds de vacances',
+    'vac.empty_sub':     'Fes servir el formulari per sol·licitar vacances o permisos',
     'vac.err_solap':     'Ja tens una sol·licitud activa que coincideix amb aquestes dates.',
     'vac.err_sin_dias':  'Només et queden {n} dies de vacances disponibles (en sol·licites {s}).',
     'vac.cancelar_ok':   '✓ Vacances cancel·lades',
@@ -797,6 +808,7 @@ var I18N = {
     'sa.exportar':       '⬇ Exportar Excel',
     'sa.actualizar':     'Actualitzar',
     'sa.empty':          'No hi ha sol·licituds',
+    'sa.empty_sub':      "Les sol·licituds dels empleats apareixeran aquí",
     'sa.aprobar':        'Aprovar',
     'sa.rechazar':       'Rebutjar',
     'sa.aprobar_c':      '✓ Aprovar',
@@ -820,6 +832,7 @@ var I18N = {
     'ta.actualizar':     '↺ Actualitzar',
     'ta.ok':             '✓ Torn assignat correctament.',
     'ta.empty':          'No hi ha torns propers',
+    'ta.empty_sub':      'El coordinador assignarà torns quan sigui necessari',
     // Cuadrante mensual admin
     'cua.titulo':        'Quadrant del mes',
     'cua.sin_turnos':    'Sense torns assignats',
@@ -862,6 +875,7 @@ var I18N = {
     'va.cmt_ph':         "Comentari per a l'empleat (opcional)...",
     'va.cancelar':       'Cancel·lar',
     'va.empty':          'Sense sol·licituds de vacances',
+    'va.empty_sub':      "Les sol·licituds de vacances dels empleats apareixeran aquí",
     // Resumen vacacional
     'rv.titulo':         'Resum vacacional',
     'rv.c_todos':        'Tots els càrrecs',
@@ -876,6 +890,7 @@ var I18N = {
     'rv.col_usados':     'Usats',
     'rv.col_rest':       'Restants',
     'rv.no_emp':         'No hi ha empleats actius',
+    'rv.no_emp_sub':     "Els empleats actius apareixeran aquí quan estiguin donats d'alta",
     'rv.chart':          'Dies de vacances aprovades per mes · ',
     // Docs admin
     'da.titulo':         'Tots els documents',
@@ -887,6 +902,7 @@ var I18N = {
     'da.actualizar':     '↺ Actualitzar',
     'da.ver':            '👁 Veure',
     'da.empty':          'Sense documents amb els filtres seleccionats',
+    'da.empty_sub':      'Prova amb altres filtres o espera que hi hagi documents',
     'da.badge_firm':     '✓ Signat',
     'da.badge_nofirm':   'Sense signar',
     // Importar
@@ -1085,6 +1101,27 @@ function skelStatCards(n) {
   var html = '';
   for (var i = 0; i < (n || 4); i++) html += card;
   return html;
+}
+
+function emptyState(iconPaths, title, sub) {
+  return '<div class="empty-state">' +
+    '<div class="empty-state-icon"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24">' + iconPaths + '</svg></div>' +
+    '<div class="empty-state-title">' + title + '</div>' +
+    (sub ? '<div class="empty-state-sub">' + sub + '</div>' : '') +
+  '</div>';
+}
+
+function skelCalendario() {
+  var hdrs = ['L','M','X','J','V','S','D'].map(function(d) {
+    return '<div class="cal-day-hdr">' + d + '</div>';
+  }).join('');
+  var cell = '<div class="cal-day" style="pointer-events:none;min-height:64px">' +
+    '<span class="skel" style="display:block;width:14px;height:10px;border-radius:3px;margin-bottom:6px"></span>' +
+    '<span class="skel" style="display:block;width:38px;height:8px;border-radius:3px;opacity:0.6"></span>' +
+  '</div>';
+  var cells = '';
+  for (var i = 0; i < 35; i++) cells += cell;
+  return hdrs + cells;
 }
 
 function animateValue(el, to, ms) {
@@ -1491,7 +1528,7 @@ function renderDocs(docs, containerId, limit) {
   if (!container) return;
   var list = limit ? docs.slice(0, limit) : docs;
   if (!list.length) {
-    container.innerHTML = '<div class="doc-empty"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><div><div class="doc-empty-title">' + t('doc.empty') + '</div></div></div>';
+    container.innerHTML = emptyState('<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>', t('doc.empty'), t('doc.empty_sub'));
     return;
   }
   // For dashboard preview (limit=3): keep compact card rows
@@ -1656,7 +1693,7 @@ async function cargarMisSolicitudes() {
     .eq('empleado_id', currentEmpleado.id)
     .order('created_at', { ascending: false });
   if (!data || !data.length) {
-    container.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>' + t('sol.empty') + '</div>';
+    container.innerHTML = emptyState('<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>', t('sol.empty'), t('sol.empty_sub'));
     return;
   }
   var delay = 0;
@@ -1693,7 +1730,7 @@ async function cargarSolicitudesAdmin() {
   var { data, error } = await q;
   _solAdminData = data || [];
   if (error || !_solAdminData.length) {
-    container.innerHTML = '<div class="empty"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>' + t('sa.empty') + '</div>';
+    container.innerHTML = emptyState('<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>', t('sa.empty'), t('sa.empty_sub'));
     return;
   }
   filtrarSolicitudesAdmin();
@@ -1709,7 +1746,7 @@ function filtrarSolicitudesAdmin() {
     return nombre.includes(q);
   }) : _solAdminData;
   if (!data.length) {
-    container.innerHTML = '<div class="empty"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>' + t('sa.empty') + '</div>';
+    container.innerHTML = emptyState('<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>', t('sa.empty'), t('sa.empty_sub'));
     return;
   }
   var contador = (data.length < _solAdminData.length)
@@ -2228,7 +2265,7 @@ async function cargarVacaciones() {
   animateValue(document.getElementById('vacUsados'),    usados,    700);
   animateValue(document.getElementById('vacRestantes'), restantes, 700);
 
-  if (!data || !data.length) { lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' + t('vac.empty') + '</div>'; return; }
+  if (!data || !data.length) { lista.innerHTML = emptyState('<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>', t('vac.empty'), t('vac.empty_sub')); return; }
 
   var delay = 0;
   lista.innerHTML = data.map(function(v) {
@@ -2264,7 +2301,7 @@ async function cargarVacacionesAdmin() {
   var { data } = await q;
   _vacAdminData = data || [];
   if (!_vacAdminData.length) {
-    lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' + t('va.empty') + '</div>';
+    lista.innerHTML = emptyState('<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>', t('va.empty'), t('va.empty_sub'));
     return;
   }
   filtrarVacacionesAdmin();
@@ -2280,7 +2317,7 @@ function filtrarVacacionesAdmin() {
     return nombre.includes(q);
   }) : _vacAdminData;
   if (!data.length) {
-    lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' + t('va.empty') + '</div>';
+    lista.innerHTML = emptyState('<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>', t('va.empty'), t('va.empty_sub'));
     return;
   }
   var contador = (data.length < _vacAdminData.length)
@@ -2519,6 +2556,8 @@ var MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
 var TIPO_LABEL = { manana:'Mañana', tarde:'Tarde', noche:'Noche', guardia:'Guardia', libre:'Libre', turno:'Turno' };
 
 async function cargarCalendario() {
+  var grid = document.getElementById('calGrid');
+  if (grid) grid.innerHTML = skelCalendario();
   var primerDia = calYear + '-' + String(calMonth + 1).padStart(2,'0') + '-01';
   var ultimoDia = new Date(calYear, calMonth + 1, 0);
   var ultimoDiaStr = calYear + '-' + String(calMonth + 1).padStart(2,'0') + '-' + String(ultimoDia.getDate()).padStart(2,'0');
@@ -3007,7 +3046,7 @@ async function cargarTurnosAdmin() {
   var { data } = await sb.from('turnos').select('*, empleados(nombre)')
     .gte('fecha', hoy).order('fecha').order('hora_inicio').limit(30);
   if (!data || !data.length) {
-    container.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' + t('ta.empty') + '</div>';
+    container.innerHTML = emptyState('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>', t('ta.empty'), t('ta.empty_sub'));
     return;
   }
   var delay = 0;
@@ -3425,7 +3464,7 @@ async function cargarResumenVacaciones() {
   });
 
   if (!empleados.length) {
-    lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' + t('rv.no_emp') + '</div>';
+    lista.innerHTML = emptyState('<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>', t('rv.no_emp'), t('rv.no_emp_sub'));
     return;
   }
 
@@ -3840,7 +3879,7 @@ function renderDocsAdmin(docs) {
   var lista = document.getElementById('docsAdminList');
   if (!lista) return;
   if (!docs.length) {
-    lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' + t('da.empty') + '</div>';
+    lista.innerHTML = emptyState('<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>', t('da.empty'), t('da.empty_sub'));
     return;
   }
   var delay = 0;
