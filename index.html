@@ -376,7 +376,7 @@
   /* Page header */
   .page-header { margin-bottom: 2.25rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
   .page-eyebrow { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
-  .page-header h1 { font-family: 'Inter', system-ui, sans-serif; font-size: 1.75rem; font-weight: 700; letter-spacing: -0.01em; color: var(--white); line-height: 1.2; }
+  .page-header h1 { font-family: 'Inter', system-ui, sans-serif; font-size: 1.75rem; font-weight: 700; letter-spacing: -0.01em; color: var(--text); line-height: 1.2; }
   .page-header p  { font-size: var(--text-base); color: var(--text2); margin-top: 0.4rem; line-height: 1.55; }
 
   /* ─── CARDS ──────────────────────────────────────────── */
@@ -395,7 +395,7 @@
   .card-accent { border-top: 2px solid var(--gold); }
   .card-accent:hover { border-color: var(--border2); border-top-color: var(--gold); }
   .card-label  { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.02em; color: var(--muted); margin-bottom: 0.625rem; }
-  .card-value  { font-family: 'Inter', system-ui, sans-serif; font-size: 2rem; font-weight: 700; color: var(--white); line-height: 1; letter-spacing: -0.02em; }
+  .card-value  { font-family: 'Inter', system-ui, sans-serif; font-size: 2rem; font-weight: 700; color: var(--text); line-height: 1; letter-spacing: -0.02em; }
   .card-sub    { font-size: var(--text-sm); color: var(--text2); margin-top: 6px; }
   .stats-grid  { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 1rem; }
 
@@ -423,7 +423,7 @@
   .doc-table tbody tr:last-child td { border-bottom: none; }
   .doc-table tbody tr:hover td { background: var(--surface); }
   .dt-tipo-cell { width: 3.25rem; padding-right: 0 !important; }
-  .dt-nombre    { font-weight: 500; color: var(--white); }
+  .dt-nombre    { font-weight: 500; color: var(--text); }
   .dt-fecha     { color: var(--text2); white-space: nowrap; font-size: var(--text-sm); }
   .dt-actions   { text-align: right; white-space: nowrap; }
   .dt-badge-new  { display: inline-flex; align-items: center; margin-left: 0.5rem; padding: 0.1rem 0.45rem; font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; border-radius: 4px; background: var(--gold-light); color: var(--gold-dark); border: 1px solid var(--gold-glow); vertical-align: middle; }
@@ -442,7 +442,7 @@
   .doc-item:hover { background: var(--surface); }
   .doc-info  { display: flex; align-items: center; gap: 0.75rem; min-width: 0; flex: 1; }
   .doc-icon  { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .doc-name  { font-size: var(--text-base); font-weight: 500; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .doc-name  { font-size: var(--text-base); font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .doc-meta  { font-size: var(--text-sm); color: var(--muted); margin-top: 1px; text-transform: capitalize; }
   .doc-filters { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
@@ -485,7 +485,7 @@
     white-space: nowrap;
   }
   .admin-tab:hover  { color: var(--text); }
-  .admin-tab.active { color: var(--white); border-bottom-color: var(--gold); }
+  .admin-tab.active { color: var(--text); border-bottom-color: var(--gold); }
   .admin-tab-content { display: none; }
   .admin-tab-content.active { display: block; }
 
@@ -905,7 +905,7 @@
     cursor: pointer; width: 100%;
     transition: all 0.18s;
   }
-  input[type="file"]:hover { border-color: rgba(245,184,0,0.42); color: var(--white); background: rgba(255,255,255,0.05); }
+  input[type="file"]:hover { border-color: rgba(245,184,0,0.42); color: var(--text); background: var(--surface2); }
   input[type="file"]::-webkit-file-upload-button,
   input[type="file"]::file-selector-button { display: none; }
 
@@ -977,9 +977,8 @@
     font-size: 1.5rem;
   }
   .cp-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.6rem; font-weight: 800; letter-spacing: 0.04em;
-    text-transform: uppercase; color: var(--text);
+    font-size: var(--text-lg); font-weight: 700; letter-spacing: -0.01em;
+    color: var(--text);
     text-align: center; margin-bottom: 0.5rem;
   }
   .cp-sub {
@@ -1012,6 +1011,17 @@
       inset 0 1px 0 rgba(255,255,255,0.055);
     animation: fadeUp 0.28s cubic-bezier(0.22,1,0.36,1);
     overflow: hidden;
+    /* Dark-scope token overrides so nested elements render correctly */
+    --text:       rgba(236,238,242,0.92);
+    --text2:      rgba(195,200,210,0.72);
+    --muted:      rgba(155,160,170,0.55);
+    --white:      rgba(236,238,242,0.92);
+    --surface-s:  rgba(255,255,255,0.05);
+    --surface-s2: rgba(255,255,255,0.05);
+    --surface2:   rgba(255,255,255,0.09);
+    --surface3:   rgba(255,255,255,0.14);
+    --border:     rgba(255,255,255,0.08);
+    --border2:    rgba(255,255,255,0.14);
   }
   .pdf-header {
     padding: 0.875rem 1.25rem;
@@ -1060,8 +1070,8 @@
     background: var(--surface-s2);
   }
   .modal-box-header .modal-eyebrow {
-    font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.04em;
-    text-transform: uppercase; color: var(--gold); margin-bottom: 2px;
+    font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.03em;
+    color: var(--gold); margin-bottom: 2px;
   }
   .modal-box-header .modal-title {
     font-size: var(--text-md); font-weight: 600; color: var(--text);
@@ -1420,7 +1430,7 @@
             <svg style="position:absolute;left:2.25rem;top:50%;transform:translateY(-50%);opacity:0.35;pointer-events:none" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input type="text" id="empBuscador" placeholder="Buscar por nombre, email o DNI…" data-i18n-ph="emp.buscar_ph"
               oninput="buscarEmpleados(this.value)"
-              style="width:100%;padding:0.55rem 1rem 0.55rem 2.25rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--white);font-size:0.875rem;font-family:inherit;outline:none;transition:border-color 0.18s,box-shadow 0.18s"
+              style="width:100%;padding:0.55rem 1rem 0.55rem 2.25rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:0.875rem;font-family:inherit;outline:none;transition:border-color 0.18s,box-shadow 0.18s"
               onfocus="this.style.borderColor='rgba(245,184,0,0.5)';this.style.boxShadow='0 0 0 3px rgba(245,184,0,0.08)'"
               onblur="this.style.borderColor='';this.style.boxShadow=''">
           </div>
@@ -1920,9 +1930,9 @@
 
       <!-- Hero card -->
       <div class="card" style="display:flex;align-items:center;gap:1.5rem;margin-bottom:1.25rem;flex-wrap:wrap">
-        <div id="prfAvatar" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--red-dark));display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.8rem;color:#fff;flex-shrink:0;box-shadow:0 4px 20px rgba(229,57,53,0.4)">?</div>
+        <div id="prfAvatar" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--red-dark));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.8rem;color:#fff;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,0.18)">?</div>
         <div style="flex:1;min-width:0">
-          <div id="prfNombreHero" style="font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:700;color:var(--white);letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+          <div id="prfNombreHero" style="font-size:var(--text-lg);font-weight:700;color:var(--text);letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
           <div id="prfCargoHero" style="font-size:0.82rem;color:var(--text2);margin-top:2px">—</div>
           <div id="prfEmailHero" style="font-size:0.78rem;color:var(--muted);margin-top:2px">—</div>
         </div>
@@ -1937,22 +1947,22 @@
           <div style="display:flex;flex-direction:column;gap:1rem">
             <div>
               <div class="section-label" style="margin-bottom:0.3rem" data-i18n="prf.nombre">Nombre completo</div>
-              <div id="prfNombre" style="font-size:0.92rem;color:var(--white);font-weight:500">—</div>
+              <div id="prfNombre" style="font-size:var(--text-md);color:var(--text);font-weight:500">—</div>
             </div>
             <div style="height:1px;background:var(--border)"></div>
             <div>
               <div class="section-label" style="margin-bottom:0.3rem" data-i18n="prf.email">Email corporativo</div>
-              <div id="prfEmail" style="font-size:0.92rem;color:var(--white);font-weight:500;word-break:break-all">—</div>
+              <div id="prfEmail" style="font-size:var(--text-md);color:var(--text);font-weight:500;word-break:break-all">—</div>
             </div>
             <div style="height:1px;background:var(--border)"></div>
             <div>
               <div class="section-label" style="margin-bottom:0.3rem" data-i18n="prf.cargo">Cargo</div>
-              <div id="prfCargo" style="font-size:0.92rem;color:var(--white);font-weight:500">—</div>
+              <div id="prfCargo" style="font-size:var(--text-md);color:var(--text);font-weight:500">—</div>
             </div>
             <div style="height:1px;background:var(--border)"></div>
             <div>
               <div class="section-label" style="margin-bottom:0.3rem" data-i18n="prf.dni">DNI</div>
-              <div id="prfDni" style="font-size:0.92rem;color:var(--white);font-weight:500">—</div>
+              <div id="prfDni" style="font-size:var(--text-md);color:var(--text);font-weight:500">—</div>
             </div>
           </div>
         </div>
@@ -1964,15 +1974,15 @@
             <div style="font-size:0.7rem;color:var(--muted);margin-bottom:0.75rem"><span data-i18n="prf.ano">Año</span> <span id="prfAno"></span></div>
             <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);gap:0.5rem">
               <div style="background:var(--surface2);border-radius:var(--r-sm);padding:0.75rem;text-align:center">
-                <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:700;color:var(--white)" id="prfDiasAnual">—</div>
+                <div style="font-size:var(--text-xl);font-weight:700;color:var(--text);letter-spacing:-0.02em" id="prfDiasAnual">—</div>
                 <div style="font-size:0.62rem;color:var(--muted);margin-top:2px" data-i18n="prf.dias_anual">Días anuales</div>
               </div>
               <div style="background:var(--surface2);border-radius:var(--r-sm);padding:0.75rem;text-align:center">
-                <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:700;color:var(--yellow)" id="prfDiasUsados">—</div>
+                <div style="font-size:var(--text-xl);font-weight:700;color:var(--yellow);letter-spacing:-0.02em" id="prfDiasUsados">—</div>
                 <div style="font-size:0.62rem;color:var(--muted);margin-top:2px" data-i18n="prf.usados">Días usados</div>
               </div>
               <div style="background:var(--surface2);border-radius:var(--r-sm);padding:0.75rem;text-align:center">
-                <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:700;color:var(--green)" id="prfDiasRest">—</div>
+                <div style="font-size:var(--text-xl);font-weight:700;color:var(--green);letter-spacing:-0.02em" id="prfDiasRest">—</div>
                 <div style="font-size:0.62rem;color:var(--muted);margin-top:2px" data-i18n="prf.disponibles">Disponibles</div>
               </div>
             </div>
