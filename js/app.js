@@ -1935,12 +1935,12 @@ async function cargarVacaciones() {
     resumen.style.display = 'block';
   }
 
-  if (!data || !data.length) { lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' + t('vac.empty') + '</div>'; return; }
-
-  // Animate counters after data loaded
-  animateValue(document.getElementById('vacTotal'),     currentEmpleado.dias_vacaciones_anuales || 22, 600);
+  // Always animate counters regardless of whether there are list items
+  animateValue(document.getElementById('vacTotal'),     total,     600);
   animateValue(document.getElementById('vacUsados'),    usados,    700);
   animateValue(document.getElementById('vacRestantes'), restantes, 700);
+
+  if (!data || !data.length) { lista.innerHTML = '<div class="empty" style="border:none"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' + t('vac.empty') + '</div>'; return; }
 
   var delay = 0;
   lista.innerHTML = data.map(function(v) {
