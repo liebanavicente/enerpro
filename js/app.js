@@ -4476,9 +4476,17 @@ async function parsearPDFCuadrante(arrayBuffer) {
 
   function isTwoRowFormat(startItems, endItems) {
     if (!startItems.length || !endItems.length) return false;
-    var sAvg = startItems.reduce(function(a, it) { return a + parseInt(it.str, 10); }, 0) / startItems.length;
-    var eAvg = endItems.reduce(function(a, it) { return a + parseInt(it.str, 10); }, 0) / endItems.length;
-    return Math.abs(eAvg - sAvg) >= 2;
+    if (startItems.length !== endItems.length) return false;
+    var valid = 0;
+    startItems.forEach(function(si) {
+      var best = null, bestDist = Infinity;
+      endItems.forEach(function(ei) {
+        var d = Math.abs(ei.x - si.x);
+        if (d < bestDist) { bestDist = d; best = ei; }
+      });
+      if (best && parseInt(best.str, 10) > parseInt(si.str, 10)) valid++;
+    });
+    return valid >= Math.ceil(startItems.length * 0.5);
   }
 
   function isPairInRowFormat(items) {
@@ -4504,7 +4512,9 @@ async function parsearPDFCuadrante(arrayBuffer) {
   }
 
   function pushTurno(dia, hiStr, hfStr, servicio) {
-    if (!dia || hiStr === hfStr) return;
+    if (!dia) return;
+    var hiN = parseInt(hiStr, 10), hfN = parseInt(hfStr, 10);
+    if (hiN === hfN || hfN <= hiN) return;
     var hi = ('0' + parseInt(hiStr, 10)).slice(-2) + ':00';
     var hf = ('0' + parseInt(hfStr, 10)).slice(-2) + ':00';
     var mm2 = ('0' + mes).slice(-2);
@@ -4523,9 +4533,9 @@ async function parsearPDFCuadrante(arrayBuffer) {
     var sItems = horaItems(rows[i]);
     var servicio = getServicio(i);
     var j = i + 1;
-    while (j < rows.length && !isHoraRow(rows[j])) j++;
+    if (j >= rows.length || !isHoraRow(rows[j])) { i++; continue; }
 
-    if (j < rows.length && isTwoRowFormat(sItems, horaItems(rows[j]))) {
+    if (isTwoRowFormat(sItems, horaItems(rows[j]))) {
       var eItems = horaItems(rows[j]);
       if (debugRows.length < 8) {
         debugRows.push((servicio ? '[' + servicio + '] ' : '[?] ') +
