@@ -1382,7 +1382,7 @@ async function cargarTurnoHoy() {
     '<div class="turno-banner t-' + tipo + '">' +
       '<span class="cal-pill t-' + tipo + '" style="flex-shrink:0;font-size:0.65rem;padding:0.25rem 0.625rem">' + tipoLabel + '</span>' +
       '<div style="flex:1;min-width:0">' +
-        '<div style="font-size:0.82rem;font-weight:600;color:var(--white)">' + t('ini.turno_hoy') + '</div>' +
+        '<div style="font-size:0.82rem;font-weight:600;color:var(--text)">' + t('ini.turno_hoy') + '</div>' +
         (horas || ubic
           ? '<div style="font-size:0.73rem;color:var(--text2);margin-top:1px">' + horas + ubic + '</div>'
           : '') +
@@ -1450,7 +1450,7 @@ async function cargarPendientesAtencion(docs) {
           docIconSVG(doc.tipo) +
         '</div>' +
         '<div style="flex:1;min-width:0">' +
-          '<div style="font-size:0.82rem;font-weight:500;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + doc.nombre + '</div>' +
+          '<div style="font-size:0.82rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + doc.nombre + '</div>' +
           '<div style="font-size:0.7rem;color:var(--muted);margin-top:1px">' + t('ini.pend_firmar') + ' · ' + doc.tipo + '</div>' +
         '</div>' +
         '<button class="btn-sm primary" onclick="navigateToPage(\'documentos\')" style="font-size:0.71rem">' + t('ini.pend_ver') + '</button>' +
@@ -1467,7 +1467,7 @@ async function cargarPendientesAtencion(docs) {
           '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>' +
         '</div>' +
         '<div style="flex:1;min-width:0">' +
-          '<div style="font-size:0.82rem;font-weight:500;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + getSolTipoShort(s.tipo) + '</div>' +
+          '<div style="font-size:0.82rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + getSolTipoShort(s.tipo) + '</div>' +
           '<div style="font-size:0.7rem;color:var(--muted);margin-top:1px">' + t('ini.pend_resp') + ' · ' + fecha + '</div>' +
         '</div>' +
         '<span class="badge ' + eb.cls + '" style="font-size:0.68rem">' + eb.lbl + '</span>' +
@@ -1664,7 +1664,7 @@ async function cargarDocumentos() {
         '<div style="display:flex;align-items:center;gap:0.875rem;min-width:0">' +
         '<div class="doc-icon" style="width:38px;height:38px;flex-shrink:0;background:var(--gold-light);color:var(--gold-dark)">' + docIconSVG('cuadrante') + '</div>' +
         '<div style="min-width:0">' +
-        '<div style="font-weight:500;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:18rem">' + cuadrante.nombre + unread + '</div>' +
+        '<div style="font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:18rem">' + cuadrante.nombre + unread + '</div>' +
         '<div style="font-size:var(--text-xs);color:var(--muted);margin-top:2px">' + mesLabel + '</div>' +
         '</div></div>' +
         '<div style="display:flex;gap:0.375rem;flex-wrap:wrap;align-items:center;flex-shrink:0">' +
@@ -1976,7 +1976,7 @@ function mostrarAccionSolicitud(id, estado) {
   el.innerHTML =
     '<div style="display:flex;flex-direction:column;gap:0.4rem;min-width:200px;max-width:280px">' +
     '<textarea id="cmt-sol-' + id + '" rows="2" placeholder="' + t('sa.cmt_ph') + '" ' +
-    'style="width:100%;padding:0.45rem 0.7rem;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--r-xs);color:var(--white);font-size:0.78rem;font-family:inherit;resize:none;outline:none"></textarea>' +
+    'style="width:100%;padding:0.45rem 0.7rem;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--r-xs);color:var(--text);font-size:0.78rem;font-family:inherit;resize:none;outline:none"></textarea>' +
     '<div style="display:flex;gap:0.4rem">' +
     '<button class="btn-sm primary" style="background:' + col + ';border-color:' + col + '" ' +
     'onclick="confirmarSolicitud(\'' + id + '\',\'' + estado + '\')">' + (esBuena ? t('sa.aprobar_c') : t('sa.rechazar_c')) + '</button>' +
@@ -2081,7 +2081,7 @@ function renderEmpleadosTabla(data) {
   if (!container) return;
   if (!data.length) {
     var msg = filtroBuscadorActivo
-      ? 'Sin resultados para "<strong style="color:var(--white)">' + filtroBuscadorActivo + '</strong>"'
+      ? 'Sin resultados para "<strong style="color:var(--text)">' + filtroBuscadorActivo + '</strong>"'
       : 'No hay empleados con ese filtro';
     container.innerHTML = '<div class="empty" style="border:none;padding:2.5rem"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' + msg + '</div>';
     return;
@@ -2095,7 +2095,7 @@ function renderEmpleadosTabla(data) {
       var emailSafe = e.email.replace(/'/g, "\\'");
       return '<tr style="animation:fadeIn 0.25s ease both;animation-delay:' + (i * 35) + 'ms">' +
         '<td style="padding-right:0">' + avatarIni(e.nombre, 32) + '</td>' +
-        '<td><strong style="color:var(--white)">' + highlightMatch(e.nombre, q) + '</strong></td>' +
+        '<td><strong style="color:var(--text)">' + highlightMatch(e.nombre, q) + '</strong></td>' +
         '<td><span class="email-copy" title="Clic para copiar" onclick="copiarEmail(\'' + emailSafe + '\',this)" style="color:var(--text2);font-size:0.82rem">' + highlightMatch(e.email, q) + '</span></td>' +
         '<td>' + e.cargo + '</td>' +
         '<td><span class="badge ' + (e.activo ? 'badge-green">' + t('emp.activo') : 'badge-red">' + t('emp.inactivo')) + '</span></td>' +
@@ -2547,7 +2547,7 @@ function mostrarAccionVacacion(id, estado) {
   el.innerHTML =
     '<div style="display:flex;flex-direction:column;gap:0.4rem;min-width:200px;max-width:280px">' +
     '<textarea id="cmt-vac-' + id + '" rows="2" placeholder="' + t('va.cmt_ph') + '" ' +
-    'style="width:100%;padding:0.45rem 0.7rem;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--r-xs);color:var(--white);font-size:0.78rem;font-family:inherit;resize:none;outline:none"></textarea>' +
+    'style="width:100%;padding:0.45rem 0.7rem;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--r-xs);color:var(--text);font-size:0.78rem;font-family:inherit;resize:none;outline:none"></textarea>' +
     '<div style="display:flex;gap:0.4rem">' +
     '<button class="btn-sm primary" style="background:' + col + ';border-color:' + col + '" ' +
     'onclick="confirmarVacacion(\'' + id + '\',\'' + estado + '\')">' + (esBuena ? t('va.aprobar_c') : t('va.rechazar_c')) + '</button>' +
@@ -3679,14 +3679,14 @@ async function cargarResumenVacaciones() {
       '<td>' +
         '<div style="display:flex;align-items:center;gap:0.75rem">' +
           '<div style="width:32px;height:32px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;color:#fff;flex-shrink:0">' + inicial + '</div>' +
-          '<div><div style="font-weight:500;color:var(--white)">' + e.nombre + '</div>' +
+          '<div><div style="font-weight:500;color:var(--text)">' + e.nombre + '</div>' +
           '<div style="font-size:0.72rem;color:var(--muted)">' + e.cargo + '</div></div>' +
         '</div>' +
       '</td>' +
       '<td style="text-align:center;color:var(--text2)">' + total + '</td>' +
       '<td style="text-align:center">' +
         '<div style="display:flex;flex-direction:column;align-items:center;gap:4px">' +
-          '<strong style="color:var(--white)">' + usados + '</strong>' +
+          '<strong style="color:var(--text)">' + usados + '</strong>' +
           '<div style="width:72px;height:4px;background:var(--surface3);border-radius:2px">' +
             '<div style="width:' + pct + '%;height:100%;background:' + colorBar + ';border-radius:2px;transition:width 0.6s"></div>' +
           '</div>' +
