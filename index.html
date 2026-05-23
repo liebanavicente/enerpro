@@ -967,16 +967,33 @@
       <div class="brand-sub" data-i18n="login.subtitulo">Portal del Empleado · Acceso Privado</div>
     </div>
     <div class="divider"></div>
-    <div class="error-box" id="loginError" data-i18n="login.error">Credenciales incorrectas. Inténtalo de nuevo.</div>
-    <div class="form-group">
-      <label data-i18n="login.email">Email corporativo</label>
-      <input type="email" id="loginEmail" placeholder="usuario@enerpro.com" data-i18n-ph="login.email_ph">
+    <div id="loginFormView">
+      <div class="error-box" id="loginError" data-i18n="login.error">Credenciales incorrectas. Inténtalo de nuevo.</div>
+      <div class="form-group">
+        <label data-i18n="login.email">Email corporativo</label>
+        <input type="email" id="loginEmail" placeholder="usuario@enerpro.com" data-i18n-ph="login.email_ph">
+      </div>
+      <div class="form-group" style="margin-bottom:0.5rem">
+        <label data-i18n="login.pass">Contraseña</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" data-i18n-ph="login.pass_ph">
+      </div>
+      <div style="text-align:right;margin-bottom:1.25rem">
+        <button type="button" id="btnForgotPass" onclick="abrirRecuperarPass()" style="background:none;border:none;padding:0;color:var(--gold);font-size:0.78rem;font-weight:500;cursor:pointer;letter-spacing:0.02em;text-decoration:underline;text-underline-offset:3px" data-i18n="login.forgot">¿Has olvidado tu contraseña?</button>
+      </div>
+      <button class="btn-primary" id="btnLogin" data-i18n="login.btn">Acceder al portal</button>
     </div>
-    <div class="form-group">
-      <label data-i18n="login.pass">Contraseña</label>
-      <input type="password" id="loginPassword" placeholder="••••••••" data-i18n-ph="login.pass_ph">
+    <div id="recuperarPassView" style="display:none">
+      <div class="error-box" id="rpError"></div>
+      <div class="success-box" id="rpOk"></div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.35rem;font-weight:800;color:var(--white);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:0.5rem" data-i18n="rp.titulo">Recuperar contraseña</div>
+      <p style="font-size:0.82rem;color:var(--text2);line-height:1.55;margin-bottom:1.25rem" data-i18n="rp.sub">Introduce tu email corporativo. Te enviaremos un enlace para restablecer la contraseña.</p>
+      <div class="form-group">
+        <label data-i18n="login.email">Email corporativo</label>
+        <input type="email" id="rpEmail" placeholder="usuario@enerpro.com" data-i18n-ph="login.email_ph" autocomplete="email">
+      </div>
+      <button class="btn-primary" id="rpBtn" onclick="enviarRecuperarPass()" data-i18n="rp.btn">Enviar enlace</button>
+      <button type="button" class="btn-sm" onclick="volverAlLogin()" style="width:100%;margin:0.75rem 0 0;padding:0.65rem;font-size:0.78rem" data-i18n="rp.volver">← Volver al acceso</button>
     </div>
-    <button class="btn-primary" id="btnLogin" data-i18n="login.btn">Acceder al portal</button>
     <div style="display:flex;gap:0.5rem;margin-top:1rem;justify-content:center">
       <button id="loginLangEs" onclick="cambiarIdioma('es')" class="btn-sm primary" style="font-size:0.7rem;padding:0.25rem 0.75rem;letter-spacing:0.08em">ES</button>
       <button id="loginLangCa" onclick="cambiarIdioma('ca')" class="btn-sm" style="font-size:0.7rem;padding:0.25rem 0.75rem;letter-spacing:0.08em">CA</button>
@@ -1843,6 +1860,26 @@
       <input type="password" id="cpConfirma" placeholder="Repite la contraseña" data-i18n-ph="cp.confirma_ph" autocomplete="new-password">
     </div>
     <button class="btn-primary" id="cpBtn" onclick="confirmarCambioPassword()" data-i18n="cp.btn">Cambiar contraseña y acceder</button>
+  </div>
+</div>
+
+<!-- NUEVA CONTRASEÑA TRAS ENLACE DE RECUPERACIÓN -->
+<div id="resetPassRecuperacionModal" class="cp-wrap" style="display:none">
+  <div class="cp-card">
+    <div class="cp-icon">🔑</div>
+    <div class="cp-title" data-i18n="rp.set_titulo">Nueva contraseña</div>
+    <p class="cp-sub" data-i18n="rp.set_sub">Establece tu nueva contraseña para acceder al portal.</p>
+    <div class="divider" style="margin:1.5rem 0 1.25rem"></div>
+    <div class="error-box" id="rpSetError"></div>
+    <div class="form-group">
+      <label data-i18n="cp.nueva">Nueva contraseña</label>
+      <input type="password" id="rpSetNueva" placeholder="Mínimo 8 caracteres" data-i18n-ph="cp.nueva_ph" autocomplete="new-password">
+    </div>
+    <div class="form-group">
+      <label data-i18n="cp.confirma">Confirmar contraseña</label>
+      <input type="password" id="rpSetConfirma" placeholder="Repite la contraseña" data-i18n-ph="cp.confirma_ph" autocomplete="new-password">
+    </div>
+    <button class="btn-primary" id="rpSetBtn" onclick="confirmarResetPassRecuperacion()" data-i18n="rp.set_btn">Guardar y acceder</button>
   </div>
 </div>
 

@@ -45,6 +45,20 @@ var I18N = {
     'login.btn':         'Acceder al portal',
     'login.accediendo':  'Accediendo...',
     'login.error':       'Credenciales incorrectas. Inténtalo de nuevo.',
+    'login.forgot':      '¿Has olvidado tu contraseña?',
+    // Recuperar contraseña
+    'rp.titulo':         'Recuperar contraseña',
+    'rp.sub':            'Introduce tu email corporativo. Te enviaremos un enlace para restablecer la contraseña.',
+    'rp.btn':            'Enviar enlace',
+    'rp.enviando':       'Enviando...',
+    'rp.ok':             '✓ Si el email está registrado, recibirás un enlace en unos minutos. Revisa también la carpeta de spam.',
+    'rp.err_email':      'Introduce un email válido.',
+    'rp.volver':         '← Volver al acceso',
+    'rp.set_titulo':     'Nueva contraseña',
+    'rp.set_sub':        'Establece tu nueva contraseña para acceder al portal.',
+    'rp.set_btn':        'Guardar y acceder',
+    'rp.set_ok':         '✓ Contraseña actualizada',
+    'rp.err_link':       'El enlace ha caducado o no es válido. Solicita uno nuevo.',
     // Cambio pass obligatorio
     'cp.titulo':         'Nueva contraseña',
     'cp.sub':            'Por seguridad, debes establecer una contraseña propia antes de acceder al portal.',
@@ -466,6 +480,20 @@ var I18N = {
     'login.btn':         'Accedir al portal',
     'login.accediendo':  'Accedint...',
     'login.error':       'Credencials incorrectes. Torna-ho a intentar.',
+    'login.forgot':      'Has oblidat la contrasenya?',
+    // Recuperar contraseña
+    'rp.titulo':         'Recuperar contrasenya',
+    'rp.sub':            'Introdueix el teu correu corporatiu. T\'enviarem un enllaç per restablir la contrasenya.',
+    'rp.btn':            'Enviar enllaç',
+    'rp.enviando':       'Enviant...',
+    'rp.ok':             '✓ Si el correu està registrat, rebràs un enllaç en uns minuts. Revisa també la carpeta de spam.',
+    'rp.err_email':      'Introdueix un correu vàlid.',
+    'rp.volver':         '← Tornar a l\'accés',
+    'rp.set_titulo':     'Nova contrasenya',
+    'rp.set_sub':        'Estableix la teva nova contrasenya per accedir al portal.',
+    'rp.set_btn':        'Desar i accedir',
+    'rp.set_ok':         '✓ Contrasenya actualitzada',
+    'rp.err_link':       'L\'enllaç ha caducat o no és vàlid. Sol·licita\'n un de nou.',
     // Cambio pass obligatorio
     'cp.titulo':         'Nova contrasenya',
     'cp.sub':            "Per seguretat, has d'establir una contrasenya pròpia abans d'accedir al portal.",
@@ -1084,6 +1112,122 @@ function actualizarBadgeDocumentos(count) {
 // LOGIN
 document.getElementById('btnLogin').addEventListener('click', doLogin);
 document.getElementById('loginPassword').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
+var rpEmailEl = document.getElementById('rpEmail');
+if (rpEmailEl) rpEmailEl.addEventListener('keydown', function(e){ if(e.key==='Enter') enviarRecuperarPass(); });
+var rpSetNuevaEl = document.getElementById('rpSetNueva');
+if (rpSetNuevaEl) rpSetNuevaEl.addEventListener('keydown', function(e){ if(e.key==='Enter') confirmarResetPassRecuperacion(); });
+
+function abrirRecuperarPass() {
+  var loginErr = document.getElementById('loginError');
+  if (loginErr) loginErr.style.display = 'none';
+  document.getElementById('loginFormView').style.display = 'none';
+  document.getElementById('recuperarPassView').style.display = 'block';
+  var rpErr = document.getElementById('rpError');
+  var rpOk  = document.getElementById('rpOk');
+  if (rpErr) rpErr.style.display = 'none';
+  if (rpOk)  rpOk.style.display  = 'none';
+  var loginEmail = document.getElementById('loginEmail').value.trim();
+  var rpEmail = document.getElementById('rpEmail');
+  if (loginEmail) rpEmail.value = loginEmail;
+  rpEmail.focus();
+}
+
+function volverAlLogin() {
+  document.getElementById('recuperarPassView').style.display = 'none';
+  document.getElementById('loginFormView').style.display = 'block';
+  var rpErr = document.getElementById('rpError');
+  var rpOk  = document.getElementById('rpOk');
+  if (rpErr) rpErr.style.display = 'none';
+  if (rpOk)  rpOk.style.display  = 'none';
+  document.getElementById('loginPassword').focus();
+}
+
+async function enviarRecuperarPass() {
+  var email = document.getElementById('rpEmail').value.trim();
+  var err = document.getElementById('rpError');
+  var ok  = document.getElementById('rpOk');
+  var btn = document.getElementById('rpBtn');
+  err.style.display = 'none';
+  ok.style.display  = 'none';
+  if (!email || email.indexOf('@') < 1) {
+    err.style.display = 'block';
+    err.textContent = t('rp.err_email');
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = t('rp.enviando');
+  var redirectTo = window.location.origin + window.location.pathname;
+  var { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
+  btn.disabled = false;
+  btn.textContent = t('rp.btn');
+  if (error) {
+    err.style.display = 'block';
+    err.textContent = 'Error: ' + error.message;
+    return;
+  }
+  ok.style.display = 'block';
+  ok.textContent = t('rp.ok');
+}
+
+function mostrarResetPassRecuperacion() {
+  document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('cambioPassModal').style.display = 'none';
+  var modal = document.getElementById('resetPassRecuperacionModal');
+  modal.style.display = 'flex';
+  document.getElementById('rpSetError').style.display = 'none';
+  document.getElementById('rpSetNueva').value = '';
+  document.getElementById('rpSetConfirma').value = '';
+  setTimeout(function() { document.getElementById('rpSetNueva').focus(); }, 80);
+}
+
+async function confirmarResetPassRecuperacion() {
+  var nueva    = document.getElementById('rpSetNueva').value;
+  var confirma = document.getElementById('rpSetConfirma').value;
+  var err = document.getElementById('rpSetError');
+  var btn = document.getElementById('rpSetBtn');
+  err.style.display = 'none';
+  if (nueva.length < 8) {
+    err.style.display = 'block';
+    err.textContent = t('cp.err_corta');
+    return;
+  }
+  if (nueva !== confirma) {
+    err.style.display = 'block';
+    err.textContent = t('cp.err_match');
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = t('cp.guardando');
+  var { error: updErr } = await sb.auth.updateUser({ password: nueva });
+  if (updErr) {
+    err.style.display = 'block';
+    err.textContent = 'Error: ' + updErr.message;
+    btn.disabled = false;
+    btn.textContent = t('rp.set_btn');
+    return;
+  }
+  btn.textContent = t('rp.set_ok');
+  document.getElementById('resetPassRecuperacionModal').style.display = 'none';
+  window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  var { data: userData } = await sb.auth.getUser();
+  if (userData && userData.user) {
+    currentUser = userData.user;
+    var { data: emp } = await sb.from('empleados').select('*').eq('email', userData.user.email).single();
+    currentEmpleado = emp;
+    currentIsAdmin = userData.user.email.includes('admin') || (emp && emp.cargo === 'Coordinador');
+    if (emp && emp.debe_cambiar_password) {
+      await sb.from('empleados').update({ debe_cambiar_password: false }).eq('id', emp.id);
+      currentEmpleado.debe_cambiar_password = false;
+    }
+    iniciarApp();
+    return;
+  }
+  btn.disabled = false;
+  btn.textContent = t('rp.set_btn');
+  document.getElementById('loginWrap').style.display = 'flex';
+  volverAlLogin();
+}
 
 async function doLogin() {
   var email = document.getElementById('loginEmail').value.trim();
@@ -1857,6 +2001,11 @@ sb.auth.onAuthStateChange(function(event, session) {
   if (event === 'SIGNED_OUT') {
     document.getElementById('app').style.display = 'none';
     document.getElementById('loginWrap').style.display = 'flex';
+    document.getElementById('resetPassRecuperacionModal').style.display = 'none';
+  }
+  if (event === 'PASSWORD_RECOVERY' && session) {
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    mostrarResetPassRecuperacion();
   }
 });
 
@@ -2086,6 +2235,12 @@ var DEMO_EMPLEADOS = [
 
 document.addEventListener('DOMContentLoaded', function() {
   aplicarIdioma();
+  var hash = window.location.hash || '';
+  if (hash.indexOf('error=') !== -1) {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('loginError').textContent = t('rp.err_link');
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
   var inputExcel = document.getElementById('importarArchivo');
   if (inputExcel) inputExcel.addEventListener('change', previsualizarExcel);
   generarPlantilla();
