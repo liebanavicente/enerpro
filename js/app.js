@@ -2381,7 +2381,6 @@ async function confirmarAprobarRegistro() {
   var nombre = document.getElementById('aprobarRegNombre').value;
   var dni    = document.getElementById('aprobarRegDni').value;
   var cargo  = document.getElementById('aprobarRegCargo').value;
-  var dias   = parseInt(document.getElementById('aprobarRegDias').value) || 22;
   var okEl   = document.getElementById('aprobarRegOk');
   var errEl  = document.getElementById('aprobarRegError');
   var btn    = document.getElementById('aprobarRegBtn');
