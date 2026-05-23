@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>ENERPRO — Presentación Portal del Empleado</title>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -30,6 +30,7 @@
     }
     .deck {
       height: 100vh;
+      height: 100dvh;
       width: 100vw;
       position: relative;
       background:
@@ -379,8 +380,131 @@
       content: '✓'; position: absolute; left: 0;
       color: var(--gold); font-weight: 700; font-size: 0.72rem;
     }
+    .controls-nav { display: flex; gap: 0.5rem; flex-shrink: 0; }
     .feat-item strong { color: var(--text); font-weight: 600; }
-    @media (max-width: 900px) {
+
+    /* ─── MOBILE ─────────────────────────────────────────── */
+    @media (max-width: 767px) {
+      html, body {
+        height: 100%;
+        height: 100dvh;
+        overflow: hidden;
+        overscroll-behavior: none;
+      }
+      .deck { height: 100dvh; }
+
+      .slide {
+        padding: max(0.85rem, env(safe-area-inset-top)) 1rem calc(6.25rem + env(safe-area-inset-bottom, 0px));
+        justify-content: flex-start;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        transform: none;
+      }
+      .slide.active {
+        transform: none;
+      }
+
+      h1 { font-size: 1.85rem; line-height: 1.08; }
+      h2 { font-size: 1.35rem; margin-bottom: 0.5rem; line-height: 1.1; }
+      .slide-dense h2 { font-size: 1.3rem; margin-bottom: 0.4rem; }
+      .sub {
+        font-size: 0.82rem;
+        line-height: 1.5;
+        margin-top: 0.35rem;
+        max-width: none;
+      }
+      .slide-dense .sub { font-size: 0.78rem; margin-bottom: 0.45rem; }
+      .eyebrow { font-size: 0.58rem; margin-bottom: 0.4rem; letter-spacing: 0.16em; }
+
+      .logo-row { gap: 0.65rem; margin-bottom: 0.85rem; }
+      .logo-row img { width: 48px; height: 48px; }
+      .brand { font-size: 1.35rem; letter-spacing: 0.08em; }
+      .client-tag { font-size: 0.55rem; letter-spacing: 0.08em; line-height: 1.35; }
+
+      .grid-2, .grid-3, .grid-4, .compare, .toc-cols, .feat-grid { grid-template-columns: 1fr; }
+      .grid-2, .grid-3, .grid-4, .compare, .toc-cols { gap: 0.65rem; margin-top: 0.65rem; }
+      .feat-grid { gap: 0.35rem; margin-top: 0.35rem; }
+
+      .card { padding: 0.75rem 0.85rem; border-radius: 12px; }
+      .card-value { font-size: 1.65rem; }
+      .card-light .card-value { font-size: 1.5rem !important; }
+      .card p { font-size: 0.76rem; }
+      .card-label { font-size: 0.55rem; margin-bottom: 0.35rem; }
+
+      .compare { margin-top: 0.65rem; }
+      .compare h3 { font-size: 0.9rem; margin-bottom: 0.45rem; }
+      .toc-block { padding: 0.75rem 0.85rem; }
+      .toc-block h3 { font-size: 0.85rem; margin-bottom: 0.45rem; }
+      .toc-block li { font-size: 0.74rem; padding: 0.22rem 0; }
+
+      .feat-item { font-size: 0.72rem; line-height: 1.4; padding-left: 0.85rem; }
+      .feat-item::before { font-size: 0.65rem; }
+
+      ul.clean { margin-top: 0.65rem; max-width: none; }
+      ul.clean li {
+        font-size: 0.76rem;
+        padding: 0.45rem 0;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        align-items: flex-start;
+      }
+      ul.clean li::before { margin-top: 0.35rem; }
+      .tag { font-size: 0.55rem; padding: 0.15rem 0.45rem; margin-bottom: 0.15rem; }
+
+      .qr-box {
+        width: 100%;
+        max-width: 16rem;
+        margin-top: 0.85rem;
+        padding: 0.85rem 1rem;
+      }
+      .qr-placeholder, .qr-box img { width: 120px !important; height: 120px !important; }
+      #portalUrl {
+        font-size: 0.72rem !important;
+        word-break: break-all;
+        text-align: center;
+        line-height: 1.35;
+        max-width: 100%;
+      }
+      .hint { font-size: 0.62rem; line-height: 1.4; }
+
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.45rem;
+        padding: 0.55rem 0.85rem calc(0.55rem + env(safe-area-inset-bottom, 0px));
+      }
+      .controls-left {
+        width: 100%;
+        gap: 0.5rem;
+      }
+      .controls-left .hint { display: none; }
+      .progress { font-size: 0.68rem; flex-shrink: 0; min-width: 2.75rem; }
+      .progress-bar {
+        flex: 1;
+        width: auto;
+        min-width: 0;
+        height: 4px;
+      }
+      .controls-nav {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.45rem;
+      }
+      .controls .btn {
+        min-height: 44px;
+        padding: 0.55rem 0.5rem;
+        font-size: 0.72rem;
+        width: 100%;
+      }
+
+      .ui-body { grid-template-columns: 1fr; }
+      .ui-sidebar { display: none; }
+    }
+
+    @media (max-width: 900px) and (min-width: 768px) {
       .slide { padding: 2rem 1.5rem 5rem; }
       .grid-2, .grid-3, .grid-4, .compare, .toc-cols, .feat-grid { grid-template-columns: 1fr; }
       .ui-body { grid-template-columns: 1fr; }
@@ -758,7 +882,7 @@
     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:6%"></div></div>
     <span class="hint">← → navegar · F pantalla completa</span>
   </div>
-  <div style="display:flex;gap:0.5rem">
+  <div class="controls-nav">
     <button class="btn" id="btnPrev" type="button">Anterior</button>
     <button class="btn btn-gold" id="btnNext" type="button">Siguiente</button>
   </div>
@@ -790,12 +914,30 @@
     slides[current].classList.remove('active');
     current = n;
     slides[current].classList.add('active');
+    slides[current].scrollTop = 0;
     numEl.textContent = (current + 1) + ' / ' + total;
     fillEl.style.width = Math.round(((current + 1) / total) * 100) + '%';
   }
 
   document.getElementById('btnPrev').addEventListener('click', function() { goTo(current - 1); });
   document.getElementById('btnNext').addEventListener('click', function() { goTo(current + 1); });
+
+  /* Swipe en móvil */
+  var touchStartX = 0;
+  var touchStartY = 0;
+  document.addEventListener('touchstart', function(e) {
+    if (!e.changedTouches || !e.changedTouches.length) return;
+    touchStartX = e.changedTouches[0].clientX;
+    touchStartY = e.changedTouches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', function(e) {
+    if (!e.changedTouches || !e.changedTouches.length) return;
+    var dx = e.changedTouches[0].clientX - touchStartX;
+    var dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
+    if (dx < 0) goTo(current + 1);
+    else goTo(current - 1);
+  }, { passive: true });
 
   document.addEventListener('keydown', function(e) {
     if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); goTo(current + 1); }
