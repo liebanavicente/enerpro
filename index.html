@@ -1941,6 +1941,17 @@
         <p data-i18n="cal.sub">Tus cuadrantes mensuales</p>
       </div>
 
+      <!-- Upload bar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;margin-bottom:0.875rem;flex-wrap:wrap">
+        <span style="font-size:var(--text-sm);color:var(--muted)" data-i18n="cq.sub">Sube tu cuadrante PDF mensual</span>
+        <label id="cqUploadLabel" style="cursor:pointer">
+          <input type="file" id="cqFileInput" accept="application/pdf" style="display:none" onchange="subirCuadrantePropio(this)">
+          <span class="btn-sm gold" data-i18n="cq.subir">⬆ Subir cuadrante</span>
+        </label>
+      </div>
+      <div class="success-box" id="cqUploadOk" style="display:none;margin-bottom:0.75rem"></div>
+      <div class="error-box"   id="cqUploadErr" style="display:none;margin-bottom:0.75rem"></div>
+
       <!-- Primary: cuadrante PDF list -->
       <div class="card" id="cuadrantesListTurnos" style="padding:0"></div>
 
@@ -2207,6 +2218,28 @@
       <div style="display:flex;gap:0.75rem;margin-top:1.5rem">
         <button class="btn-sm primary" id="editEmpBtn" onclick="guardarEmpleado()" style="flex:1;padding:0.7rem;font-size:0.85rem" data-i18n="edit.guardar">Guardar cambios</button>
         <button class="btn-sm" onclick="cerrarEditEmp()" style="padding:0.7rem 1.25rem" data-i18n="edit.cancelar">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PARSEO CUADRANTE (empleado) -->
+<div id="cqParseModal" class="modal-overlay" style="display:none;z-index:9000">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-box-header">
+      <div>
+        <div class="modal-eyebrow" data-i18n="cq.modal_eyebrow">Mis turnos</div>
+        <div class="modal-title" data-i18n="cq.modal_titulo">Reconocimiento de turnos</div>
+      </div>
+      <button class="modal-close" onclick="cerrarCqParseModal()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="success-box" id="cqParseOk"  style="display:none"></div>
+      <div class="error-box"   id="cqParseErr" style="display:none"></div>
+      <div id="cqParseContent" style="font-size:var(--text-sm);color:var(--text2)">Procesando…</div>
+      <div id="cqParseActions" style="display:none;display:flex;gap:0.75rem;margin-top:1.25rem">
+        <button class="btn-sm primary" id="cqParseConfirmBtn" onclick="confirmarParseCuadrante()" style="flex:1;padding:0.7rem;font-size:0.85rem" data-i18n="cq.importar">Importar al calendario</button>
+        <button class="btn-sm" onclick="cerrarCqParseModal()" style="padding:0.7rem 1.25rem" data-i18n="cq.cancelar">Cancelar</button>
       </div>
     </div>
   </div>

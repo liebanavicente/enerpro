@@ -286,6 +286,18 @@ var I18N = {
     'reg.estado_rech':    'Rechazada',
     'reg.empty':          'No hay solicitudes pendientes.',
     'login.solicitar':    '¿Primera vez? Solicitar acceso →',
+    // Cuadrante propio
+    'cq.sub':             'Sube tu cuadrante PDF mensual',
+    'cq.subir':           '⬆ Subir cuadrante',
+    'cq.eliminar':        'Eliminar',
+    'cq.parsear':         'Ver turnos',
+    'cq.modal_eyebrow':   'Mis turnos',
+    'cq.modal_titulo':    'Reconocimiento de turnos',
+    'cq.importar':        'Importar al calendario',
+    'cq.cancelar':        'Cancelar',
+    'cq.parse_ok':        'turnos importados correctamente.',
+    'cq.parse_none':      'No se encontraron turnos en el PDF.',
+    'cq.del_confirm':     '¿Eliminar este cuadrante? Los turnos importados de este mes no se eliminarán.',
     // Dashboard
     'dash.sin_firmar':   'Sin firmar cuadrante',
     'dash.solicitudes':  'Solicitudes pendientes',
@@ -770,6 +782,18 @@ var I18N = {
     'reg.estado_rech':    'Rebutjada',
     'reg.empty':          'No hi ha sol·licituds pendents.',
     'login.solicitar':    'Primera vegada? Sol·licitar accés →',
+    // Cuadrante propio
+    'cq.sub':             'Puja el teu quadrant PDF mensual',
+    'cq.subir':           '⬆ Pujar quadrant',
+    'cq.eliminar':        'Eliminar',
+    'cq.parsear':         'Veure torns',
+    'cq.modal_eyebrow':   'Els meus torns',
+    'cq.modal_titulo':    'Reconeixement de torns',
+    'cq.importar':        'Importar al calendari',
+    'cq.cancelar':        'Cancel·lar',
+    'cq.parse_ok':        'torns importats correctament.',
+    'cq.parse_none':      'No s\'han trobat torns al PDF.',
+    'cq.del_confirm':     'Eliminar aquest quadrant? Els torns importats d\'aquest mes no s\'eliminaran.',
     // Dashboard
     'dash.sin_firmar':   'Sense signar quadrant',
     'dash.solicitudes':  'Sol·licituds pendents',
@@ -1750,12 +1774,145 @@ function _renderCuadrantesEnTurnos(cuadrantes) {
       '<div style="font-size:var(--text-md);font-weight:600;color:var(--text)">' + mesLabel + unread + '</div>' +
       '<div style="font-size:var(--text-xs);color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + c.nombre + '</div>' +
       '</div>' +
-      '<div style="display:flex;gap:0.5rem;align-items:center;flex-shrink:0">' +
+      '<div style="display:flex;gap:0.5rem;align-items:center;flex-shrink:0;flex-wrap:wrap">' +
       firmaHtml +
       '<button class="btn-sm primary" onclick="verDoc(\'' + safeUrl + '\', \'' + safeName + '\')">' + t('doc.ver_cuad') + '</button>' +
       '<button class="btn-sm" onclick="descargarDoc(\'' + c.id + '\', \'' + safeUrl + '\', \'' + safeName + '\')">' + t('doc.descargar') + '</button>' +
+      '<button class="btn-sm gold" onclick="parsearCuadrantePropio(\'' + safeUrl + '\', \'' + c.id + '\')" title="Reconocer turnos automáticamente">' + t('cq.parsear') + '</button>' +
+      '<button class="btn-sm btn-danger" onclick="eliminarCuadrantePropio(\'' + c.id + '\', \'' + safeUrl + '\')" title="Eliminar cuadrante">' + t('cq.eliminar') + '</button>' +
       '</div></div>';
   }).join('');
+}
+
+// ─── CUADRANTE PROPIO (EMPLEADO) ─────────────────────────
+
+async function subirCuadrantePropio(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var okEl  = document.getElementById('cqUploadOk');
+  var errEl = document.getElementById('cqUploadErr');
+  var label = document.getElementById('cqUploadLabel');
+  okEl.style.display = 'none'; errEl.style.display = 'none';
+  if (!currentEmpleado) { errEl.textContent = 'Sesión no iniciada.'; errEl.style.display = 'block'; return; }
+
+  label.style.opacity = '0.5';
+  label.style.pointerEvents = 'none';
+
+  var empId    = currentEmpleado.id;
+  var fileName = empId + '/' + Date.now() + '_' + file.name;
+  var { error: storageErr } = await sb.storage.from('documentos').upload(fileName, file);
+  if (storageErr) {
+    errEl.textContent = 'Error al subir: ' + storageErr.message;
+    errEl.style.display = 'block';
+    label.style.opacity = ''; label.style.pointerEvents = '';
+    input.value = ''; return;
+  }
+
+  var { data: urlData } = sb.storage.from('documentos').getPublicUrl(fileName);
+  var url = urlData && urlData.publicUrl;
+  var nombre = file.name.replace(/\.pdf$/i, '');
+
+  var { error: dbErr } = await sb.from('documentos').insert({
+    empleado_id: empId, tipo: 'cuadrante', nombre: nombre,
+    url: url, firmado: false, leido: true
+  });
+  if (dbErr) {
+    errEl.textContent = 'Error al guardar: ' + dbErr.message;
+    errEl.style.display = 'block';
+    label.style.opacity = ''; label.style.pointerEvents = '';
+    input.value = ''; return;
+  }
+
+  okEl.textContent = '✓ Cuadrante subido. Puedes verlo en la lista.';
+  okEl.style.display = 'block';
+  label.style.opacity = ''; label.style.pointerEvents = '';
+  input.value = '';
+  await cargarDocumentos();
+  setTimeout(function() { okEl.style.display = 'none'; }, 4000);
+}
+
+async function eliminarCuadrantePropio(docId, url) {
+  if (!confirm(t('cq.del_confirm'))) return;
+  // Extract storage path from URL
+  var match = url.match(/documentos\/(.+)$/);
+  if (match) await sb.storage.from('documentos').remove([match[1]]);
+  await sb.from('documentos').delete().eq('id', docId);
+  await cargarDocumentos();
+}
+
+var _cqParseDatos = null;
+
+async function parsearCuadrantePropio(url, docId) {
+  var modal   = document.getElementById('cqParseModal');
+  var content = document.getElementById('cqParseContent');
+  var actions = document.getElementById('cqParseActions');
+  var okEl    = document.getElementById('cqParseOk');
+  var errEl   = document.getElementById('cqParseErr');
+  _cqParseDatos = null;
+  okEl.style.display = 'none'; errEl.style.display = 'none';
+  actions.style.display = 'none';
+  content.textContent = 'Procesando PDF…';
+  modal.style.display = 'flex';
+
+  try {
+    await _cargarPdfjsLib();
+    var resp = await fetch(url);
+    if (!resp.ok) throw new Error('No se pudo descargar el PDF (' + resp.status + ').');
+    var buf   = await resp.arrayBuffer();
+    var datos = await parsearPDFCuadrante(buf);
+
+    if (!datos.turnos.length) {
+      content.innerHTML = '<p style="color:var(--muted)">' + t('cq.parse_none') + '</p>';
+      return;
+    }
+
+    _cqParseDatos = datos;
+    var MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    var mesStr = (MESES[datos.mes - 1] || datos.mes) + ' ' + datos.anio;
+    content.innerHTML =
+      '<p style="margin-bottom:0.75rem"><strong>' + datos.turnos.length + ' turnos</strong> encontrados · <span style="color:var(--muted)">' + mesStr + '</span></p>' +
+      '<div style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r-sm)">' +
+      '<table style="font-size:var(--text-xs);width:100%"><thead><tr><th>Fecha</th><th>Inicio</th><th>Fin</th><th>Servicio</th></tr></thead><tbody>' +
+      datos.turnos.slice(0, 20).map(function(tt) {
+        return '<tr><td>' + tt.fecha + '</td><td>' + tt.hora_inicio + '</td><td>' + tt.hora_fin + '</td>' +
+          '<td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (tt.ubicacion || '—') + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+    actions.style.display = 'flex';
+  } catch(e) {
+    errEl.textContent = e.message || 'Error al procesar el PDF.';
+    errEl.style.display = 'block';
+    content.textContent = '';
+  }
+}
+
+async function confirmarParseCuadrante() {
+  if (!_cqParseDatos || !currentEmpleado) return;
+  var btn  = document.getElementById('cqParseConfirmBtn');
+  var okEl = document.getElementById('cqParseOk');
+  var errEl = document.getElementById('cqParseErr');
+  btn.disabled = true; btn.textContent = 'Importando…';
+
+  var empId = currentEmpleado.id;
+  var rows  = _cqParseDatos.turnos.map(function(tt) {
+    return { empleado_id: empId, fecha: tt.fecha, hora_inicio: tt.hora_inicio,
+             hora_fin: tt.hora_fin, tipo: tt.tipo, ubicacion: tt.ubicacion || null };
+  });
+
+  // Upsert by empleado_id + fecha to avoid duplicates
+  var { error } = await sb.from('turnos').upsert(rows, { onConflict: 'empleado_id,fecha' });
+  btn.disabled = false; btn.textContent = t('cq.importar');
+  if (error) { errEl.textContent = 'Error: ' + error.message; errEl.style.display = 'block'; return; }
+
+  document.getElementById('cqParseActions').style.display = 'none';
+  okEl.textContent = '✓ ' + _cqParseDatos.turnos.length + ' ' + t('cq.parse_ok');
+  okEl.style.display = 'block';
+  mostrarToast('✓ Turnos importados', _cqParseDatos.turnos.length + ' turnos para ' + _cqParseDatos.anio + '-' + ('0' + _cqParseDatos.mes).slice(-2));
+  setTimeout(cerrarCqParseModal, 2000);
+}
+
+function cerrarCqParseModal() {
+  document.getElementById('cqParseModal').style.display = 'none';
+  _cqParseDatos = null;
 }
 
 function renderDocs(docs, containerId, limit) {
