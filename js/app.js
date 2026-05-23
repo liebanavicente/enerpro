@@ -2412,7 +2412,7 @@ async function confirmarAprobarRegistro() {
   // Crear registro en tabla empleados
   var { error: dbError } = await sb.from('empleados').insert({
     nombre: nombre, email: email, dni: dni, cargo: cargo,
-    activo: true, debe_cambiar_password: true, dias_vacaciones_anuales: dias
+    activo: true, debe_cambiar_password: true
   });
   if (dbError) {
     errEl.textContent = 'Error al crear empleado: ' + dbError.message;
