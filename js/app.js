@@ -258,12 +258,33 @@ var I18N = {
     'tab.empleados':     'Empleados',
     'tab.subir':         'Subir documento',
     'tab.masivo':        'Subida masiva ZIP',
+    'tab.registro':      'Registro',
     'tab.solicitudes':   'Solicitudes',
     'tab.turnos':        'Turnos',
     'tab.importar':      'Importar',
     'tab.vacaciones':    'Vacaciones',
     'tab.resumen':       '📋 Resumen vacacional',
     'tab.docs':          '📂 Documentos',
+    // Registro de empleados
+    'reg.titulo':         'Solicitudes de registro',
+    'reg.f_pend':         'Pendientes',
+    'reg.f_todas':        'Todas',
+    'reg.f_apr':          'Aprobadas',
+    'reg.f_rech':         'Rechazadas',
+    'reg.actualizar':     'Actualizar',
+    'reg.modal_eyebrow':  'Registro de empleado',
+    'reg.modal_titulo':   'Aprobar solicitud',
+    'reg.dias_label':     'Días de vacaciones / año',
+    'reg.email_nota':     'Se creará la cuenta y se enviará un email de acceso al empleado.',
+    'reg.confirmar':      'Aprobar y enviar acceso',
+    'reg.cancelar':       'Cancelar',
+    'reg.aprobar':        'Aprobar',
+    'reg.rechazar':       'Rechazar',
+    'reg.estado_pend':    'Pendiente',
+    'reg.estado_apr':     'Aprobada',
+    'reg.estado_rech':    'Rechazada',
+    'reg.empty':          'No hay solicitudes pendientes.',
+    'login.solicitar':    '¿Primera vez? Solicitar acceso →',
     // Dashboard
     'dash.sin_firmar':   'Sin firmar cuadrante',
     'dash.solicitudes':  'Solicitudes pendientes',
@@ -721,12 +742,33 @@ var I18N = {
     'tab.empleados':     'Empleats',
     'tab.subir':         'Pujar document',
     'tab.masivo':        'Pujada massiva ZIP',
+    'tab.registro':      'Registre',
     'tab.solicitudes':   'Sol·licituds',
     'tab.turnos':        'Torns',
     'tab.importar':      'Importar',
     'tab.vacaciones':    'Vacances',
     'tab.resumen':       '📋 Resum vacacional',
     'tab.docs':          '📂 Documents',
+    // Registro de empleados
+    'reg.titulo':         'Sol·licituds de registre',
+    'reg.f_pend':         'Pendents',
+    'reg.f_todas':        'Totes',
+    'reg.f_apr':          'Aprovades',
+    'reg.f_rech':         'Rebutjades',
+    'reg.actualizar':     'Actualitzar',
+    'reg.modal_eyebrow':  'Registre d\'empleat',
+    'reg.modal_titulo':   'Aprovar sol·licitud',
+    'reg.dias_label':     'Dies de vacances / any',
+    'reg.email_nota':     'Es crearà el compte i s\'enviarà un email d\'accés a l\'empleat.',
+    'reg.confirmar':      'Aprovar i enviar accés',
+    'reg.cancelar':       'Cancel·lar',
+    'reg.aprobar':        'Aprovar',
+    'reg.rechazar':       'Rebutjar',
+    'reg.estado_pend':    'Pendent',
+    'reg.estado_apr':     'Aprovada',
+    'reg.estado_rech':    'Rebutjada',
+    'reg.empty':          'No hi ha sol·licituds pendents.',
+    'login.solicitar':    'Primera vegada? Sol·licitar accés →',
     // Dashboard
     'dash.sin_firmar':   'Sense signar quadrant',
     'dash.solicitudes':  'Sol·licituds pendents',
@@ -1165,11 +1207,13 @@ function actualizarBadgeAdmin(count) {
 
 async function cargarBadgeAdmin() {
   if (!currentIsAdmin) return;
-  var [solRes, vacRes] = await Promise.all([
+  var [solRes, vacRes, regRes] = await Promise.all([
     sb.from('solicitudes').select('*', { count:'exact', head:true }).eq('estado', 'pendiente'),
-    sb.from('vacaciones').select('*',  { count:'exact', head:true }).eq('estado', 'pendiente')
+    sb.from('vacaciones').select('*',  { count:'exact', head:true }).eq('estado', 'pendiente'),
+    sb.from('solicitudes_registro').select('*', { count:'exact', head:true }).eq('estado', 'pendiente')
   ]);
-  actualizarBadgeAdmin((solRes.count || 0) + (vacRes.count || 0));
+  actualizarBadgeAdmin((solRes.count || 0) + (vacRes.count || 0) + (regRes.count || 0));
+  _actualizarBadgeRegistro(regRes.count || 0);
 }
 
 function actualizarBadgeDocumentos(count) {
@@ -2012,6 +2056,7 @@ function switchTab(tab, el) {
     var buscador = document.getElementById('empBuscador');
     if (buscador) buscador.value = '';
   }
+  if (tab === 'registro-admin')     cargarSolicitudesRegistro();
   if (tab === 'solicitudes-admin')  cargarSolicitudesAdmin();
   if (tab === 'vacaciones-admin')   cargarVacacionesAdmin();
   if (tab === 'turnos-admin') { cargarTurnosAdmin(); poblarMasivaEmpleados(); cargarCuadranteAdmin(); }
@@ -2234,6 +2279,174 @@ async function crearEmpleado() {
   document.getElementById('empDni').value='';
   document.getElementById('empPassword').value='';
   cargarEmpleados();
+}
+
+// ─── REGISTRO DE EMPLEADOS ────────────────────────────────
+
+async function cargarSolicitudesRegistro() {
+  var listEl = document.getElementById('registroAdminList');
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="loading">Cargando...</div>';
+
+  var filtro = (document.getElementById('regAdminFiltro') || {}).value || 'pendiente';
+  var query = sb.from('solicitudes_registro').select('*').order('created_at', { ascending: false });
+  if (filtro !== 'todas') query = query.eq('estado', filtro);
+
+  var { data, error } = await query;
+  if (error) {
+    listEl.innerHTML = '<div class="empty-state" style="padding:2rem">Error al cargar solicitudes: ' + error.message + '</div>';
+    // Table may not exist yet — show SQL hint
+    if (error.message.includes('does not exist') || error.code === '42P01') {
+      listEl.innerHTML = '<div class="empty-state" style="padding:2rem;text-align:left"><p style="color:var(--muted);font-size:0.82rem;margin-bottom:0.5rem">La tabla <code>solicitudes_registro</code> no existe todavía.</p><p style="font-size:0.78rem;color:var(--muted)">Créala en el panel SQL de Supabase (ver instrucciones).</p></div>';
+    }
+    return;
+  }
+
+  _actualizarBadgeRegistro(data ? data.filter(function(r){ return r.estado === 'pendiente'; }).length : 0);
+
+  if (!data || !data.length) {
+    listEl.innerHTML = '<div class="empty-state" style="padding:2rem">' + t('reg.empty') + '</div>';
+    return;
+  }
+
+  var estadoColor = { pendiente: 'var(--yellow)', aprobada: 'var(--green)', rechazada: 'var(--red)' };
+  var estadoLabel = { pendiente: t('reg.estado_pend'), aprobada: t('reg.estado_apr'), rechazada: t('reg.estado_rech') };
+
+  var html = '<table class="dt-table"><thead><tr>' +
+    '<th>Nombre</th><th>Email</th><th>DNI</th><th>Cargo</th><th>Fecha</th><th>Estado</th><th>Acción</th>' +
+    '</tr></thead><tbody>';
+
+  data.forEach(function(r) {
+    var fecha = new Date(r.created_at).toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
+    var color = estadoColor[r.estado] || 'var(--muted)';
+    var label = estadoLabel[r.estado] || r.estado;
+    var acciones = '';
+    if (r.estado === 'pendiente') {
+      acciones = '<button class="btn-sm primary" onclick="abrirAprobarRegistro(\'' + r.id + '\',\'' + _esc(r.nombre) + '\',\'' + _esc(r.email) + '\',\'' + _esc(r.dni) + '\',\'' + _esc(r.cargo) + '\')" style="margin-right:0.4rem" data-i18n="reg.aprobar">' + t('reg.aprobar') + '</button>' +
+        '<button class="btn-sm btn-danger" onclick="rechazarRegistro(\'' + r.id + '\',\'' + _esc(r.nombre) + '\')" data-i18n="reg.rechazar">' + t('reg.rechazar') + '</button>';
+    }
+    html += '<tr>' +
+      '<td style="color:var(--text);font-weight:500">' + _esc(r.nombre) + '</td>' +
+      '<td style="color:var(--text2)">' + _esc(r.email) + '</td>' +
+      '<td>' + _esc(r.dni) + '</td>' +
+      '<td>' + _esc(r.cargo) + '</td>' +
+      '<td style="color:var(--muted)">' + fecha + '</td>' +
+      '<td><span style="font-size:0.72rem;font-weight:600;color:' + color + '">' + label + '</span>' + (r.nota ? ' <span style="font-size:0.7rem;color:var(--muted)" title="' + _esc(r.nota) + '">✱</span>' : '') + '</td>' +
+      '<td>' + acciones + '</td>' +
+      '</tr>';
+  });
+
+  html += '</tbody></table>';
+  listEl.innerHTML = html;
+}
+
+function _esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function _actualizarBadgeRegistro(count) {
+  var badge = document.getElementById('regPendBadge');
+  if (!badge) return;
+  if (count > 0) {
+    badge.textContent = count > 99 ? '99+' : String(count);
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function abrirAprobarRegistro(id, nombre, email, dni, cargo) {
+  document.getElementById('aprobarRegId').value    = id;
+  document.getElementById('aprobarRegEmail').value = email;
+  document.getElementById('aprobarRegNombre').value = nombre;
+  document.getElementById('aprobarRegDni').value   = dni;
+  document.getElementById('aprobarRegCargo').value = cargo;
+  document.getElementById('aprobarRegDias').value  = '22';
+  document.getElementById('aprobarRegOk').style.display   = 'none';
+  document.getElementById('aprobarRegError').style.display = 'none';
+  document.getElementById('aprobarRegBtn').disabled = false;
+  document.getElementById('aprobarRegInfo').innerHTML =
+    '<strong>' + _esc(nombre) + '</strong> · ' + _esc(email) + '<br>' +
+    _esc(cargo) + ' · DNI: ' + _esc(dni);
+  document.getElementById('aprobarRegModal').style.display = 'flex';
+}
+
+function cerrarAprobarRegModal() {
+  document.getElementById('aprobarRegModal').style.display = 'none';
+}
+
+async function confirmarAprobarRegistro() {
+  var id     = document.getElementById('aprobarRegId').value;
+  var email  = document.getElementById('aprobarRegEmail').value;
+  var nombre = document.getElementById('aprobarRegNombre').value;
+  var dni    = document.getElementById('aprobarRegDni').value;
+  var cargo  = document.getElementById('aprobarRegCargo').value;
+  var dias   = parseInt(document.getElementById('aprobarRegDias').value) || 22;
+  var okEl   = document.getElementById('aprobarRegOk');
+  var errEl  = document.getElementById('aprobarRegError');
+  var btn    = document.getElementById('aprobarRegBtn');
+  okEl.style.display = 'none'; errEl.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Creando cuenta…';
+
+  // Generar contraseña temporal segura
+  var tempPass = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-4).toUpperCase() + '!9';
+
+  // Guardar sesión admin
+  var { data: sessionData } = await sb.auth.getSession();
+  var adminSession = sessionData && sessionData.session;
+
+  // Crear usuario Auth
+  var { data: authData, error: authError } = await sb.auth.signUp({ email: email, password: tempPass });
+
+  // Restaurar sesión admin
+  if (adminSession && authData && authData.session) {
+    await sb.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token });
+  }
+
+  if (authError && !authError.message.toLowerCase().includes('already registered')) {
+    errEl.textContent = 'Error al crear acceso: ' + authError.message;
+    errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = t('reg.confirmar'); return;
+  }
+
+  // Crear registro en tabla empleados
+  var { error: dbError } = await sb.from('empleados').insert({
+    nombre: nombre, email: email, dni: dni, cargo: cargo,
+    activo: true, debe_cambiar_password: true, dias_vacaciones: dias
+  });
+  if (dbError) {
+    errEl.textContent = 'Error al crear empleado: ' + dbError.message;
+    errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = t('reg.confirmar'); return;
+  }
+
+  // Marcar solicitud como aprobada
+  await sb.from('solicitudes_registro').update({ estado: 'aprobada' }).eq('id', id);
+
+  // Enviar email de acceso (reset password actúa como invitación de primer acceso)
+  await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+
+  okEl.textContent = '✓ Cuenta creada. Se ha enviado un email de acceso a ' + email;
+  okEl.style.display = 'block';
+  btn.textContent = t('reg.confirmar');
+  showToast('✓ ' + nombre + ' — cuenta creada y email enviado', 'success');
+
+  setTimeout(function() {
+    cerrarAprobarRegModal();
+    cargarSolicitudesRegistro();
+    cargarEmpleados();
+    cargarBadgeAdmin();
+  }, 1800);
+}
+
+async function rechazarRegistro(id, nombre) {
+  var nota = window.prompt('Motivo del rechazo (opcional, se guardará internamente):');
+  if (nota === null) return; // cancelled
+  var { error } = await sb.from('solicitudes_registro').update({ estado: 'rechazada', nota: nota || null }).eq('id', id);
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+  showToast('Solicitud de ' + nombre + ' rechazada.', 'info');
+  cargarSolicitudesRegistro();
+  cargarBadgeAdmin();
 }
 
 // ADMIN - SUBIR DOCUMENTO
