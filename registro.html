@@ -204,6 +204,20 @@
       btn.disabled = false; btn.textContent = 'Enviar solicitud'; return;
     }
 
+    // Notificar al coordinador por email (Formsubmit, sin cuenta necesaria)
+    fetch('https://formsubmit.co/ajax/mlieban3@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        _subject: 'Nueva solicitud de acceso — ' + nombre,
+        nombre: nombre,
+        email: email,
+        dni: dni,
+        cargo: cargo,
+        _template: 'table'
+      })
+    }).catch(function() {}); // silencioso si falla
+
     document.getElementById('formSection').style.display = 'none';
     document.getElementById('successSection').style.display = 'block';
   };
