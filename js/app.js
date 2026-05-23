@@ -1860,7 +1860,8 @@ async function subirCuadrantePropio(input) {
 
   var { error: dbErr } = await sb.from('documentos').insert({
     empleado_id: empId, tipo: 'cuadrante', nombre: nombre,
-    url: url, firmado: false, leido: true
+    url: url, fecha: new Date().toISOString().split('T')[0],
+    firmado: false, leido: true
   });
   if (dbErr) {
     errEl.textContent = 'Error al guardar: ' + dbErr.message;
