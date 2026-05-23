@@ -27,6 +27,7 @@ var _cuadAdminCargo = 'todos';
 var _cuadAdminRaw   = { empleados: [], turnos: [] };
 var _dashChartSolCtx = null;
 var _dashChartVacCtx = null;
+var _modoRecuperacionPass = false;
 
 // ─── I18N ─────────────────────────────────────────────────
 
@@ -1170,6 +1171,7 @@ async function enviarRecuperarPass() {
 }
 
 function mostrarResetPassRecuperacion() {
+  _modoRecuperacionPass = true;
   document.getElementById('loginWrap').style.display = 'none';
   document.getElementById('app').style.display = 'none';
   document.getElementById('cambioPassModal').style.display = 'none';
@@ -1209,24 +1211,40 @@ async function confirmarResetPassRecuperacion() {
   }
   btn.textContent = t('rp.set_ok');
   document.getElementById('resetPassRecuperacionModal').style.display = 'none';
+  _modoRecuperacionPass = false;
   window.history.replaceState(null, '', window.location.pathname + window.location.search);
   var { data: userData } = await sb.auth.getUser();
   if (userData && userData.user) {
-    currentUser = userData.user;
     var { data: emp } = await sb.from('empleados').select('*').eq('email', userData.user.email).single();
-    currentEmpleado = emp;
-    currentIsAdmin = userData.user.email.includes('admin') || (emp && emp.cargo === 'Coordinador');
     if (emp && emp.debe_cambiar_password) {
       await sb.from('empleados').update({ debe_cambiar_password: false }).eq('id', emp.id);
-      currentEmpleado.debe_cambiar_password = false;
     }
-    iniciarApp();
+    await aplicarSesionDesdeUser(userData.user);
     return;
   }
   btn.disabled = false;
   btn.textContent = t('rp.set_btn');
   document.getElementById('loginWrap').style.display = 'flex';
   volverAlLogin();
+}
+
+async function aplicarSesionDesdeUser(user) {
+  if (!user || !user.email || _modoRecuperacionPass) return;
+  currentUser = user;
+  var email = user.email;
+  var { data: emp } = await sb.from('empleados').select('*').eq('email', email).single();
+  currentEmpleado = emp;
+  currentIsAdmin = email.includes('admin') || (emp && emp.cargo === 'Coordinador');
+
+  if (emp && emp.debe_cambiar_password) {
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('resetPassRecuperacionModal').style.display = 'none';
+    document.getElementById('cambioPassModal').style.display = 'flex';
+    document.getElementById('cpNueva').focus();
+    return;
+  }
+  iniciarApp();
 }
 
 async function doLogin() {
@@ -1239,18 +1257,7 @@ async function doLogin() {
   var { data, error } = await sb.auth.signInWithPassword({ email: email, password: pass });
   btn.textContent = t('login.btn'); btn.disabled = false;
   if (error) { err.style.display = 'block'; return; }
-  currentUser = data.user;
-  var { data: emp } = await sb.from('empleados').select('*').eq('email', email).single();
-  currentEmpleado = emp;
-  currentIsAdmin = email.includes('admin') || (emp && emp.cargo === 'Coordinador');
-
-  if (emp && emp.debe_cambiar_password) {
-    document.getElementById('loginWrap').style.display = 'none';
-    document.getElementById('cambioPassModal').style.display = 'flex';
-    document.getElementById('cpNueva').focus();
-    return;
-  }
-  iniciarApp();
+  await aplicarSesionDesdeUser(data.user);
 }
 
 function iniciarApp() {
@@ -1259,6 +1266,7 @@ function iniciarApp() {
   var isAdmin = currentIsAdmin;
   document.getElementById('loginWrap').style.display = 'none';
   document.getElementById('cambioPassModal').style.display = 'none';
+  document.getElementById('resetPassRecuperacionModal').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   document.getElementById('userName').textContent = emp ? emp.nombre : email;
   document.getElementById('userAvatar').textContent = emp ? emp.nombre.charAt(0).toUpperCase() : '?';
@@ -1999,13 +2007,22 @@ async function subirMasivo() {
 // SESIÓN
 sb.auth.onAuthStateChange(function(event, session) {
   if (event === 'SIGNED_OUT') {
+    currentUser = null;
+    currentEmpleado = null;
+    currentIsAdmin = false;
+    _modoRecuperacionPass = false;
     document.getElementById('app').style.display = 'none';
     document.getElementById('loginWrap').style.display = 'flex';
     document.getElementById('resetPassRecuperacionModal').style.display = 'none';
+    document.getElementById('cambioPassModal').style.display = 'none';
   }
   if (event === 'PASSWORD_RECOVERY' && session) {
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
     mostrarResetPassRecuperacion();
+    return;
+  }
+  if (event === 'INITIAL_SESSION' && session && session.user) {
+    aplicarSesionDesdeUser(session.user);
   }
 });
 
