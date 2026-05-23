@@ -1773,6 +1773,24 @@
           <button class="btn-sm" onclick="borrarDemoEmpleados()" style="width:100%;margin-top:0.5rem;min-height:44px;color:var(--red);border-color:rgba(220,38,38,0.3)" data-i18n="demo.btn_bor">Borrar empleados demo</button>
         </div>
       </div>
+
+      <!-- Importar cuadrante PDF Beta10 -->
+      <div class="card" style="margin-top:0">
+        <div class="section-label" style="margin-bottom:0.375rem">Importar cuadrante PDF (Beta10)</div>
+        <p style="font-size:var(--text-sm);color:var(--text2);line-height:1.6;margin-bottom:1.25rem">
+          Sube el PDF mensual generado por <strong style="color:var(--text)">Beta10</strong>.
+          Se extraen automáticamente el empleado, el mes y todos los turnos (formato
+          <code style="color:var(--gold-dark);background:var(--gold-light);padding:0.1em 0.35em;border-radius:3px">HH/HH</code>)
+          y se guardan en la tabla de turnos, reemplazando los existentes del mismo mes.
+        </p>
+        <div class="success-box" id="pdfImportOk"></div>
+        <div class="error-box"   id="pdfImportError"></div>
+        <div class="form-group">
+          <label>Archivo PDF del cuadrante</label>
+          <input type="file" id="pdfCuadranteArchivo" accept=".pdf" onchange="handlePDFCuadrante(event)">
+        </div>
+        <div id="pdfPreview" style="display:none"></div>
+      </div>
     </div>
     </div><!-- /#page-admin -->
 

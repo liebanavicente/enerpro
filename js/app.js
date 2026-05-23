@@ -3819,6 +3819,310 @@ async function crearTurnosPorEmpleados() {
   cargarCuadranteAdmin();
 }
 
+// ─── PDF CUADRANTE BETA10 IMPORT ─────────────────────────────
+
+var _pdfImportData = null;
+var _PDFJS_SRC    = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+var _PDFJS_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+function _cargarPdfjsLib() {
+  return new Promise(function(resolve, reject) {
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = _PDFJS_WORKER;
+      resolve(); return;
+    }
+    var s = document.createElement('script');
+    s.src = _PDFJS_SRC;
+    s.onload = function() { window.pdfjsLib.GlobalWorkerOptions.workerSrc = _PDFJS_WORKER; resolve(); };
+    s.onerror = function() { reject(new Error('No se pudo cargar PDF.js desde CDN')); };
+    document.head.appendChild(s);
+  });
+}
+
+/* Group PDF text items into visual rows by shared y-coordinate (±tol pt). */
+function _pdfAgruparFilas(items, tol) {
+  tol = tol || 4;
+  var sorted = items.slice().sort(function(a, b) {
+    if (a.page !== b.page) return a.page - b.page;
+    return b.y - a.y; // PDF y=0 is bottom; descending = top-to-bottom reading order
+  });
+  var rows = [];
+  sorted.forEach(function(item) {
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i][0].page === item.page && Math.abs(rows[i][0].y - item.y) <= tol) {
+        rows[i].push(item); return;
+      }
+    }
+    rows.push([item]);
+  });
+  rows.forEach(function(row) { row.sort(function(a, b) { return a.x - b.x; }); });
+  return rows;
+}
+
+/* Return the day number whose column x-position is closest to x, within colTol. */
+function _pdfXADia(x, diaXMap, colTol) {
+  var best = null, bestDist = Infinity;
+  Object.keys(diaXMap).forEach(function(dia) {
+    var d = Math.abs(x - diaXMap[dia]);
+    if (d < bestDist) { bestDist = d; best = parseInt(dia, 10); }
+  });
+  return (bestDist <= colTol) ? best : null;
+}
+
+/* Infer shift type from hora_inicio (HH:00 string). */
+function _pdfInferirTipo(hi) {
+  var h = parseInt((hi || '').split(':')[0], 10);
+  if (isNaN(h))          return 'turno';
+  if (h >= 5  && h <= 9)  return 'manana';
+  if (h >= 13 && h <= 17) return 'tarde';
+  if (h >= 20 || h <= 4)  return 'noche';
+  return 'turno';
+}
+
+/* Uppercase + strip diacritics for name comparison. */
+function _pdfNormNombre(s) {
+  return (s || '').toUpperCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Z ]/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
+
+/* Fuzzy-match a Beta10 name ("GARCIA BURGOS, LUIS JOSE") to an empleados row. */
+function _pdfBuscarEmpleado(nombrePDF, empleados) {
+  var norm     = _pdfNormNombre(nombrePDF.replace(',', ' '));
+  var palabras = norm.split(' ').filter(Boolean);
+  var mejor = null, mejorScore = 0;
+  empleados.forEach(function(emp) {
+    var ne    = _pdfNormNombre(emp.nombre);
+    var score = palabras.filter(function(w) { return ne.indexOf(w) !== -1; }).length;
+    if (score > mejorScore) { mejorScore = score; mejor = emp; }
+  });
+  var minScore = Math.max(2, Math.ceil(palabras.length * 0.5));
+  return (mejor && mejorScore >= minScore) ? mejor : null;
+}
+
+/**
+ * Parse a Beta10 cuadrante PDF.
+ * Returns { nombre, mes, anio, turnos: [{fecha, hora_inicio, hora_fin, tipo, ubicacion}] }
+ */
+async function parsearPDFCuadrante(arrayBuffer) {
+  var pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+  // Collect all text items with x/y positions across all pages
+  var allItems = [];
+  for (var p = 1; p <= pdf.numPages; p++) {
+    var page = await pdf.getPage(p);
+    var tc   = await page.getTextContent();
+    tc.items.forEach(function(item) {
+      var s = item.str.trim();
+      if (s) allItems.push({ str: s, x: item.transform[4], y: item.transform[5], page: p });
+    });
+  }
+
+  var rows = _pdfAgruparFilas(allItems);
+  var nombre = null, mes = null, anio = null;
+  var diaHeaderRowIdx = -1, diaXMap = {};
+
+  rows.forEach(function(row, idx) {
+    var line = row.map(function(i) { return i.str; }).join(' ');
+
+    // "000836 - GARCIA BURGOS, LUIS JOSE"
+    var mEmp = line.match(/\d{3,8}\s*[-–]\s*([A-ZÁÉÍÓÚÑÜA-Za-záéíóúñü][A-ZÁÉÍÓÚÑÜA-Za-záéíóúñü ,]{3,})/);
+    if (mEmp && !nombre) nombre = mEmp[1].trim();
+
+    // "MES SERVICIO: 01 (ENERO / 2026)"
+    var mMes = line.match(/MES\s+SERVICIO\D{0,6}(\d{1,2})\D{1,40}(\d{4})/);
+    if (mMes && !mes) { mes = parseInt(mMes[1], 10); anio = parseInt(mMes[2], 10); }
+
+    // Day-header row: ≥20 items whose text is a bare integer 1–31
+    if (diaHeaderRowIdx === -1) {
+      var nums = row.filter(function(item) {
+        var n = parseInt(item.str, 10);
+        return !isNaN(n) && n >= 1 && n <= 31 && String(n) === item.str.trim();
+      });
+      if (nums.length >= 20) {
+        diaHeaderRowIdx = idx;
+        nums.forEach(function(item) { diaXMap[parseInt(item.str, 10)] = item.x; });
+      }
+    }
+  });
+
+  if (!nombre)              throw new Error('No se encontró el nombre del empleado en el PDF.');
+  if (!mes || !anio)        throw new Error('No se encontró el mes/año en el PDF.');
+  if (diaHeaderRowIdx < 0)  throw new Error('No se encontró la tabla de turnos (fila de días 1-31).');
+
+  // Column snap tolerance = half the average inter-column gap
+  var diasKeys = Object.keys(diaXMap).map(Number).sort(function(a, b) { return a - b; });
+  var colTol   = 10;
+  if (diasKeys.length >= 2) {
+    var span = diaXMap[diasKeys[diasKeys.length - 1]] - diaXMap[diasKeys[0]];
+    colTol   = Math.max(8, Math.ceil(span / (diasKeys.length - 1) / 2) + 2);
+  }
+  var minDiaX = diaXMap[diasKeys[0]];
+
+  var turnos = [];
+  for (var i = diaHeaderRowIdx + 1; i < rows.length; i++) {
+    var row = rows[i];
+    if (!row.length) continue;
+
+    var nameItems = row.filter(function(it) { return it.x < minDiaX - 5; });
+    var dataItems = row.filter(function(it) { return it.x >= minDiaX - 5; });
+    if (!dataItems.length) continue;
+
+    var ubicacion = nameItems.map(function(it) { return it.str; }).join(' ').trim() || null;
+
+    // Merge fragment items at almost the same x (PDF.js sometimes splits "07" and "/19")
+    var cells = [];
+    dataItems.forEach(function(it) {
+      if (cells.length && Math.abs(it.x - cells[cells.length - 1].x) < 6) {
+        cells[cells.length - 1].str += it.str;
+      } else {
+        cells.push({ str: it.str, x: it.x });
+      }
+    });
+
+    cells.forEach(function(cell) {
+      var s = cell.str.replace(/\s/g, '');
+
+      // Main format: "07/19" or "7/19" or "07:00/19:00"
+      var mTime = s.match(/^(\d{1,2})(?::00)?\/(\d{1,2})(?::00)?$/);
+      if (!mTime) return;
+
+      var dia = _pdfXADia(cell.x, diaXMap, colTol);
+      if (!dia) return;
+
+      var hi = ('0' + parseInt(mTime[1], 10)).slice(-2) + ':00';
+      var hf = ('0' + parseInt(mTime[2], 10)).slice(-2) + ':00';
+      var mm = ('0' + mes).slice(-2);
+      var dd = ('0' + dia).slice(-2);
+
+      turnos.push({
+        fecha:       anio + '-' + mm + '-' + dd,
+        hora_inicio: hi,
+        hora_fin:    hf,
+        tipo:        _pdfInferirTipo(hi),
+        ubicacion:   ubicacion
+      });
+    });
+  }
+
+  return { nombre: nombre, mes: mes, anio: anio, turnos: turnos };
+}
+
+async function handlePDFCuadrante(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+
+  var ok   = document.getElementById('pdfImportOk');
+  var err  = document.getElementById('pdfImportError');
+  var prev = document.getElementById('pdfPreview');
+  ok.style.display = 'none'; err.style.display = 'none'; prev.style.display = 'none';
+  _pdfImportData = null;
+
+  prev.innerHTML = '<div class="loading">Procesando PDF…</div>';
+  prev.style.display = 'block';
+
+  try {
+    await _cargarPdfjsLib();
+    var buf   = await file.arrayBuffer();
+    var datos = await parsearPDFCuadrante(buf);
+
+    var { data: empleados } = await sb.from('empleados').select('id, nombre').eq('activo', true);
+    var emp = _pdfBuscarEmpleado(datos.nombre, empleados || []);
+    if (!emp) {
+      prev.style.display = 'none';
+      err.style.display = 'block';
+      err.textContent = 'Empleado no encontrado: "' + datos.nombre + '". Verifica que el nombre coincide con la BD.';
+      return;
+    }
+
+    _pdfImportData = { empleadoId: emp.id, empleadoNombre: emp.nombre,
+                       mes: datos.mes, anio: datos.anio, turnos: datos.turnos };
+
+    var MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                 'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    var mesStr = (MESES[datos.mes - 1] || datos.mes) + ' ' + datos.anio;
+
+    var html = '<div style="display:flex;align-items:center;justify-content:space-between;'
+      + 'margin-bottom:0.875rem;flex-wrap:wrap;gap:0.5rem">'
+      + '<div><div style="font-weight:600;color:var(--text)">' + emp.nombre + '</div>'
+      + '<div style="font-size:var(--text-xs);color:var(--muted)">' + mesStr
+      + ' &nbsp;·&nbsp; <strong>' + datos.turnos.length + ' turnos</strong></div></div>'
+      + '<button class="btn-sm primary" onclick="confirmarImportPDF()" style="min-height:36px">'
+      + 'Confirmar e importar</button></div>';
+
+    if (datos.turnos.length) {
+      html += '<div style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r-sm)">'
+        + '<table style="font-size:var(--text-xs)"><thead><tr>'
+        + '<th>Fecha</th><th>Inicio</th><th>Fin</th><th>Tipo</th><th>Servicio</th>'
+        + '</tr></thead><tbody>';
+      datos.turnos.slice(0, 25).forEach(function(turno) {
+        html += '<tr><td>' + turno.fecha + '</td>'
+          + '<td>' + turno.hora_inicio + '</td><td>' + turno.hora_fin + '</td>'
+          + '<td><span class="cal-pill t-' + turno.tipo + '">' + getTipoTurno(turno.tipo) + '</span></td>'
+          + '<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'
+          + (turno.ubicacion || '—') + '</td></tr>';
+      });
+      if (datos.turnos.length > 25) {
+        html += '<tr><td colspan="5" style="text-align:center;color:var(--muted)">'
+          + '… y ' + (datos.turnos.length - 25) + ' más</td></tr>';
+      }
+      html += '</tbody></table></div>';
+      html += '<p style="font-size:var(--text-xs);color:var(--muted);margin-top:0.625rem">'
+        + '⚠ Los turnos existentes de ' + emp.nombre + ' en ' + mesStr + ' se reemplazarán.</p>';
+    } else {
+      html += '<div class="empty-state"><div class="empty-state-title">'
+        + 'No se encontraron celdas de turno en el PDF</div>'
+        + '<div class="empty-state-sub">Verifica que el PDF es un cuadrante Beta10 con formato HH/HH.</div></div>';
+    }
+    prev.innerHTML = html;
+
+  } catch (ex) {
+    prev.style.display = 'none';
+    err.style.display = 'block';
+    err.textContent = 'Error al procesar el PDF: ' + ex.message;
+  }
+}
+
+async function confirmarImportPDF() {
+  if (!_pdfImportData) return;
+  var ok  = document.getElementById('pdfImportOk');
+  var err = document.getElementById('pdfImportError');
+  ok.style.display = 'none'; err.style.display = 'none';
+
+  var d   = _pdfImportData;
+  var mm  = ('0' + d.mes).slice(-2);
+  var pri = d.anio + '-' + mm + '-01';
+  var ult = d.anio + '-' + mm + '-' + new Date(d.anio, d.mes, 0).getDate();
+
+  // Replace: delete existing shifts for employee+month, then insert new ones
+  var { error: delErr } = await sb.from('turnos').delete()
+    .eq('empleado_id', d.empleadoId).gte('fecha', pri).lte('fecha', ult);
+  if (delErr) {
+    err.style.display = 'block'; err.textContent = 'Error al limpiar turnos previos: ' + delErr.message; return;
+  }
+
+  if (d.turnos.length) {
+    var payload = d.turnos.map(function(turno) {
+      return { empleado_id: d.empleadoId, fecha: turno.fecha, tipo: turno.tipo,
+               hora_inicio: turno.hora_inicio, hora_fin: turno.hora_fin,
+               ubicacion: turno.ubicacion || null };
+    });
+    var { error: insErr } = await sb.from('turnos').insert(payload);
+    if (insErr) {
+      err.style.display = 'block'; err.textContent = 'Error al guardar turnos: ' + insErr.message; return;
+    }
+  }
+
+  ok.style.display = 'block';
+  ok.textContent = '✓ ' + d.turnos.length + ' turnos importados para ' + d.empleadoNombre + '.';
+  document.getElementById('pdfPreview').style.display = 'none';
+  document.getElementById('pdfCuadranteArchivo').value = '';
+  _pdfImportData = null;
+  cargarTurnosAdmin();
+  cargarCuadranteAdmin();
+}
+
 // ─── PWA ─────────────────────────────────────────────────
 
 function registrarServiceWorker() {
