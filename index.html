@@ -20,22 +20,22 @@
     --border:       rgba(0,0,0,0.09);
     --border2:      rgba(0,0,0,0.16);
     --text:         #1c1e2e;
-    --text2:        #6a6e85;
-    --muted:        #9b9fb5;
+    --text2:        #52566e;
+    --muted:        #737794;
     --white:        #1c1e2e;
-    --gold:         #d49d00;
-    --gold-dark:    #a87a00;
-    --gold-mid:     #c08e00;
-    --gold-light:   rgba(212,157,0,0.12);
-    --gold-glow:    rgba(212,157,0,0.20);
-    --red:          #e53935;
-    --red-dark:     #c62828;
-    --red-light:    rgba(229,57,53,0.10);
-    --red-glow:     rgba(229,57,53,0.18);
-    --green:        #00994d;
-    --green-light:  rgba(0,153,77,0.12);
-    --yellow:       #d48b00;
-    --yellow-light: rgba(212,139,0,0.12);
+    --gold:         #b87f00;
+    --gold-dark:    #8f6300;
+    --gold-mid:     #a37200;
+    --gold-light:   rgba(184,127,0,0.12);
+    --gold-glow:    rgba(184,127,0,0.20);
+    --red:          #c62828;
+    --red-dark:     #b71c1c;
+    --red-light:    rgba(198,40,40,0.10);
+    --red-glow:     rgba(198,40,40,0.18);
+    --green:        #1b7a45;
+    --green-light:  rgba(27,122,69,0.11);
+    --yellow:       #8a6000;
+    --yellow-light: rgba(138,96,0,0.11);
     --r:    16px;
     --r-sm:  12px;
     --r-xs:   8px;
@@ -92,9 +92,13 @@
     padding: 1.5rem;
   }
   .login-card {
-    --white: #f0f1ff; --text: #e0e2f0; --text2: #8e92b0; --muted: #6a6e85;
+    --white: #f0f1ff; --text: #e0e2f0; --text2: #9295b0; --muted: #6a6e85;
     --gold: #f5b800; --gold-dark: #c99200; --gold-mid: #dba800;
-    --glass-border: rgba(255,255,255,0.1);
+    --surface-s: #1d2038; --surface-s2: #252847;
+    --border: rgba(255,255,255,0.12); --border2: rgba(255,255,255,0.2);
+    --surface2: rgba(255,255,255,0.07); --surface3: rgba(255,255,255,0.12);
+    --glass-border: rgba(255,255,255,0.12);
+    --gold-light: rgba(245,184,0,0.12);
     background: #14162a;
     backdrop-filter: blur(48px) saturate(1.6);
     -webkit-backdrop-filter: blur(48px) saturate(1.6);
@@ -605,6 +609,12 @@
   }
 
   /* ─── LIGHT MODE PATCHES ───────────────────────────────── */
+  /* Gold button border uses new gold token */
+  .btn-sm.gold       { border-color: rgba(184,127,0,0.45); color: var(--gold); }
+  .btn-sm.gold:hover { background: var(--gold-light); border-color: rgba(184,127,0,0.7); color: var(--gold); }
+  /* Primary button stays red but adapted */
+  .btn-sm.primary       { background: var(--red); border-color: var(--red); box-shadow: 0 2px 10px rgba(198,40,40,0.25); }
+  .btn-sm.primary:hover { background: var(--red-dark); border-color: var(--red-dark); }
   /* Hardcoded rgba-white values flipped for light bg */
   .page-header          { border-bottom-color: var(--border); }
   .doc-item             { border-bottom-color: var(--border); }
