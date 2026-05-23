@@ -1801,15 +1801,13 @@ async function cargarDocumentos() {
         : '<button class="btn-sm gold" style="white-space:nowrap" onclick="firmarDoc(\'' + cuadrante.id + '\', \'' + cSafeName + '\', this)">' + t('doc.confirmar') + '</button>';
       var unread = cuadrante.leido ? '' : '<span class="dt-badge-new" style="vertical-align:middle;margin-left:0.375rem">' + t('doc.nuevo') + '</span>';
       var mesLabel = _formatFechaCuadrante(cuadrante.fecha, cuadrante.nombre);
-      var border = i < cuadrantes.length - 1 ? 'border-bottom:1px solid var(--border);' : '';
-      return '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;padding:0.875rem 1.25rem;' + border + '">' +
-        '<div style="display:flex;align-items:center;gap:0.875rem;min-width:0">' +
-        '<div class="doc-icon" style="width:38px;height:38px;flex-shrink:0;background:var(--gold-light);color:var(--gold-dark)">' + docIconSVG('cuadrante') + '</div>' +
-        '<div style="min-width:0">' +
-        '<div style="font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:18rem">' + cuadrante.nombre + unread + '</div>' +
-        '<div style="font-size:var(--text-xs);color:var(--muted);margin-top:2px">' + mesLabel + '</div>' +
-        '</div></div>' +
-        '<div style="display:flex;gap:0.375rem;flex-wrap:wrap;align-items:center;flex-shrink:0">' +
+      return '<div class="list-row">' +
+        '<div class="list-row-icon doc-icon" style="background:var(--gold-light);color:var(--gold-dark)">' + docIconSVG('cuadrante') + '</div>' +
+        '<div class="list-row-body">' +
+        '<div class="list-row-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + cuadrante.nombre + unread + '</div>' +
+        '<div class="list-row-sub">' + mesLabel + '</div>' +
+        '</div>' +
+        '<div class="list-row-actions">' +
         '<button class="btn-sm primary" onclick="verDoc(\'' + cSafeUrl + '\', \'' + cSafeName + '\')">' + t('doc.ver_cuad') + '</button>' +
         '<button class="btn-sm" onclick="descargarDoc(\'' + cuadrante.id + '\', \'' + cSafeUrl + '\', \'' + cSafeName + '\')">' + t('doc.descargar') + '</button>' +
         cFirmaHtml +
@@ -1834,19 +1832,19 @@ function _renderCuadrantesEnTurnos(cuadrantes) {
     var safeName  = c.nombre.replace(/'/g, "\\'");
     var safeUrl   = c.url.replace(/'/g, "\\'");
     var mesLabel  = _formatFechaCuadrante(c.fecha, c.nombre);
-    var firmaHtml = c.firmado
-      ? '<span class="badge badge-green">' + t('doc.firmado') + '</span>'
-      : '<button class="btn-sm gold" style="white-space:nowrap" onclick="firmarDoc(\'' + c.id + '\', \'' + safeName + '\', this)">' + t('doc.confirmar') + '</button>';
-    var unread = c.leido ? '' : '<span class="dt-badge-new" style="vertical-align:middle;margin-left:0.375rem">' + t('doc.nuevo') + '</span>';
-    var border = i < list.length - 1 ? 'border-bottom:1px solid var(--border);' : '';
-    return '<div style="display:flex;align-items:center;gap:1.25rem;padding:1.125rem 1.5rem;' + border + '">' +
-      '<div style="width:44px;height:44px;flex-shrink:0;border-radius:var(--r-sm);background:var(--gold-light);color:var(--gold-dark);display:flex;align-items:center;justify-content:center">' + docIconSVG('cuadrante') + '</div>' +
-      '<div style="flex:1;min-width:0">' +
-      '<div style="font-size:var(--text-md);font-weight:600;color:var(--text)">' + mesLabel + unread + '</div>' +
-      '<div style="font-size:var(--text-xs);color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + c.nombre + '</div>' +
+    var confirmBtn = c.firmado
+      ? ''
+      : '<button class="btn-sm gold" onclick="firmarDoc(\'' + c.id + '\', \'' + safeName + '\', this)">' + t('doc.confirmar') + '</button>';
+    var unread = c.leido ? '' : '<span class="dt-badge-new">' + t('doc.nuevo') + '</span>';
+    var firmaBadge = c.firmado ? '<span class="badge badge-green">' + t('doc.firmado') + '</span>' : '';
+    return '<div class="list-row">' +
+      '<div class="list-row-icon" style="background:var(--gold-light);color:var(--gold-dark)">' + docIconSVG('cuadrante') + '</div>' +
+      '<div class="list-row-body">' +
+      '<div class="list-row-title">' + mesLabel + unread + firmaBadge + '</div>' +
+      '<div class="list-row-sub">' + c.nombre + '</div>' +
       '</div>' +
-      '<div style="display:flex;gap:0.5rem;align-items:center;flex-shrink:0;flex-wrap:wrap">' +
-      firmaHtml +
+      '<div class="list-row-actions">' +
+      confirmBtn +
       '<button class="btn-sm primary" onclick="verDoc(\'' + safeUrl + '\', \'' + safeName + '\')">' + t('doc.ver_cuad') + '</button>' +
       '<button class="btn-sm" onclick="descargarDoc(\'' + c.id + '\', \'' + safeUrl + '\', \'' + safeName + '\')">' + t('doc.descargar') + '</button>' +
       '<button class="btn-sm gold" onclick="parsearCuadrantePropio(\'' + safeUrl + '\', \'' + c.id + '\')" title="Reconocer turnos automáticamente">' + t('cq.parsear') + '</button>' +
@@ -2188,7 +2186,7 @@ async function cargarMisSolicitudes() {
     var tipoLbl = getSolTipoShort(s.tipo);
     var btnCancelar = s.estado === 'pendiente'
       ? '<button class="btn-sm" onclick="cancelarSolicitud(\'' + s.id + '\')" ' +
-        'style="margin-left:0.5rem;color:var(--muted);border-color:rgba(255,255,255,0.1);font-size:0.68rem" ' +
+        'style="margin-left:0.5rem;color:var(--muted);border-color:var(--border2);font-size:var(--text-xs)" ' +
         'title="Cancelar solicitud">' + t('sol.cancelar') + '</button>'
       : '';
     var d = delay; delay += 50;
@@ -2929,7 +2927,7 @@ async function cargarVacaciones() {
     var eb = getEstadoBadge(v.estado);
     var btnCancelar = v.estado === 'pendiente'
       ? '<button class="btn-sm" onclick="cancelarVacacion(\'' + v.id + '\')" ' +
-        'style="margin-left:0.25rem;color:var(--muted);border-color:rgba(255,255,255,0.1);font-size:0.68rem" ' +
+        'style="margin-left:0.25rem;color:var(--muted);border-color:var(--border2);font-size:var(--text-xs)" ' +
         'title="Cancelar solicitud">' + t('sol.cancelar') + '</button>'
       : '';
     var d = delay; delay += 50;
@@ -3299,7 +3297,7 @@ function renderCalendario(turnos) {
     resumen.innerHTML = '<div class="empty">' + t('cal.no_turnos') + '</div>';
     return;
   }
-  resumen.innerHTML = '<div class="card" style="padding:0"><div style="padding:0.875rem 1.25rem;border-bottom:1px solid var(--border);font-size:0.65rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)">' + t('cal.detalle') + '</div>' +
+  resumen.innerHTML = '<div class="card" style="padding:0"><div class="cal-resumen-hdr">' + t('cal.detalle') + '</div>' +
     turnos.map(function(turno) {
       var fecha = new Date(turno.fecha + 'T12:00:00');
       var fechaStr = fecha.toLocaleDateString('es-ES', { weekday:'short', day:'numeric', month:'short' });
@@ -4173,12 +4171,12 @@ async function cargarResumenVacaciones() {
   var maxDias = Math.max.apply(null, mensual) || 1;
   var chartHtml =
     '<div style="padding:1.25rem 1.5rem 1.5rem;border-top:1px solid var(--border)">' +
-    '<div style="font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem">' + t('rv.chart') + ano + '</div>' +
+    '<div style="font-size:var(--text-sm);font-weight:600;color:var(--muted);margin-bottom:1rem">' + t('rv.chart') + ano + '</div>' +
     '<div style="display:flex;align-items:flex-end;gap:5px;height:68px">' +
     mensual.map(function(d, i) {
       var pxH = d > 0 ? Math.max(4, Math.round((d / maxDias) * 56)) : 2;
       var col = d === 0
-        ? 'rgba(255,255,255,0.04)'
+        ? 'var(--surface2)'
         : (d >= maxDias * 0.8 ? 'var(--red)' : d >= maxDias * 0.45 ? 'var(--yellow)' : 'var(--green)');
       var hoy = new Date();
       var esActual = (i === hoy.getMonth() && ano === hoy.getFullYear());
@@ -4191,7 +4189,7 @@ async function cargarResumenVacaciones() {
         '</div>';
     }).join('') +
     '</div>' +
-    '<div style="display:flex;gap:5px;margin-top:3px;border-top:1px solid rgba(255,255,255,0.05);padding-top:5px">' +
+    '<div style="display:flex;gap:5px;margin-top:3px;border-top:1px solid var(--border);padding-top:5px">' +
     [0,1,2,3,4,5,6,7,8,9,10,11].map(function(i) {
       var hoy = new Date();
       var esActual = (i === hoy.getMonth() && ano === hoy.getFullYear());

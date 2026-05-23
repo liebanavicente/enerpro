@@ -97,6 +97,12 @@
       text-decoration: none; transition: color 0.15s;
     }
     .back-link:hover { color: rgba(240,241,255,0.8); }
+    @media (max-width: 767px) {
+      body { padding: 1rem 0.875rem; padding-top: calc(1rem + env(safe-area-inset-top, 0px)); justify-content: flex-start; padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)); }
+      .card { padding: 1.75rem 1.25rem 1.5rem; max-width: none; }
+      input, select { min-height: 48px; font-size: 16px; }
+      .btn-primary { min-height: 48px; font-size: 1rem; }
+    }
   </style>
 </head>
 <body>
