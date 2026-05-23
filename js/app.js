@@ -1720,6 +1720,12 @@ var btnLogoutMobile = document.getElementById('btnLogoutMobile');
 if (btnLogoutMobile) btnLogoutMobile.addEventListener('click', confirmarLogout);
 
 // DOCUMENTOS
+function _docStoragePath(url) {
+  if (!url) return url;
+  var m = String(url).match(/\/documentos\/(.+?)(?:\?|$)/);
+  return m ? decodeURIComponent(m[1]) : url;
+}
+
 /* Format a cuadrante fecha field into a readable "Mes YYYY" string.
    Falls back to extracting year/month from the document name. */
 function _formatFechaCuadrante(fecha, nombre) {
@@ -1854,8 +1860,7 @@ async function subirCuadrantePropio(input) {
     input.value = ''; return;
   }
 
-  var { data: urlData } = sb.storage.from('documentos').getPublicUrl(fileName);
-  var url = urlData && urlData.publicUrl;
+  var url = fileName;
   var nombre = file.name.replace(/\.pdf$/i, '');
 
   var { error: dbErr } = await sb.from('documentos').insert({
@@ -1880,9 +1885,7 @@ async function subirCuadrantePropio(input) {
 
 async function eliminarCuadrantePropio(docId, url) {
   if (!confirm(t('cq.del_confirm'))) return;
-  // Extract storage path from URL
-  var match = url.match(/documentos\/(.+)$/);
-  if (match) await sb.storage.from('documentos').remove([match[1]]);
+  await sb.storage.from('documentos').remove([_docStoragePath(url)]);
   await sb.from('documentos').delete().eq('id', docId);
   await cargarDocumentos();
 }
@@ -1903,9 +1906,10 @@ async function parsearCuadrantePropio(url, docId) {
 
   try {
     await _cargarPdfjsLib();
-    var resp = await fetch(url);
-    if (!resp.ok) throw new Error('No se pudo descargar el PDF (' + resp.status + ').');
-    var buf   = await resp.arrayBuffer();
+    var path = _docStoragePath(url);
+    var { data: blob, error: dlErr } = await sb.storage.from('documentos').download(path);
+    if (dlErr || !blob) throw new Error('No se pudo descargar el PDF.');
+    var buf   = await blob.arrayBuffer();
     var datos = await parsearPDFCuadrante(buf);
 
     if (!datos.turnos.length) {
@@ -2043,14 +2047,14 @@ function filterDocs(tipo) {
 
 async function eliminarDoc(docId, url) {
   if (!confirm('¿Eliminar este documento?')) return;
-  await sb.storage.from('documentos').remove([url]);
+  await sb.storage.from('documentos').remove([_docStoragePath(url)]);
   await sb.from('documentos').delete().eq('id', docId);
   cargarDocumentos();
 }
 
 async function descargarDoc(docId, url, nombre) {
   await sb.from('documentos').update({ leido: true }).eq('id', docId);
-  var { data, error } = await sb.storage.from('documentos').download(url);
+  var { data, error } = await sb.storage.from('documentos').download(_docStoragePath(url));
   if (error) { mostrarToast('❌ Error al descargar', 'No se pudo descargar el documento.'); return; }
   var link = document.createElement('a');
   link.href = URL.createObjectURL(data);
@@ -2073,7 +2077,7 @@ async function verDoc(url, nombre) {
   if (link) link.href = '#';
   modal.style.display = 'flex';
 
-  var { data, error } = await sb.storage.from('documentos').createSignedUrl(url, 3600);
+  var { data, error } = await sb.storage.from('documentos').createSignedUrl(_docStoragePath(url), 3600);
   if (error || !data) {
     frame.style.display = 'none';
     modal.querySelector('.pdf-header').insertAdjacentHTML('afterend',
@@ -4874,7 +4878,7 @@ function renderDocsAdmin(docs) {
 
 async function eliminarDocAdmin(docId, url) {
   if (!confirm('¿Eliminar este documento?')) return;
-  await sb.storage.from('documentos').remove([url]);
+  await sb.storage.from('documentos').remove([_docStoragePath(url)]);
   await sb.from('documentos').delete().eq('id', docId);
   mostrarToast(t('toast.doc_elim'), t('toast.doc_elim_msg'));
   cargarDocumentosAdmin();
