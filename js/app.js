@@ -162,6 +162,12 @@ var I18N = {
     'doc.nuevo':         'Nuevo',
     'doc.cuad_sub':      'Cuadrante de servicio',
     'doc.no_cuad':       'No hay cuadrante disponible.',
+    'ini.turno_hoy':     'Tu turno de hoy',
+    'ini.pend_titulo':   'Pendiente de tu atención',
+    'ini.pend_firmar':   'Sin firmar',
+    'ini.pend_resp':     'Solicitud respondida',
+    'ini.pend_ver':      'Ver',
+    'ini.vac_de':        'Días disponibles · ',
     'doc.empty':         'No hay documentos disponibles',
     'doc.empty_sub':     'Cuando el coordinador suba documentos, aparecerán aquí',
     'doc.cargando':      'Cargando documentos...',
@@ -618,6 +624,12 @@ var I18N = {
     'doc.nuevo':         'Nou',
     'doc.cuad_sub':      'Quadrant de servei',
     'doc.no_cuad':       'No hi ha quadrant disponible.',
+    'ini.turno_hoy':     'El teu torn d\'avui',
+    'ini.pend_titulo':   'Pendent de la teva atenció',
+    'ini.pend_firmar':   'Sense signar',
+    'ini.pend_resp':     'Sol·licitud resposta',
+    'ini.pend_ver':      'Veure',
+    'ini.vac_de':        'Dies disponibles · ',
     'doc.empty':         'No hi ha documents disponibles',
     'doc.empty_sub':     'Quan el coordinador pugi documents, apareixeran aquí',
     'doc.cargando':      'Carregant documents...',
@@ -1346,6 +1358,124 @@ async function doLogin() {
   await aplicarSesionDesdeUser(data.user);
 }
 
+// ─── S3: TURNO HOY ────────────────────────────────────────
+async function cargarTurnoHoy() {
+  var banner = document.getElementById('turnoHoyBanner');
+  if (!banner || !currentEmpleado) return;
+  var hoy = new Date().toISOString().split('T')[0];
+  var res = await sb.from('turnos').select('*')
+    .eq('empleado_id', currentEmpleado.id)
+    .eq('fecha', hoy)
+    .limit(1);
+  var data = res.data;
+  if (!data || !data.length) { banner.style.display = 'none'; return; }
+  var tr   = data[0];
+  var tipo = tr.tipo || 'turno';
+  var tipoLabel = getTipoTurno(tipo);
+  var horas = tr.hora_inicio
+    ? tr.hora_inicio.slice(0,5) + (tr.hora_fin ? ' – ' + tr.hora_fin.slice(0,5) : '')
+    : '';
+  var ubic = tr.ubicacion ? ' · ' + tr.ubicacion : '';
+  banner.innerHTML =
+    '<div class="turno-banner t-' + tipo + '">' +
+      '<span class="cal-pill t-' + tipo + '" style="flex-shrink:0;font-size:0.65rem;padding:0.25rem 0.625rem">' + tipoLabel + '</span>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:0.82rem;font-weight:600;color:var(--white)">' + t('ini.turno_hoy') + '</div>' +
+        (horas || ubic
+          ? '<div style="font-size:0.73rem;color:var(--text2);margin-top:1px">' + horas + ubic + '</div>'
+          : '') +
+      '</div>' +
+      '<button class="btn-sm" onclick="navigateToPage(\'calendario\')">' +
+        '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:11px;height:11px;margin-right:3px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' +
+        t('nav.calendario') + '</button>' +
+    '</div>';
+  banner.style.display = 'block';
+}
+
+// ─── S3: STAT VAC (progress bar) ─────────────────────────
+async function cargarStatVacInicio() {
+  var card  = document.getElementById('statVacCard');
+  var statEl = document.getElementById('statVac');
+  if (!card || !currentEmpleado) return;
+  var ano = new Date().getFullYear();
+  var res = await sb.from('vacaciones')
+    .select('fecha_inicio, fecha_fin')
+    .eq('empleado_id', currentEmpleado.id)
+    .eq('estado', 'aprobada')
+    .gte('fecha_inicio', ano + '-01-01')
+    .lte('fecha_fin', ano + '-12-31');
+  var total   = currentEmpleado.dias_vacaciones_anuales || 22;
+  var usados  = 0;
+  (res.data || []).forEach(function(v) {
+    usados += diasEntre(v.fecha_inicio, v.fecha_fin);
+  });
+  var restantes = Math.max(0, total - usados);
+  var pct       = total > 0 ? Math.min(100, Math.round((usados / total) * 100)) : 0;
+  animateValue(statEl, restantes, 700);
+  var sub = document.getElementById('statVacSub');
+  if (sub) sub.textContent = t('ini.vac_de') + ano;
+  var bar = document.getElementById('vacProgressBar');
+  if (bar) setTimeout(function() { bar.style.width = pct + '%'; }, 250);
+  card.style.display = '';
+}
+
+// ─── S3: PENDIENTES DE ATENCIÓN ───────────────────────────
+async function cargarPendientesAtencion(docs) {
+  var section = document.getElementById('pendienteSection');
+  if (!section || !currentEmpleado) return;
+  var sinFirmar = (docs || []).filter(function(d) { return !d.firmado; });
+  var res = await sb.from('solicitudes')
+    .select('id, tipo, estado, created_at')
+    .eq('empleado_id', currentEmpleado.id)
+    .in('estado', ['aprobada', 'rechazada'])
+    .order('created_at', { ascending: false })
+    .limit(3);
+  var solResp = res.data || [];
+  if (!sinFirmar.length && !solResp.length) {
+    section.style.display = 'none';
+    return;
+  }
+  var total = sinFirmar.length + solResp.length;
+  var html = '<div class="card" style="padding:0;border-top:2px solid var(--gold)">' +
+    '<div class="pend-header">' +
+      '<span>' + t('ini.pend_titulo') + '</span>' +
+      '<span class="badge badge-yellow">' + total + '</span>' +
+    '</div>';
+  sinFirmar.slice(0, 3).forEach(function(doc) {
+    html +=
+      '<div class="pend-item">' +
+        '<div style="width:32px;height:32px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(245,184,0,0.1);color:var(--gold)">' +
+          docIconSVG(doc.tipo) +
+        '</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:0.82rem;font-weight:500;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + doc.nombre + '</div>' +
+          '<div style="font-size:0.7rem;color:var(--muted);margin-top:1px">' + t('ini.pend_firmar') + ' · ' + doc.tipo + '</div>' +
+        '</div>' +
+        '<button class="btn-sm primary" onclick="navigateToPage(\'documentos\')" style="font-size:0.71rem">' + t('ini.pend_ver') + '</button>' +
+      '</div>';
+  });
+  solResp.forEach(function(s) {
+    var eb    = getEstadoBadge(s.estado);
+    var ok    = s.estado === 'aprobada';
+    var fecha = new Date(s.created_at).toLocaleDateString('es-ES', { day:'numeric', month:'short' });
+    html +=
+      '<div class="pend-item">' +
+        '<div style="width:32px;height:32px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:' +
+          (ok ? 'rgba(27,122,69,0.1)' : 'rgba(220,38,38,0.1)') + ';color:' + (ok ? 'var(--green)' : 'var(--red)') + '">' +
+          '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>' +
+        '</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:0.82rem;font-weight:500;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + getSolTipoShort(s.tipo) + '</div>' +
+          '<div style="font-size:0.7rem;color:var(--muted);margin-top:1px">' + t('ini.pend_resp') + ' · ' + fecha + '</div>' +
+        '</div>' +
+        '<span class="badge ' + eb.cls + '" style="font-size:0.68rem">' + eb.lbl + '</span>' +
+      '</div>';
+  });
+  html += '</div>';
+  section.innerHTML = html;
+  section.style.display = 'block';
+}
+
 function iniciarApp() {
   var emp    = currentEmpleado;
   var email  = currentUser ? currentUser.email : '';
@@ -1370,6 +1500,8 @@ function iniciarApp() {
     cargarDashboard();
   }
   cargarDocumentos();
+  cargarTurnoHoy();
+  cargarStatVacInicio();
   pedirPermisoNotificaciones();
   suscribirDocumentosNuevos();
   suscribirSolicitudesEmpleado();
@@ -1484,12 +1616,15 @@ async function cargarDocumentos() {
   var unreadCount = data.filter(function(d){ return !d.leido; }).length;
   animateValue(document.getElementById('statDocs'),   data.length, 700);
   animateValue(document.getElementById('statUnread'), unreadCount, 700);
+  var unreadCard = document.getElementById('statUnreadCard');
+  if (unreadCard) unreadCard.style.display = unreadCount > 0 ? '' : 'none';
   var activePage = document.querySelector('.page.active');
   if (!activePage || activePage.id !== 'page-documentos') {
     actualizarBadgeDocumentos(unreadCount);
   }
   renderDocs(data, 'recentDocs', 3);
   renderDocs(data, 'docsList');
+  cargarPendientesAtencion(data);
   var cuadrante = data.find(function(d){ return d.tipo === 'cuadrante'; });
   var cuadranteDiv = document.getElementById('cuadranteDestacado');
   var cuadranteMes = document.getElementById('cuadranteMes');

@@ -429,6 +429,21 @@
   .empty-state-title { font-size: 0.875rem; font-weight: 600; color: var(--text2); }
   .empty-state-sub { font-size: 0.775rem; color: var(--muted); max-width: 260px; line-height: 1.55; }
 
+  /* ─── S3: TURNO HOY BANNER ───────────────────────────── */
+  .turno-banner { display:flex; align-items:center; gap:1rem; padding:0.875rem 1.25rem; border-radius:var(--r); border:1px solid; }
+  .turno-banner.t-manana  { background:rgba(96,165,250,0.07);  border-color:rgba(96,165,250,0.22); }
+  .turno-banner.t-tarde   { background:rgba(251,146,60,0.07);  border-color:rgba(251,146,60,0.22); }
+  .turno-banner.t-noche   { background:rgba(167,139,250,0.07); border-color:rgba(167,139,250,0.22); }
+  .turno-banner.t-guardia { background:rgba(245,184,0,0.07);   border-color:rgba(245,184,0,0.22); }
+  .turno-banner.t-libre   { background:rgba(27,122,69,0.07);   border-color:rgba(27,122,69,0.22); }
+  .turno-banner.t-turno   { background:rgba(255,255,255,0.03); border-color:rgba(255,255,255,0.1); }
+
+  /* ─── S3: PENDIENTE SECTION ──────────────────────────── */
+  .pend-header { padding:0.875rem 1.5rem; border-bottom:1px solid var(--border); font-size:0.7rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); display:flex; justify-content:space-between; align-items:center; }
+  .pend-item { display:flex; align-items:center; gap:0.875rem; padding:0.75rem 1.5rem; border-bottom:1px solid var(--border); transition:background 0.12s; }
+  .pend-item:last-child { border-bottom:none; }
+  .pend-item:hover { background:var(--surface); }
+
   /* ─── ADMIN ──────────────────────────────────────────── */
   .admin-tabs {
     display: flex; gap: 0; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 1.5rem;
@@ -1207,6 +1222,7 @@
         <h1 id="welcomeMsg">Bienvenido</h1>
         <p id="welcomeSub">Cargando datos...</p>
       </div>
+      <div id="turnoHoyBanner" style="display:none;margin-bottom:1rem"></div>
       <div class="quick-actions">
         <button class="quick-action-btn" onclick="navigateToPage('documentos')">
           <div class="qa-icon" style="background:rgba(184,127,0,0.10);color:#92680a">
@@ -1233,23 +1249,27 @@
           <span class="qa-label" data-i18n="ini.qa_sol">Solicitudes</span>
         </button>
       </div>
-      <div class="stats-grid">
-        <div class="card card-accent">
+      <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
+        <div class="card card-accent" id="statDocsCard">
           <div class="card-label" data-i18n="ini.stat_docs">Documentos disponibles</div>
           <div class="card-value" id="statDocs">—</div>
           <div class="card-sub" data-i18n="ini.stat_docs_sub">Nóminas y cuadrantes</div>
         </div>
-        <div class="card">
+        <div class="card" id="statUnreadCard" style="display:none">
           <div class="card-label" data-i18n="ini.stat_unread">Sin leer</div>
-          <div class="card-value" id="statUnread" style="color:var(--red)">—</div>
+          <div class="card-value" id="statUnread" style="color:var(--red)">0</div>
           <div class="card-sub" data-i18n="ini.stat_unread_sub">Documentos nuevos</div>
         </div>
-        <div class="card">
+        <div class="card" id="statVacCard" style="display:none">
           <div class="card-label" data-i18n="ini.stat_vac">Vacaciones</div>
           <div class="card-value" id="statVac" style="color:var(--green)">—</div>
-          <div class="card-sub" data-i18n="ini.stat_vac_sub">Días pendientes</div>
+          <div style="margin-top:0.5rem;height:3px;background:var(--surface3);border-radius:2px">
+            <div id="vacProgressBar" style="height:100%;background:var(--green);border-radius:2px;width:0%;transition:width 0.8s cubic-bezier(0.22,1,0.36,1)"></div>
+          </div>
+          <div class="card-sub" id="statVacSub" data-i18n="ini.stat_vac_sub">Días disponibles</div>
         </div>
       </div>
+      <div id="pendienteSection" style="display:none;margin-bottom:1.25rem"></div>
       <div class="card" style="padding:0;border-top:2px solid var(--red);margin-bottom:1rem">
         <div style="padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)">
           <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)" data-i18n="ini.cuadrante">Mi cuadrante del mes</div>
