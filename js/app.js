@@ -2492,9 +2492,11 @@ async function guardarEmpleado() {
 
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape' && document.getElementById('editEmpModal').style.display === 'flex') cerrarEditEmp();
+  if (e.key === 'Escape' && document.getElementById('addEmpModal') && document.getElementById('addEmpModal').style.display === 'flex') hideAddEmpleado();
 });
 document.addEventListener('click', function(e) {
   if (e.target && e.target.id === 'editEmpModal') cerrarEditEmp();
+  if (e.target && e.target.id === 'addEmpModal') hideAddEmpleado();
 });
 
 function _descargarXlsx(filas, nombreHoja, anchos, nombreArchivo) {
@@ -2517,8 +2519,25 @@ function exportarEmpleadosExcel() {
   _descargarXlsx(filas, 'Empleados', [{wch:30},{wch:35},{wch:12},{wch:25},{wch:10},{wch:16}], 'empleados_enerpro_' + new Date().toISOString().split('T')[0]);
 }
 
-function showAddEmpleado() { document.getElementById('addEmpleadoForm').style.display = 'block'; }
-function hideAddEmpleado() { document.getElementById('addEmpleadoForm').style.display = 'none'; }
+function showAddEmpleado() {
+  var modal = document.getElementById('addEmpModal');
+  if (!modal) return;
+  var ok  = document.getElementById('empleadoOk');
+  var err = document.getElementById('empleadoError');
+  if (ok)  ok.style.display  = 'none';
+  if (err) err.style.display = 'none';
+  document.getElementById('empNombre').value = '';
+  document.getElementById('empEmail').value = '';
+  document.getElementById('empDni').value = '';
+  document.getElementById('empPassword').value = '';
+  modal.style.display = 'flex';
+  setTimeout(function(){ document.getElementById('empNombre').focus(); }, 80);
+}
+
+function hideAddEmpleado() {
+  var modal = document.getElementById('addEmpModal');
+  if (modal) modal.style.display = 'none';
+}
 
 async function crearEmpleado() {
   var nombre = document.getElementById('empNombre').value.trim();
@@ -2566,6 +2585,7 @@ async function crearEmpleado() {
   document.getElementById('empDni').value='';
   document.getElementById('empPassword').value='';
   cargarEmpleados();
+  setTimeout(hideAddEmpleado, 1400);
 }
 
 // ─── REGISTRO DE EMPLEADOS ────────────────────────────────

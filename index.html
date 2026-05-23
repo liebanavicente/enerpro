@@ -1616,27 +1616,6 @@
           </div>
           <div id="empleadosList"><div class="loading" data-i18n="g.cargando">Cargando...</div></div>
         </div>
-        <div class="card" id="addEmpleadoForm" style="display:none;max-width:500px;margin-top:1rem">
-          <div class="section-label" style="margin-bottom:1.25rem" data-i18n="emp.nuevo">Nuevo empleado</div>
-          <div class="success-box" id="empleadoOk" data-i18n="emp.ok">✓ Empleado creado correctamente.</div>
-          <div class="error-box" id="empleadoError"></div>
-          <div class="form-group"><label data-i18n="emp.nombre">Nombre completo</label><input type="text" id="empNombre" placeholder="Carlos Martínez López" data-i18n-ph="emp.nombre_ph"></div>
-          <div class="form-group"><label data-i18n="emp.email">Email corporativo</label><input type="email" id="empEmail" placeholder="cmartinez@enerpro.com" data-i18n-ph="emp.email_ph"></div>
-          <div class="form-group"><label data-i18n="emp.dni">DNI</label><input type="text" id="empDni" placeholder="12345678A" data-i18n-ph="emp.dni_ph"></div>
-          <div class="form-group"><label data-i18n="emp.cargo">Cargo</label>
-            <select id="empCargo">
-              <option data-i18n="emp.c_vig">Vigilante de seguridad</option>
-              <option data-i18n="emp.c_aux">Auxiliar de servicio</option>
-              <option data-i18n="emp.c_coo">Coordinador</option>
-              <option data-i18n="emp.c_adm">Administrativo</option>
-            </select>
-          </div>
-          <div class="form-group"><label data-i18n="emp.pass_ini">Contraseña inicial</label><input type="password" id="empPassword" placeholder="Mínimo 6 caracteres" data-i18n-ph="emp.pass_ph"></div>
-          <div class="admin-form-actions" style="display:flex;gap:0.75rem">
-            <button class="btn-sm primary" onclick="crearEmpleado()" style="flex:1;padding:0.65rem" data-i18n="emp.btn_crear">Crear empleado</button>
-            <button class="btn-sm" onclick="hideAddEmpleado()" style="padding:0.65rem 1rem" data-i18n="emp.btn_cancel">Cancelar</button>
-          </div>
-        </div>
       </div>
 
       <div class="admin-tab-content" id="tab-subir">
@@ -2319,6 +2298,39 @@
       <div style="display:flex;gap:0.75rem;margin-top:1rem">
         <button class="btn-sm primary" id="cpPerfilBtn" onclick="guardarCambioPassPerfil()" style="flex:1;padding:0.7rem;font-size:0.85rem" data-i18n="cpp.btn">Actualizar contraseña</button>
         <button class="btn-sm" onclick="cerrarCambioPassPerfil()" style="padding:0.7rem 1.25rem" data-i18n="g.cancelar">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AÑADIR EMPLEADO -->
+<div id="addEmpModal" class="modal-overlay" style="display:none;z-index:9000">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-box-header">
+      <div>
+        <div class="modal-eyebrow" data-i18n="edit.eyebrow">Administración</div>
+        <div class="modal-title" data-i18n="emp.nuevo">Nuevo empleado</div>
+      </div>
+      <button class="modal-close" onclick="hideAddEmpleado()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="success-box" id="empleadoOk" data-i18n="emp.ok">✓ Empleado creado correctamente.</div>
+      <div class="error-box" id="empleadoError"></div>
+      <div class="form-group"><label data-i18n="emp.nombre">Nombre completo</label><input type="text" id="empNombre" placeholder="Carlos Martínez López" data-i18n-ph="emp.nombre_ph"></div>
+      <div class="form-group"><label data-i18n="emp.email">Email corporativo</label><input type="email" id="empEmail" placeholder="cmartinez@enerpro.com" data-i18n-ph="emp.email_ph"></div>
+      <div class="form-group"><label data-i18n="emp.dni">DNI</label><input type="text" id="empDni" placeholder="12345678A" data-i18n-ph="emp.dni_ph"></div>
+      <div class="form-group"><label data-i18n="emp.cargo">Cargo</label>
+        <select id="empCargo">
+          <option data-i18n="emp.c_vig">Vigilante de seguridad</option>
+          <option data-i18n="emp.c_aux">Auxiliar de servicio</option>
+          <option data-i18n="emp.c_coo">Coordinador</option>
+          <option data-i18n="emp.c_adm">Administrativo</option>
+        </select>
+      </div>
+      <div class="form-group"><label data-i18n="emp.pass_ini">Contraseña inicial</label><input type="password" id="empPassword" placeholder="Mínimo 6 caracteres" data-i18n-ph="emp.pass_ph"></div>
+      <div style="display:flex;gap:0.75rem;margin-top:1.5rem">
+        <button class="btn-sm primary" onclick="crearEmpleado()" style="flex:1;padding:0.7rem;font-size:0.85rem" data-i18n="emp.btn_crear">Crear empleado</button>
+        <button class="btn-sm" onclick="hideAddEmpleado()" style="padding:0.7rem 1.25rem" data-i18n="emp.btn_cancel">Cancelar</button>
       </div>
     </div>
   </div>
