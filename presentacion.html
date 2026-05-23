@@ -19,6 +19,8 @@
       --red: #e53935;
       --green: #1b7a45;
       --border: rgba(255,255,255,0.08);
+      --content-max: min(96vw, 1280px);
+      --slide-pad-x: clamp(1.25rem, 4vw, 3rem);
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; overflow: hidden; }
@@ -28,42 +30,136 @@
       color: var(--text);
       -webkit-font-smoothing: antialiased;
     }
+
+    /* ─── ANIMATIONS ─────────────────────────────────────── */
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-24px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.94) translateY(12px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes bgPulse {
+      0%, 100% { opacity: 0.55; transform: scale(1); }
+      50%      { opacity: 0.85; transform: scale(1.04); }
+    }
+    @keyframes goldShimmer {
+      0%   { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+
     .deck {
       height: 100vh;
       height: 100dvh;
       width: 100vw;
       position: relative;
-      background:
-        radial-gradient(ellipse 70% 55% at 5% 95%, rgba(120,80,255,0.08) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 45% at 95% 5%, rgba(212,157,0,0.12) 0%, transparent 55%),
-        var(--bg);
+      overflow: hidden;
+      background: var(--bg);
     }
+    .deck::before,
+    .deck::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: bgPulse 8s ease-in-out infinite;
+    }
+    .deck::before {
+      width: min(70vw, 680px); height: min(70vw, 680px);
+      left: -12%; bottom: -18%;
+      background: radial-gradient(circle, rgba(120,80,255,0.14) 0%, transparent 68%);
+    }
+    .deck::after {
+      width: min(55vw, 520px); height: min(55vw, 520px);
+      right: -8%; top: -12%;
+      background: radial-gradient(circle, rgba(245,184,0,0.16) 0%, transparent 68%);
+      animation-delay: -4s;
+    }
+
     .slide {
       position: absolute;
       inset: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 3rem 4rem 5rem;
+      align-items: flex-start;
+      padding: 2rem var(--slide-pad-x) 4.75rem;
       opacity: 0;
       visibility: hidden;
-      transform: translateY(18px);
-      transition: opacity 0.45s cubic-bezier(0.22,1,0.36,1), transform 0.45s cubic-bezier(0.22,1,0.36,1);
+      transform: translateY(24px) scale(0.985);
+      filter: blur(6px);
+      transition:
+        opacity 0.5s cubic-bezier(0.22,1,0.36,1),
+        transform 0.55s cubic-bezier(0.22,1,0.36,1),
+        filter 0.45s ease,
+        visibility 0s linear 0.5s;
       pointer-events: none;
+      width: 100%;
     }
     .slide.active {
       opacity: 1;
       visibility: visible;
-      transform: translateY(0);
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+      transition:
+        opacity 0.5s cubic-bezier(0.22,1,0.36,1),
+        transform 0.55s cubic-bezier(0.22,1,0.36,1),
+        filter 0.45s ease,
+        visibility 0s;
       pointer-events: auto;
     }
+    .slide.slide-dense {
+      justify-content: flex-start;
+      padding-top: clamp(1.5rem, 3vh, 2.5rem);
+    }
+
+    /* Staggered reveal on slide enter */
+    .slide.reveal .eyebrow  { animation: slideInLeft 0.5s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.04s; }
+    .slide.reveal h1,
+    .slide.reveal h2       { animation: slideInUp 0.55s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.1s; }
+    .slide.reveal .sub,
+    .slide.reveal .logo-row { animation: slideInUp 0.5s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.16s; }
+    .slide.reveal .grid-2 > *,
+    .slide.reveal .grid-3 > *,
+    .slide.reveal .grid-4 > *,
+    .slide.reveal .compare > *,
+    .slide.reveal .toc-cols > *,
+    .slide.reveal .card:not(.grid-2 > *):not(.grid-3 > *):not(.grid-4 > *) { animation: popIn 0.48s cubic-bezier(0.22,1,0.36,1) both; }
+    .slide.reveal .grid-2 > *:nth-child(1), .slide.reveal .grid-3 > *:nth-child(1), .slide.reveal .grid-4 > *:nth-child(1), .slide.reveal .compare > *:nth-child(1), .slide.reveal .toc-cols > *:nth-child(1) { animation-delay: 0.2s; }
+    .slide.reveal .grid-2 > *:nth-child(2), .slide.reveal .grid-3 > *:nth-child(2), .slide.reveal .grid-4 > *:nth-child(2), .slide.reveal .compare > *:nth-child(2), .slide.reveal .toc-cols > *:nth-child(2) { animation-delay: 0.28s; }
+    .slide.reveal .grid-2 > *:nth-child(3), .slide.reveal .grid-3 > *:nth-child(3), .slide.reveal .grid-4 > *:nth-child(3) { animation-delay: 0.36s; }
+    .slide.reveal .grid-2 > *:nth-child(4), .slide.reveal .grid-3 > *:nth-child(4), .slide.reveal .grid-4 > *:nth-child(4) { animation-delay: 0.44s; }
+    .slide.reveal .grid-2 > *:nth-child(5), .slide.reveal .grid-3 > *:nth-child(5), .slide.reveal .grid-4 > *:nth-child(5) { animation-delay: 0.52s; }
+    .slide.reveal .grid-2 > *:nth-child(6), .slide.reveal .grid-3 > *:nth-child(6), .slide.reveal .grid-4 > *:nth-child(6) { animation-delay: 0.6s; }
+    .slide.reveal .feat-grid,
+    .slide.reveal ul.clean,
+    .slide.reveal .qr-box,
+    .slide.reveal .callout-box,
+    .slide.reveal .ui-mock { animation: slideInUp 0.5s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.22s; }
+    .slide.reveal .feat-item { animation: slideInUp 0.4s cubic-bezier(0.22,1,0.36,1) both; }
+    .slide.reveal .feat-item:nth-child(odd)  { animation-delay: 0.24s; }
+    .slide.reveal .feat-item:nth-child(even) { animation-delay: 0.32s; }
+    .slide.reveal ul.clean li { animation: slideInUp 0.4s cubic-bezier(0.22,1,0.36,1) both; }
+    .slide.reveal ul.clean li:nth-child(1) { animation-delay: 0.22s; }
+    .slide.reveal ul.clean li:nth-child(2) { animation-delay: 0.28s; }
+    .slide.reveal ul.clean li:nth-child(3) { animation-delay: 0.34s; }
+
     .eyebrow {
-      font-size: 0.65rem;
+      font-size: 0.82rem;
       font-weight: 700;
-      letter-spacing: 0.22em;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--gold);
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.65rem;
     }
     h1, h2 {
       font-family: 'Barlow Condensed', sans-serif;
@@ -71,43 +167,55 @@
       letter-spacing: 0.03em;
       text-transform: uppercase;
       line-height: 1.05;
+      max-width: var(--content-max);
     }
-    h1 { font-size: clamp(2.8rem, 6vw, 4.5rem); }
+    h1 { font-size: clamp(3.2rem, 7.5vw, 5.5rem); }
     h1 span { color: var(--gold); }
-    h2 { font-size: clamp(2rem, 4.5vw, 3rem); margin-bottom: 1.5rem; }
+    h2 { font-size: clamp(2.4rem, 5.5vw, 3.75rem); margin-bottom: 1rem; }
     .sub {
-      font-size: 1.05rem;
+      font-size: clamp(1.1rem, 2vw, 1.35rem);
       color: var(--text2);
-      line-height: 1.6;
-      max-width: 42rem;
-      margin-top: 1rem;
+      line-height: 1.55;
+      max-width: var(--content-max);
+      margin-top: 0.75rem;
     }
     .grid-2 {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
-      margin-top: 1.5rem;
-      max-width: 56rem;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.1rem;
+      margin-top: 1.25rem;
+      max-width: var(--content-max);
+      width: 100%;
     }
     .grid-3 {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 1rem;
-      margin-top: 1.5rem;
-      max-width: 56rem;
+      margin-top: 1.25rem;
+      max-width: var(--content-max);
+      width: 100%;
     }
     .grid-4 {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 0.875rem;
-      margin-top: 1.5rem;
-      max-width: 56rem;
+      gap: 1rem;
+      margin-top: 1.25rem;
+      max-width: var(--content-max);
+      width: 100%;
     }
     .card {
       background: rgba(255,255,255,0.04);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.25rem 1.35rem;
+      border-radius: 16px;
+      padding: 1.35rem 1.5rem;
+      transition: transform 0.25s cubic-bezier(0.22,1,0.36,1), border-color 0.25s, box-shadow 0.25s;
+    }
+    @media (hover: hover) {
+      .card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(245,184,0,0.22);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+      }
     }
     .card-light {
       background: var(--card);
@@ -117,27 +225,27 @@
     }
     .card-accent { border-top: 2px solid var(--gold); background: linear-gradient(160deg, var(--gold-dim) 0%, rgba(255,255,255,0.03) 55%); }
     .card-label {
-      font-size: 0.6rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.55rem;
     }
     .card-light .card-label { color: #737794; }
     .card-title {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1.35rem;
+      font-size: 1.55rem;
       font-weight: 700;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.4rem;
     }
-    .card p { font-size: 0.85rem; color: var(--text2); line-height: 1.5; }
+    .card p { font-size: 1rem; color: var(--text2); line-height: 1.55; }
     .card-light p { color: #52566e; }
     .card-value {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 2.5rem;
+      font-size: 3.25rem;
       font-weight: 800;
       color: var(--gold);
       line-height: 1;
@@ -145,16 +253,18 @@
     ul.clean {
       list-style: none;
       margin-top: 1rem;
-      max-width: 44rem;
+      max-width: var(--content-max);
+      width: 100%;
     }
     ul.clean li {
-      padding: 0.55rem 0;
+      padding: 0.65rem 0;
       border-bottom: 1px solid var(--border);
-      font-size: 0.92rem;
+      font-size: 1.05rem;
       color: var(--text2);
       display: flex;
       align-items: flex-start;
-      gap: 0.65rem;
+      gap: 0.75rem;
+      line-height: 1.45;
     }
     ul.clean li:last-child { border-bottom: none; }
     ul.clean li::before {
@@ -167,23 +277,23 @@
     }
     .tag {
       display: inline-block;
-      font-size: 0.62rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      padding: 0.2rem 0.55rem;
+      padding: 0.28rem 0.65rem;
       border-radius: 100px;
-      margin-right: 0.35rem;
+      margin-right: 0.4rem;
     }
     .tag-ok   { background: rgba(27,122,69,0.18); color: #4ade80; }
     .tag-next { background: rgba(245,184,0,0.15); color: var(--gold); }
     .tag-fut  { background: rgba(255,255,255,0.07); color: var(--muted); }
-    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; max-width: 56rem; margin-top: 1.5rem; }
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; max-width: var(--content-max); width: 100%; margin-top: 1.25rem; }
     .compare h3 {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1.1rem;
+      font-size: 1.35rem;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       margin-bottom: 0.75rem;
     }
@@ -196,23 +306,23 @@
       margin-bottom: 1.5rem;
     }
     .logo-row img {
-      width: 72px;
-      height: 72px;
+      width: 88px;
+      height: 88px;
       object-fit: contain;
-      border-radius: 8px;
+      border-radius: 10px;
     }
     .brand {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 2rem;
+      font-size: 2.5rem;
       font-weight: 800;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.1em;
     }
     .brand span { color: var(--gold); }
     .client-tag {
       display: inline-block;
-      font-size: 0.62rem;
+      font-size: 0.78rem;
       font-weight: 600;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--muted);
       margin-top: 4px;
@@ -222,7 +332,8 @@
       border-radius: 14px;
       overflow: hidden;
       border: 1px solid var(--border);
-      max-width: 56rem;
+      max-width: var(--content-max);
+      width: 100%;
       box-shadow: 0 20px 60px rgba(0,0,0,0.4);
     }
     .ui-bar {
@@ -316,9 +427,11 @@
     }
     .progress-fill {
       height: 100%;
-      background: var(--gold);
+      background: linear-gradient(90deg, var(--gold), #ffe066, var(--gold));
+      background-size: 200% 100%;
       border-radius: 3px;
-      transition: width 0.35s ease;
+      transition: width 0.45s cubic-bezier(0.22,1,0.36,1);
+      animation: goldShimmer 3s linear infinite;
     }
     .btn {
       background: rgba(255,255,255,0.06);
@@ -343,45 +456,70 @@
       font-weight: 800;
       letter-spacing: 0.1em;
     }
-    .hint { font-size: 0.68rem; color: var(--muted); }
-    .slide-dense h2 { margin-bottom: 0.65rem; font-size: clamp(1.65rem, 3.2vw, 2.35rem); }
-    .slide-dense .sub { margin-top: 0; margin-bottom: 0.65rem; font-size: 0.88rem; max-width: 52rem; }
+    .hint { font-size: 0.82rem; color: var(--muted); }
+    .slide-dense h2 { margin-bottom: 0.75rem; }
+    .slide-dense .sub { margin-top: 0; margin-bottom: 0.75rem; font-size: clamp(1rem, 1.8vw, 1.2rem); max-width: var(--content-max); }
+    .callout-box {
+      margin-top: 1rem;
+      padding: 1rem 1.25rem;
+      background: rgba(245,184,0,0.07);
+      border: 1px solid rgba(245,184,0,0.18);
+      border-radius: 12px;
+      max-width: var(--content-max);
+      width: 100%;
+      font-size: 1rem;
+      color: var(--text2);
+      line-height: 1.5;
+    }
     .toc-cols {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;
-      max-width: 56rem; margin-top: 1rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem;
+      max-width: var(--content-max); width: 100%; margin-top: 1rem;
     }
     .toc-block {
       background: rgba(255,255,255,0.04);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.15rem 1.25rem;
+      border-radius: 16px;
+      padding: 1.35rem 1.5rem;
     }
     .toc-block h3 {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1rem; font-weight: 700;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--gold); margin-bottom: 0.65rem;
+      font-size: 1.25rem; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 0.75rem;
     }
     .toc-block ul { list-style: none; }
     .toc-block li {
-      font-size: 0.8rem; color: var(--text2);
-      padding: 0.3rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.98rem; color: var(--text2);
+      padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+      line-height: 1.4;
     }
     .toc-block li:last-child { border-bottom: none; }
     .feat-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 0.45rem 1.5rem; max-width: 56rem; margin-top: 0.5rem;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 0.55rem 1.25rem; max-width: var(--content-max); width: 100%; margin-top: 0.65rem;
     }
     .feat-item {
-      font-size: 0.79rem; color: var(--text2); line-height: 1.45;
-      padding-left: 1rem; position: relative;
+      font-size: 0.95rem; color: var(--text2); line-height: 1.5;
+      padding-left: 1.15rem; position: relative;
     }
     .feat-item::before {
       content: '✓'; position: absolute; left: 0;
-      color: var(--gold); font-weight: 700; font-size: 0.72rem;
+      color: var(--gold); font-weight: 700; font-size: 0.88rem;
     }
     .controls-nav { display: flex; gap: 0.5rem; flex-shrink: 0; }
     .feat-item strong { color: var(--text); font-weight: 600; }
+
+    /* Feature cards (slides empleado/coordinador) */
+    .grid-2 .card p { font-size: 1rem; line-height: 1.55; }
+    .grid-2 .card [style*="Barlow Condensed"] {
+      font-size: 1.25rem !important;
+      margin-bottom: 0.35rem !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .slide, .slide.active, .slide.reveal * { animation: none !important; transition: opacity 0.2s !important; transform: none !important; filter: none !important; }
+      .deck::before, .deck::after, .progress-fill { animation: none !important; }
+    }
 
     /* ─── MOBILE ─────────────────────────────────────────── */
     @media (max-width: 767px) {
@@ -410,46 +548,48 @@
         justify-content: flex-start;
       }
 
-      h1 { font-size: 1.85rem; line-height: 1.08; }
-      h2 { font-size: 1.35rem; margin-bottom: 0.5rem; line-height: 1.1; }
-      .slide-dense h2 { font-size: 1.3rem; margin-bottom: 0.4rem; }
+      h1 { font-size: 2.35rem; line-height: 1.08; }
+      h2 { font-size: 1.75rem; margin-bottom: 0.65rem; line-height: 1.1; }
+      .slide-dense h2 { font-size: 1.7rem; margin-bottom: 0.55rem; }
       .sub {
-        font-size: 0.82rem;
+        font-size: 1rem;
         line-height: 1.5;
         margin-top: 0.35rem;
         max-width: none;
       }
-      .slide-dense .sub { font-size: 0.78rem; margin-bottom: 0.45rem; }
-      .eyebrow { font-size: 0.58rem; margin-bottom: 0.4rem; letter-spacing: 0.16em; }
+      .slide-dense .sub { font-size: 0.95rem; margin-bottom: 0.55rem; }
+      .eyebrow { font-size: 0.72rem; margin-bottom: 0.45rem; letter-spacing: 0.14em; }
 
-      .logo-row { gap: 0.65rem; margin-bottom: 0.85rem; }
-      .logo-row img { width: 48px; height: 48px; }
-      .brand { font-size: 1.35rem; letter-spacing: 0.08em; }
-      .client-tag { font-size: 0.55rem; letter-spacing: 0.08em; line-height: 1.35; }
+      .logo-row { gap: 0.75rem; margin-bottom: 1rem; }
+      .logo-row img { width: 56px; height: 56px; }
+      .brand { font-size: 1.65rem; letter-spacing: 0.08em; }
+      .client-tag { font-size: 0.68rem; letter-spacing: 0.08em; line-height: 1.35; }
 
       .grid-2, .grid-3, .grid-4, .compare, .toc-cols, .feat-grid { grid-template-columns: 1fr; }
+      .feat-grid { grid-template-columns: 1fr; }
       .grid-2, .grid-3, .grid-4, .compare, .toc-cols { gap: 0.65rem; margin-top: 0.65rem; }
       .feat-grid { gap: 0.35rem; margin-top: 0.35rem; }
 
-      .card { padding: 0.75rem 0.85rem; border-radius: 12px; }
-      .card-value { font-size: 1.65rem; }
-      .card-light .card-value { font-size: 1.5rem !important; }
-      .card p { font-size: 0.76rem; }
-      .card-label { font-size: 0.55rem; margin-bottom: 0.35rem; }
+      .card { padding: 1rem 1.1rem; border-radius: 14px; }
+      .card-value { font-size: 2.25rem; }
+      .card-light .card-value { font-size: 2rem !important; }
+      .card p { font-size: 0.92rem; }
+      .card-label { font-size: 0.72rem; margin-bottom: 0.4rem; }
+      .grid-2 .card [style*="Barlow Condensed"] { font-size: 1.05rem !important; }
 
-      .compare { margin-top: 0.65rem; }
-      .compare h3 { font-size: 0.9rem; margin-bottom: 0.45rem; }
-      .toc-block { padding: 0.75rem 0.85rem; }
-      .toc-block h3 { font-size: 0.85rem; margin-bottom: 0.45rem; }
-      .toc-block li { font-size: 0.74rem; padding: 0.22rem 0; }
+      .compare { margin-top: 0.75rem; }
+      .compare h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+      .toc-block { padding: 1rem 1.1rem; }
+      .toc-block h3 { font-size: 1.05rem; margin-bottom: 0.5rem; }
+      .toc-block li { font-size: 0.9rem; padding: 0.3rem 0; }
 
-      .feat-item { font-size: 0.72rem; line-height: 1.4; padding-left: 0.85rem; }
-      .feat-item::before { font-size: 0.65rem; }
+      .feat-item { font-size: 0.88rem; line-height: 1.45; padding-left: 1rem; }
+      .feat-item::before { font-size: 0.8rem; }
 
-      ul.clean { margin-top: 0.65rem; max-width: none; }
+      ul.clean { margin-top: 0.75rem; max-width: none; }
       ul.clean li {
-        font-size: 0.76rem;
-        padding: 0.45rem 0;
+        font-size: 0.92rem;
+        padding: 0.5rem 0;
         flex-wrap: wrap;
         gap: 0.35rem;
         align-items: flex-start;
@@ -508,9 +648,14 @@
       .ui-sidebar { display: none; }
     }
 
+    @media (max-width: 1100px) {
+      .feat-grid { grid-template-columns: repeat(2, 1fr); }
+    }
     @media (max-width: 900px) and (min-width: 768px) {
-      .slide { padding: 2rem 1.5rem 5rem; }
-      .grid-2, .grid-3, .grid-4, .compare, .toc-cols, .feat-grid { grid-template-columns: 1fr; }
+      .slide { padding: 2rem var(--slide-pad-x) 4.75rem; }
+      .grid-2, .grid-3, .grid-4, .compare, .toc-cols { grid-template-columns: 1fr 1fr; }
+      .grid-4 { grid-template-columns: 1fr 1fr; }
+      .feat-grid { grid-template-columns: 1fr 1fr; }
       .ui-body { grid-template-columns: 1fr; }
       .ui-sidebar { display: none; }
     }
@@ -597,7 +742,7 @@
   <section class="slide slide-dense" data-slide="4">
     <div class="eyebrow">Perfil · Empleado</div>
     <h2>Lo que tendrás disponible</h2>
-    <p class="sub" style="margin-top:0;margin-bottom:0.75rem;font-size:0.88rem">Para cada vigilante y auxiliar de ENERPRO, accesible desde el móvil o el ordenador en cualquier momento.</p>
+    <p class="sub" style="margin-top:0;margin-bottom:0.75rem">Para cada vigilante y auxiliar de ENERPRO, accesible desde el móvil o el ordenador en cualquier momento.</p>
     <div class="grid-2" style="margin-top:0.5rem">
 
       <div class="card" style="display:flex;align-items:flex-start;gap:0.875rem;border-left:2px solid rgba(96,165,250,0.45)">
@@ -667,7 +812,7 @@
   <section class="slide slide-dense" data-slide="5">
     <div class="eyebrow">Perfil · Coordinador</div>
     <h2>Lo que podrás gestionar</h2>
-    <p class="sub" style="margin-top:0;margin-bottom:0.75rem;font-size:0.88rem">Visión y control total sobre la plantilla de ENERPRO: documentación, turnos, solicitudes y métricas, todo desde un panel central.</p>
+    <p class="sub" style="margin-top:0;margin-bottom:0.75rem">Visión y control total sobre la plantilla de ENERPRO: documentación, turnos, solicitudes y métricas, todo desde un panel central.</p>
     <div class="grid-2" style="margin-top:0.5rem">
 
       <div class="card card-accent" style="display:flex;align-items:flex-start;gap:0.875rem">
@@ -757,7 +902,7 @@
   <section class="slide slide-dense" data-slide="6">
     <div class="eyebrow">Novedad · Alta de empleados</div>
     <h2>Autoregistro con aprobación</h2>
-    <p class="sub" style="margin-top:0;margin-bottom:0.75rem;font-size:0.88rem">Formulario público en <strong style="color:var(--gold)">registro.html</strong> — el empleado solicita acceso; el coordinador aprueba desde Admin → Registro.</p>
+    <p class="sub" style="margin-top:0;margin-bottom:0.75rem">Formulario público en <strong style="color:var(--gold)">registro.html</strong> — el empleado solicita acceso; el coordinador aprueba desde Admin → Registro.</p>
     <div class="grid-2" style="margin-top:0.5rem">
       <div class="card card-accent" style="margin:0">
         <div class="card-label">Flujo del empleado</div>
@@ -1055,7 +1200,7 @@
   <section class="slide slide-dense" data-slide="18">
     <div class="eyebrow">Puesta en marcha</div>
     <h2>De la demo a datos reales</h2>
-    <p class="sub" style="margin-top:0;margin-bottom:1rem;font-size:0.88rem">El portal está desplegado y funcional. Solo hace falta sustituir los datos de demo por los datos reales de ENERPRO.</p>
+    <p class="sub" style="margin-top:0;margin-bottom:1rem">El portal está desplegado y funcional. Solo hace falta sustituir los datos de demo por los datos reales de ENERPRO.</p>
     <div class="grid-2" style="margin-top:0">
 
       <div class="card card-accent" style="margin:0">
@@ -1090,7 +1235,7 @@
   <section class="slide slide-dense" data-slide="19">
     <div class="eyebrow">Puesta en marcha</div>
     <h2>Activación en 4 pasos</h2>
-    <p class="sub" style="margin-top:0;margin-bottom:1rem;font-size:0.88rem">El coordinador lo gestiona todo desde el panel de administración. Tiempo estimado con una plantilla de 20–30 personas: <strong style="color:var(--gold)">menos de una hora</strong>.</p>
+    <p class="sub" style="margin-top:0;margin-bottom:1rem">El coordinador lo gestiona todo desde el panel de administración. Tiempo estimado con una plantilla de 20–30 personas: <strong style="color:var(--gold)">menos de una hora</strong>.</p>
 
     <div class="grid-4" style="margin-top:0">
 
@@ -1120,8 +1265,8 @@
 
     </div>
 
-    <div style="margin-top:1rem;padding:0.75rem 1rem;background:rgba(245,184,0,0.07);border:1px solid rgba(245,184,0,0.18);border-radius:10px;max-width:56rem">
-      <span style="font-size:0.78rem;color:var(--text2)"><strong style="color:var(--gold)">Tip cuadrantes</strong> — Los empleados pueden subir su PDF en Mis turnos y parsear turnos al calendario. Admin → Importar hace lo mismo a escala. Los PDFs Beta10 (CTTI1/2, sindicales) ya están soportados.</span>
+    <div class="callout-box">
+      <strong style="color:var(--gold)">Tip cuadrantes</strong> — Los empleados pueden subir su PDF en Mis turnos y parsear turnos al calendario. Admin → Importar hace lo mismo a escala. Los PDFs Beta10 (CTTI1/2, sindicales) ya están soportados.
     </div>
   </section>
 
@@ -1132,7 +1277,7 @@
     <p class="sub">Escanea el QR o abre el portal. Registro de nuevos empleados: <strong style="color:var(--gold)">/registro.html</strong>. Instálalo en el móvil: Compartir → Añadir a pantalla de inicio.</p>
     <div class="qr-box">
       <div class="qr-placeholder" id="qrCode">QR al portal<br><small>(sustituir URL Vercel)</small></div>
-      <div style="font-size:0.85rem;color:var(--text2)" id="portalUrl">https://tu-dominio.vercel.app</div>
+      <div style="font-size:1.05rem;color:var(--text2)" id="portalUrl">https://tu-dominio.vercel.app</div>
     </div>
     <p class="hint" style="margin-top:1rem">Ruta demo: Carlos → documentos → vacaciones · Coordinador → badge pendientes → aprobar → cuadrante admin</p>
   </section>
@@ -1183,10 +1328,14 @@
 
   function goTo(n) {
     if (n < 0 || n >= total) return;
-    slides[current].classList.remove('active');
+    slides[current].classList.remove('active', 'reveal');
     current = n;
-    slides[current].classList.add('active');
-    slides[current].scrollTop = 0;
+    var slide = slides[current];
+    slide.classList.add('active');
+    slide.scrollTop = 0;
+    /* Re-trigger stagger animations */
+    void slide.offsetWidth;
+    slide.classList.add('reveal');
     numEl.textContent = (current + 1) + ' / ' + total;
     fillEl.style.width = Math.round(((current + 1) / total) * 100) + '%';
   }
@@ -1223,6 +1372,7 @@
   });
 
   updatePortalUrl();
+  slides[0].classList.add('reveal');
 })();
 </script>
 </body>
