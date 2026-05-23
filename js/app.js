@@ -1601,6 +1601,25 @@ var btnLogoutMobile = document.getElementById('btnLogoutMobile');
 if (btnLogoutMobile) btnLogoutMobile.addEventListener('click', confirmarLogout);
 
 // DOCUMENTOS
+/* Format a cuadrante fecha field into a readable "Mes YYYY" string.
+   Falls back to extracting year/month from the document name. */
+function _formatFechaCuadrante(fecha, nombre) {
+  var MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+               'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  if (fecha) {
+    var parts = fecha.split('-');
+    if (parts.length >= 2) {
+      var m = parseInt(parts[1], 10) - 1;
+      var y = parts[0];
+      if (m >= 0 && m < 12) return MESES[m] + ' ' + y;
+    }
+  }
+  // Try to extract from name e.g. "Cuadrante 01-2026" or "Cuadrante Enero 2026"
+  var mNombre = (nombre || '').match(/(\d{4})/);
+  if (mNombre) return mNombre[1];
+  return fecha || '—';
+}
+
 async function cargarDocumentos() {
   var recentEl = document.getElementById('recentDocs');
   var docsEl   = document.getElementById('docsList');
@@ -1625,36 +1644,36 @@ async function cargarDocumentos() {
   renderDocs(data, 'recentDocs', 3);
   renderDocs(data, 'docsList');
   cargarPendientesAtencion(data);
-  var cuadrante = data.find(function(d){ return d.tipo === 'cuadrante'; });
+  var cuadrantes = data.filter(function(d){ return d.tipo === 'cuadrante'; });
   var cuadranteDiv = document.getElementById('cuadranteDestacado');
   var cuadranteMes = document.getElementById('cuadranteMes');
-  if (cuadrante) {
-    if (cuadranteMes) cuadranteMes.textContent = cuadrante.fecha || 'Actual';
-    var cSafeName = cuadrante.nombre.replace(/'/g, "\\'");
-    var cSafeUrl  = cuadrante.url.replace(/'/g, "\\'");
-    var cFirmaHtml = '';
-    if (cuadrante.firmado) {
-      var cFecha = cuadrante.fecha_firma
-        ? new Date(cuadrante.fecha_firma).toLocaleDateString('es-ES', { day:'numeric', month:'long', year:'numeric' })
-        : '';
-      cFirmaHtml = '<span class="badge badge-green">' + t('doc.firmado') + (cFecha ? ' el ' + cFecha : '') + '</span>';
-    } else {
-      cFirmaHtml = '<button class="btn-sm gold" onclick="firmarDoc(\'' + cuadrante.id + '\', \'' + cSafeName + '\', this)">' + t('doc.confirmar') + '</button>';
-    }
-    if (cuadranteDiv) cuadranteDiv.innerHTML =
-      '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">' +
-      '<div style="display:flex;align-items:center;gap:1rem">' +
-      '<div class="doc-icon" style="width:44px;height:44px;flex-shrink:0;background:rgba(37,99,235,0.09);color:#3b82f6">' + docIconSVG('cuadrante') + '</div>' +
-      '<div><div style="font-size:1rem;font-weight:600;color:var(--white)">' + cuadrante.nombre + '</div>' +
-      '<div style="font-size:0.8rem;color:var(--muted);margin-top:2px">' + (cuadrante.fecha||'') + ' · ' + t('doc.cuad_sub') + '</div></div></div>' +
-      '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">' +
-      '<button class="btn-sm primary" onclick="verDoc(\'' + cSafeUrl + '\', \'' + cSafeName + '\')">' + t('doc.ver_cuad') + '</button>' +
-      '<button class="btn-sm" onclick="descargarDoc(\'' + cuadrante.id + '\', \'' + cSafeUrl + '\', \'' + cSafeName + '\')">' + t('doc.descargar') + '</button>' +
-      cFirmaHtml +
-      '</div></div>';
+  if (cuadrantes.length) {
+    if (cuadranteMes) cuadranteMes.textContent = cuadrantes.length > 1 ? cuadrantes.length + ' docs' : (cuadrantes[0].fecha || 'Actual');
+    if (cuadranteDiv) cuadranteDiv.innerHTML = cuadrantes.map(function(cuadrante, i) {
+      var cSafeName = cuadrante.nombre.replace(/'/g, "\\'");
+      var cSafeUrl  = cuadrante.url.replace(/'/g, "\\'");
+      var cFirmaHtml = cuadrante.firmado
+        ? '<span class="badge badge-green" style="font-size:var(--text-xs)">' + t('doc.firmado') + '</span>'
+        : '<button class="btn-sm gold" style="white-space:nowrap" onclick="firmarDoc(\'' + cuadrante.id + '\', \'' + cSafeName + '\', this)">' + t('doc.confirmar') + '</button>';
+      var unread = cuadrante.leido ? '' : '<span class="dt-badge-new" style="vertical-align:middle;margin-left:0.375rem">' + t('doc.nuevo') + '</span>';
+      var mesLabel = _formatFechaCuadrante(cuadrante.fecha, cuadrante.nombre);
+      var border = i < cuadrantes.length - 1 ? 'border-bottom:1px solid var(--border);' : '';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;padding:0.875rem 1.25rem;' + border + '">' +
+        '<div style="display:flex;align-items:center;gap:0.875rem;min-width:0">' +
+        '<div class="doc-icon" style="width:38px;height:38px;flex-shrink:0;background:var(--gold-light);color:var(--gold-dark)">' + docIconSVG('cuadrante') + '</div>' +
+        '<div style="min-width:0">' +
+        '<div style="font-weight:500;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:18rem">' + cuadrante.nombre + unread + '</div>' +
+        '<div style="font-size:var(--text-xs);color:var(--muted);margin-top:2px">' + mesLabel + '</div>' +
+        '</div></div>' +
+        '<div style="display:flex;gap:0.375rem;flex-wrap:wrap;align-items:center;flex-shrink:0">' +
+        '<button class="btn-sm primary" onclick="verDoc(\'' + cSafeUrl + '\', \'' + cSafeName + '\')">' + t('doc.ver_cuad') + '</button>' +
+        '<button class="btn-sm" onclick="descargarDoc(\'' + cuadrante.id + '\', \'' + cSafeUrl + '\', \'' + cSafeName + '\')">' + t('doc.descargar') + '</button>' +
+        cFirmaHtml +
+        '</div></div>';
+    }).join('');
   } else {
     if (cuadranteMes) cuadranteMes.style.display = 'none';
-    if (cuadranteDiv) cuadranteDiv.innerHTML = '<div style="color:var(--muted);font-size:0.875rem">' + t('doc.no_cuad') + '</div>';
+    if (cuadranteDiv) cuadranteDiv.innerHTML = '<div style="color:var(--muted);font-size:var(--text-base);padding:1.5rem">' + t('doc.no_cuad') + '</div>';
   }
 }
 
@@ -1705,10 +1724,13 @@ function renderDocs(docs, containerId, limit) {
       (currentIsAdmin ? '<button class="dt-btn dt-btn-del" onclick="eliminarDoc(\'' + doc.id + '\', \'' + safeUrl + '\')" title="Eliminar">' +
         '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:0.85rem;height:0.85rem"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>' +
       '</button>' : '');
+    var fechaLabel = doc.tipo === 'cuadrante'
+      ? _formatFechaCuadrante(doc.fecha, doc.nombre)
+      : (doc.fecha || '—');
     return '<tr style="animation:fadeIn 0.22s ease both;animation-delay:' + (i * 30) + 'ms">' +
       '<td class="dt-tipo-cell"><div class="doc-icon" style="background:' + ic.bg + ';color:' + ic.color + '">' + docIconSVG(doc.tipo) + '</div></td>' +
       '<td><span class="dt-nombre">' + doc.nombre + '</span>' + unread + '</td>' +
-      '<td class="dt-fecha">' + (doc.fecha || '—') + '</td>' +
+      '<td class="dt-fecha">' + fechaLabel + '</td>' +
       '<td>' + estadoCell + '</td>' +
       '<td class="dt-actions">' + actions + '</td>' +
       '</tr>';
