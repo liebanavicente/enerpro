@@ -530,7 +530,7 @@
     </div>
     <div class="eyebrow">Proyecto web</div>
     <h1>Portal del <span>Empleado</span></h1>
-    <p class="sub">Aplicación desarrollada para la plantilla de ENERPRO. Centraliza nóminas, cuadrantes, turnos, vacaciones y solicitudes — accesible desde móvil, en español y catalán.</p>
+    <p class="sub">Aplicación desarrollada para la plantilla de ENERPRO. Nóminas, cuadrantes PDF, turnos, vacaciones y solicitudes — optimizada para móvil, bilingüe ES/CA, con autoregistro y parser de cuadrantes.</p>
   </section>
 
   <!-- 2 PROBLEMA -->
@@ -573,8 +573,9 @@
           <li>Documentos — nóminas, cuadrantes, contratos</li>
           <li>Solicitudes — permisos y consultas</li>
           <li>Vacaciones — días, peticiones y estados</li>
-          <li>Turnos — calendario mensual + iCal</li>
+          <li>Turnos — cuadrantes PDF, parser automático y calendario</li>
           <li>Mi perfil — datos personales y contraseña</li>
+          <li>Autoregistro — solicitar acceso desde registro.html</li>
         </ul>
       </div>
       <div class="toc-block">
@@ -585,7 +586,8 @@
           <li>Documentos — subida individual y masiva ZIP</li>
           <li>Solicitudes y vacaciones — aprobar / rechazar</li>
           <li>Turnos — creación, Excel, cuadrante visual</li>
-          <li>Resumen vacacional — balance anual por empleado</li>
+          <li>Registro — aprobar altas solicitadas por empleados</li>
+          <li>Importar — parser PDF cuadrantes Beta10 → turnos</li>
         </ul>
       </div>
     </div>
@@ -614,7 +616,7 @@
         </div>
         <div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Mis turnos</div>
-          <p>Calendario mensual con tu servicio. Consulta horario y ubicación, y expórtalo a tu móvil con iCal.</p>
+          <p>Lista de cuadrantes PDF del mes: sube el tuyo, visualiza, descarga, firma y parsea turnos al calendario. Vista calendario + iCal en un clic.</p>
         </div>
       </div>
 
@@ -643,8 +645,8 @@
           <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
         <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Firmar cuadrante</div>
-          <p>Confirma la recepción del cuadrante con un toque. Queda registrado con fecha y hora.</p>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Cuadrantes PDF</div>
+          <p>Sube tu cuadrante mensual, reconoce turnos automáticamente (parser Beta10) y confirma lectura con firma registrada.</p>
         </div>
       </div>
 
@@ -718,6 +720,26 @@
         </div>
       </div>
 
+      <div class="card card-accent" style="display:flex;align-items:flex-start;gap:0.875rem">
+        <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(245,184,0,0.12);display:flex;align-items:center;justify-content:center;color:var(--gold);margin-top:2px">
+          <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        </div>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Altas y registro</div>
+          <p>Revisa solicitudes de acceso enviadas por empleados, aprueba con un clic y envía contraseña de activación.</p>
+        </div>
+      </div>
+
+      <div class="card" style="display:flex;align-items:flex-start;gap:0.875rem">
+        <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(245,184,0,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);margin-top:2px">
+          <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Importar cuadrantes PDF</div>
+          <p>Parser automático de PDFs Beta10: extrae turnos por empleado y mes para el calendario del portal.</p>
+        </div>
+      </div>
+
       <div class="card" style="display:flex;align-items:flex-start;gap:0.875rem">
         <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(245,184,0,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);margin-top:2px">
           <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -731,13 +753,41 @@
     </div>
   </section>
 
-  <!-- 6 ACCESO -->
+  <!-- 6 AUTOREGISTRO -->
   <section class="slide slide-dense" data-slide="6">
+    <div class="eyebrow">Novedad · Alta de empleados</div>
+    <h2>Autoregistro con aprobación</h2>
+    <p class="sub" style="margin-top:0;margin-bottom:0.75rem;font-size:0.88rem">Formulario público en <strong style="color:var(--gold)">registro.html</strong> — el empleado solicita acceso; el coordinador aprueba desde Admin → Registro.</p>
+    <div class="grid-2" style="margin-top:0.5rem">
+      <div class="card card-accent" style="margin:0">
+        <div class="card-label">Flujo del empleado</div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item"><strong>Enlace desde login</strong> — «Solicitar acceso al portal»</div>
+          <div class="feat-item"><strong>Formulario</strong> — Nombre, email, DNI y cargo</div>
+          <div class="feat-item"><strong>Notificación</strong> — Email al coordinador vía Formsubmit</div>
+          <div class="feat-item"><strong>Espera</strong> — Solicitud en estado pendiente hasta aprobación</div>
+        </div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-label">Flujo del coordinador</div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item"><strong>Tab Registro</strong> — Badge con solicitudes pendientes</div>
+          <div class="feat-item"><strong>Modal de aprobación</strong> — Revisar datos antes de confirmar</div>
+          <div class="feat-item"><strong>Creación automática</strong> — Auth + ficha empleado + email reset pass</div>
+          <div class="feat-item"><strong>22 días vacaciones</strong> — Valor por defecto al aprobar</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 ACCESO -->
+  <section class="slide slide-dense" data-slide="7">
     <div class="eyebrow">Módulo · Acceso</div>
     <h2>Autenticación y cuenta</h2>
     <div class="feat-grid">
       <div class="feat-item"><strong>Login corporativo</strong> — Email + contraseña vía Supabase Auth</div>
       <div class="feat-item"><strong>Sesión persistente</strong> — Al recargar o reabrir la PWA sigues dentro</div>
+      <div class="feat-item"><strong>Cierre por inactividad</strong> — Logout automático tras 30 min sin actividad</div>
       <div class="feat-item"><strong>Recuperar contraseña</strong> — Enlace por email, flujo self-service</div>
       <div class="feat-item"><strong>Cambio obligatorio</strong> — Primera entrada con contraseña temporal</div>
       <div class="feat-item"><strong>Cambio desde perfil</strong> — El empleado actualiza su contraseña</div>
@@ -747,8 +797,8 @@
     </div>
   </section>
 
-  <!-- 5 INICIO -->
-  <section class="slide slide-dense" data-slide="5">
+  <!-- 8 INICIO -->
+  <section class="slide slide-dense" data-slide="8">
     <div class="eyebrow">Módulo · Inicio</div>
     <h2>Panel principal del empleado</h2>
     <div class="feat-grid">
@@ -761,8 +811,8 @@
     </div>
   </section>
 
-  <!-- 6 DOCUMENTOS -->
-  <section class="slide slide-dense" data-slide="6">
+  <!-- 9 DOCUMENTOS -->
+  <section class="slide slide-dense" data-slide="9">
     <div class="eyebrow">Módulo · Documentos</div>
     <h2>Mis documentos</h2>
     <div class="feat-grid">
@@ -777,8 +827,8 @@
     </div>
   </section>
 
-  <!-- 7 VACACIONES + SOLICITUDES -->
-  <section class="slide slide-dense" data-slide="7">
+  <!-- 10 VACACIONES + SOLICITUDES -->
+  <section class="slide slide-dense" data-slide="10">
     <div class="eyebrow">Módulo · Vacaciones y solicitudes</div>
     <h2>Gestión de permisos</h2>
     <div class="grid-2" style="margin-top:0.5rem">
@@ -806,18 +856,20 @@
     </div>
   </section>
 
-  <!-- 8 TURNOS + PERFIL -->
-  <section class="slide slide-dense" data-slide="8">
+  <!-- 11 TURNOS + PERFIL -->
+  <section class="slide slide-dense" data-slide="11">
     <div class="eyebrow">Módulo · Turnos y perfil</div>
-    <h2>Calendario y cuenta personal</h2>
+    <h2>Cuadrantes PDF y calendario</h2>
     <div class="grid-2" style="margin-top:0.5rem">
       <div class="card card-accent" style="margin:0">
-        <div class="card-label">Mis turnos</div>
+        <div class="card-label">Mis turnos (rediseñado)</div>
         <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item"><strong>Calendario mensual</strong> — Nav anterior / siguiente / hoy</div>
+          <div class="feat-item"><strong>Vista principal</strong> — Lista de cuadrantes PDF del mes</div>
+          <div class="feat-item"><strong>Subir cuadrante</strong> — El empleado sube su PDF mensual</div>
+          <div class="feat-item"><strong>Parser Beta10</strong> — Reconoce turnos y los importa al calendario</div>
+          <div class="feat-item"><strong>Acciones</strong> — Ver, descargar, firmar, parsear y eliminar</div>
+          <div class="feat-item"><strong>Calendario secundario</strong> — Desplegable «Ver en calendario» + iCal</div>
           <div class="feat-item"><strong>Pills por turno</strong> — Mañana, tarde, noche, guardia, libre</div>
-          <div class="feat-item"><strong>Detalle del mes</strong> — Listado con fecha, horas y lugar</div>
-          <div class="feat-item"><strong>Exportar iCal</strong> — Sincronizar con calendario del móvil</div>
         </div>
       </div>
       <div class="card" style="margin:0">
@@ -833,8 +885,8 @@
     </div>
   </section>
 
-  <!-- 9 ADMIN DASHBOARD + EMPLEADOS -->
-  <section class="slide slide-dense" data-slide="9">
+  <!-- 12 ADMIN DASHBOARD + EMPLEADOS -->
+  <section class="slide slide-dense" data-slide="12">
     <div class="eyebrow">Admin · Dashboard y plantilla</div>
     <h2>Vista global y empleados</h2>
     <div class="grid-2" style="margin-top:0.5rem">
@@ -863,8 +915,8 @@
     </div>
   </section>
 
-  <!-- 10 ADMIN DOCS + APROBACIONES -->
-  <section class="slide slide-dense" data-slide="10">
+  <!-- 13 ADMIN DOCS + APROBACIONES -->
+  <section class="slide slide-dense" data-slide="13">
     <div class="eyebrow">Admin · Documentos y aprobaciones</div>
     <h2>Contenido y revisiones</h2>
     <div class="grid-2" style="margin-top:0.5rem">
@@ -875,6 +927,7 @@
           <div class="feat-item"><strong>Subida masiva ZIP</strong> — Match automático por DNI en nombre archivo</div>
           <div class="feat-item"><strong>Gestión central</strong> — Tab docs-admin con filtros y visor</div>
           <div class="feat-item"><strong>Barra de progreso</strong> — Feedback en subidas masivas</div>
+          <div class="feat-item"><strong>Enriquecimiento client-side</strong> — Datos empleado sin joins problemáticos</div>
         </div>
       </div>
       <div class="card" style="margin:0">
@@ -891,43 +944,44 @@
     </div>
   </section>
 
-  <!-- 11 ADMIN TURNOS -->
-  <section class="slide slide-dense" data-slide="11">
-    <div class="eyebrow">Admin · Turnos y cuadrante</div>
+  <!-- 14 ADMIN TURNOS + IMPORTAR -->
+  <section class="slide slide-dense" data-slide="14">
+    <div class="eyebrow">Admin · Turnos, cuadrante e importación</div>
     <h2>Planificación del servicio</h2>
     <div class="feat-grid">
       <div class="feat-item"><strong>Crear turno</strong> — Empleado, fecha, tipo, horas y lugar</div>
       <div class="feat-item"><strong>Asignación masiva</strong> — Por rango de fechas o varios empleados</div>
       <div class="feat-item"><strong>Import Excel</strong> — Carga de turnos desde hoja de cálculo</div>
+      <div class="feat-item"><strong>Importar PDF Beta10</strong> — Parser de cuadrantes reales → turnos en BD</div>
+      <div class="feat-item"><strong>Preview antes de importar</strong> — Modal con turnos detectados</div>
       <div class="feat-item"><strong>Cuadrante visual</strong> — Tabla empleado × día del mes</div>
       <div class="feat-item"><strong>Nav mes</strong> — Anterior / siguiente / hoy + filtro por cargo</div>
       <div class="feat-item"><strong>Avatares</strong> — Iniciales con color por empleado, agrupados por cargo</div>
-      <div class="feat-item"><strong>Tooltips</strong> — Detalle al pasar sobre cada celda</div>
       <div class="feat-item"><strong>Export CSV</strong> — Cuadrante del mes descargable</div>
       <div class="feat-item"><strong>Resumen vacacional</strong> — Balance anual por empleado, filtro cargo, export</div>
-      <div class="feat-item"><strong>Columna «hoy»</strong> — Resaltada en el cuadrante del mes actual</div>
     </div>
   </section>
 
-  <!-- 12 UX TRANSVERSAL -->
-  <section class="slide slide-dense" data-slide="12">
+  <!-- 15 UX TRANSVERSAL -->
+  <section class="slide slide-dense" data-slide="15">
     <div class="eyebrow">Experiencia transversal</div>
     <h2>UX, diseño y movilidad</h2>
     <div class="grid-3" style="margin-top:0.5rem">
       <div class="card card-accent" style="margin:0">
         <div class="card-label">Diseño</div>
         <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item">Tema claro + chrome negro (sidebar, header, bottom nav)</div>
+          <div class="feat-item">Tema claro en contenido + chrome oscuro (header, bottom nav)</div>
+          <div class="feat-item">Calendario light-mode, botones unificados, tipografía legible</div>
           <div class="feat-item">Cards, badges, animaciones y skeleton loaders</div>
-          <div class="feat-item">Contraste WCAG revisado</div>
         </div>
       </div>
-      <div class="card" style="margin:0">
-        <div class="card-label">Móvil</div>
+      <div class="card card-accent" style="margin:0">
+        <div class="card-label">Móvil optimizado</div>
         <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item">Bottom navigation con 5–6 accesos</div>
-          <div class="feat-item">Header compacto con idioma ES/CA</div>
-          <div class="feat-item">Tablas responsive (cards en móvil)</div>
+          <div class="feat-item">Bottom nav · safe areas · targets táctiles 44px+</div>
+          <div class="feat-item">Listas apiladas — cuadrantes, docs y admin sin overflow</div>
+          <div class="feat-item">Tablas → tarjetas · modales bottom sheet</div>
+          <div class="feat-item">Badge admin en header móvil para coordinadores</div>
         </div>
       </div>
       <div class="card" style="margin:0">
@@ -941,8 +995,8 @@
     </div>
   </section>
 
-  <!-- 13 STACK -->
-  <section class="slide slide-dense" data-slide="13">
+  <!-- 16 STACK -->
+  <section class="slide slide-dense" data-slide="16">
     <div class="eyebrow">Tecnología</div>
     <h2>Stack técnico</h2>
     <div class="grid-2">
@@ -962,22 +1016,22 @@
           <li>Supabase Auth, PostgreSQL, Storage, Realtime</li>
           <li>Edge Function scaffold (notificar-email)</li>
           <li>Deploy automático GitHub → Vercel</li>
-          <li>Tablas: empleados, documentos, solicitudes, vacaciones, turnos</li>
+          <li>Tablas: empleados, documentos, solicitudes, vacaciones, turnos, solicitudes_registro</li>
         </ul>
       </div>
     </div>
   </section>
 
-  <!-- 14 ESTADO -->
-  <section class="slide slide-dense" data-slide="14">
+  <!-- 17 ESTADO -->
+  <section class="slide slide-dense" data-slide="17">
     <div class="eyebrow">Estado del proyecto</div>
     <h2>¿Dónde está el portal?</h2>
-    <p class="sub">Avance del Portal del Empleado desarrollado para ENERPRO.</p>
+    <p class="sub">Avance del Portal del Empleado desarrollado para ENERPRO — mayo 2026.</p>
     <div class="grid-3">
       <div class="card card-light">
-        <div class="card-value">~75%</div>
+        <div class="card-value">~90%</div>
         <div class="card-label">Core funcional</div>
-        <p>Empleado + admin operativos en producción.</p>
+        <p>Empleado + admin operativos. Móvil optimizado.</p>
       </div>
       <div class="card card-light">
         <div class="card-value" style="color:var(--green)">Live</div>
@@ -991,14 +1045,14 @@
       </div>
     </div>
     <ul class="clean" style="margin-top:1rem">
-      <li><span class="tag tag-ok">Hecho</span> PWA · sesión persistente · recuperar pass · validación vacaciones · cuadrante visual · dashboard · bloqueo inactivos</li>
-      <li><span class="tag tag-next">Próximo</span> Emails automáticos (Edge Function) · RLS Supabase · banner cuadrante sin firmar</li>
+      <li><span class="tag tag-ok">Hecho</span> Autoregistro · parser PDF Beta10 · cuadrante self-service · idle logout 30 min · móvil responsive · PWA · cuadrante visual · dashboard</li>
+      <li><span class="tag tag-next">Próximo</span> Emails automáticos (Edge Function) · RLS Supabase completo · deduplicar cuadrantes por mes</li>
       <li><span class="tag tag-fut">Futuro</span> Justificantes bajas · calendario equipo · auditoría firmas</li>
     </ul>
   </section>
 
-  <!-- 15 DE DEMO A PRODUCCIÓN — QUÉ SE NECESITA -->
-  <section class="slide slide-dense" data-slide="15">
+  <!-- 18 DE DEMO A PRODUCCIÓN — QUÉ SE NECESITA -->
+  <section class="slide slide-dense" data-slide="18">
     <div class="eyebrow">Puesta en marcha</div>
     <h2>De la demo a datos reales</h2>
     <p class="sub" style="margin-top:0;margin-bottom:1rem;font-size:0.88rem">El portal está desplegado y funcional. Solo hace falta sustituir los datos de demo por los datos reales de ENERPRO.</p>
@@ -1024,14 +1078,16 @@
           <li>Subida masiva de PDFs — ZIP con match automático por DNI</li>
           <li>Acceso móvil, bilingüe (ES/CA) y PWA instalable</li>
           <li>Flujo de contraseñas — temporal en primer acceso, cambio self-service</li>
+          <li>Autoregistro — registro.html + aprobación coordinador</li>
+          <li>Parser PDF cuadrantes Beta10 — importación automática de turnos</li>
         </ul>
       </div>
 
     </div>
   </section>
 
-  <!-- 16 PUESTA EN MARCHA — 4 PASOS -->
-  <section class="slide slide-dense" data-slide="16">
+  <!-- 19 PUESTA EN MARCHA — 4 PASOS -->
+  <section class="slide slide-dense" data-slide="19">
     <div class="eyebrow">Puesta en marcha</div>
     <h2>Activación en 4 pasos</h2>
     <p class="sub" style="margin-top:0;margin-bottom:1rem;font-size:0.88rem">El coordinador lo gestiona todo desde el panel de administración. Tiempo estimado con una plantilla de 20–30 personas: <strong style="color:var(--gold)">menos de una hora</strong>.</p>
@@ -1059,21 +1115,21 @@
       <div class="card" style="margin:0;border-top:2px solid rgba(245,184,0,0.5)">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:800;color:rgba(245,184,0,0.18);line-height:1;margin-bottom:0.5rem">04</div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.04em;margin-bottom:0.4rem;color:var(--text)">Comunicar acceso</div>
-        <p>Enviar a cada empleado su email y la contraseña temporal. En el primer acceso el portal les pide que la cambien.</p>
+        <p>Enviar email y contraseña temporal — o dejar que el empleado solicite acceso vía registro.html y aprobar desde Admin → Registro.</p>
       </div>
 
     </div>
 
     <div style="margin-top:1rem;padding:0.75rem 1rem;background:rgba(245,184,0,0.07);border:1px solid rgba(245,184,0,0.18);border-radius:10px;max-width:56rem">
-      <span style="font-size:0.78rem;color:var(--text2)"><strong style="color:var(--gold)">Opcional</strong> — Los turnos se pueden cargar desde Excel o crear directamente en el panel. Los cuadrantes PDF también se pueden subir de golpe con el ZIP. El borrado de los empleados demo es un clic en Admin → Demo.</span>
+      <span style="font-size:0.78rem;color:var(--text2)"><strong style="color:var(--gold)">Tip cuadrantes</strong> — Los empleados pueden subir su PDF en Mis turnos y parsear turnos al calendario. Admin → Importar hace lo mismo a escala. Los PDFs Beta10 (CTTI1/2, sindicales) ya están soportados.</span>
     </div>
   </section>
 
-  <!-- 17 DEMO -->
-  <section class="slide" data-slide="17">
+  <!-- 20 DEMO -->
+  <section class="slide" data-slide="20">
     <div class="eyebrow">Demo en vivo</div>
     <h2>Pruébalo ahora</h2>
-    <p class="sub">Escanea el QR o abre el portal. Instálalo en el móvil: Compartir → Añadir a pantalla de inicio.</p>
+    <p class="sub">Escanea el QR o abre el portal. Registro de nuevos empleados: <strong style="color:var(--gold)">/registro.html</strong>. Instálalo en el móvil: Compartir → Añadir a pantalla de inicio.</p>
     <div class="qr-box">
       <div class="qr-placeholder" id="qrCode">QR al portal<br><small>(sustituir URL Vercel)</small></div>
       <div style="font-size:0.85rem;color:var(--text2)" id="portalUrl">https://tu-dominio.vercel.app</div>
@@ -1081,8 +1137,8 @@
     <p class="hint" style="margin-top:1rem">Ruta demo: Carlos → documentos → vacaciones · Coordinador → badge pendientes → aprobar → cuadrante admin</p>
   </section>
 
-  <!-- 18 CIERRE -->
-  <section class="slide" data-slide="18">
+  <!-- 21 CIERRE -->
+  <section class="slide" data-slide="21">
     <div class="eyebrow">Gracias</div>
     <h1>Portal del <span>Empleado</span></h1>
     <p class="sub" style="font-size:1.2rem;margin-top:1.5rem">Proyecto web para <strong style="color:var(--text);font-weight:600">ENERPRO</strong> — empresa de seguridad privada y servicios auxiliares.</p>
@@ -1094,7 +1150,7 @@
 
 <div class="controls">
   <div class="controls-left">
-    <span class="progress" id="slideNum">1 / 20</span>
+    <span class="progress" id="slideNum">1 / 21</span>
     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:5%"></div></div>
     <span class="hint">← → navegar · F pantalla completa</span>
   </div>
