@@ -20,39 +20,47 @@
   <style>
   /* ─── DESIGN SYSTEM ───────────────────────────────── */
   :root {
-    --bg:           #f7f8fc;
-    --surface:      rgba(0,0,0,0.022);
-    --surface2:     rgba(0,0,0,0.045);
-    --surface3:     rgba(0,0,0,0.075);
+    /* ── Surfaces ─────────────────────────────────────── */
+    --bg:           #f8fafc;
+    --surface:      rgba(0,0,0,0.018);
+    --surface2:     rgba(0,0,0,0.040);
+    --surface3:     rgba(0,0,0,0.068);
     --surface-s:    #ffffff;
-    --surface-s2:   #f4f6fb;
+    --surface-s2:   #f9fafb;
     --border:       rgba(0,0,0,0.08);
-    --border2:      rgba(0,0,0,0.14);
-    --text:         #1a1d2e;
-    --text2:        #4e526a;
-    --muted:        #8589a0;
-    --white:        #1a1d2e;
-    --gold:         #b87f00;
-    --gold-dark:    #8f6300;
-    --gold-mid:     #a37200;
-    --gold-light:   rgba(184,127,0,0.12);
-    --gold-glow:    rgba(184,127,0,0.20);
-    --red:          #c62828;
-    --red-dark:     #b71c1c;
-    --red-light:    rgba(198,40,40,0.10);
-    --red-glow:     rgba(198,40,40,0.18);
-    --green:        #1b7a45;
-    --green-light:  rgba(27,122,69,0.11);
-    --yellow:       #8a6000;
-    --yellow-light: rgba(138,96,0,0.11);
+    --border2:      rgba(0,0,0,0.13);
+    /* ── Text ─────────────────────────────────────────── */
+    --text:         #111827;
+    --text2:        #374151;
+    --muted:        #6b7280;
+    --white:        #111827;          /* alias kept for dark-context overrides */
+    /* ── Gold — único token de marca ─────────────────── */
+    --gold:         #f5b800;          /* brand gold: fills, borders, icons */
+    --gold-dark:    #92680a;          /* text on light bg (readable) */
+    --gold-mid:     #d4a800;          /* hover states */
+    --gold-light:   rgba(245,184,0,0.08);
+    --gold-glow:    rgba(245,184,0,0.15);
+    /* ── Red ──────────────────────────────────────────── */
+    --red:          #dc2626;
+    --red-dark:     #b91c1c;
+    --red-light:    rgba(220,38,38,0.08);
+    --red-glow:     rgba(220,38,38,0.15);
+    /* ── Green ────────────────────────────────────────── */
+    --green:        #16a34a;
+    --green-light:  rgba(22,163,74,0.08);
+    /* ── Yellow/Amber (pending state text) ────────────── */
+    --yellow:       #92400e;
+    --yellow-light: rgba(245,184,0,0.10);
+    /* ── Radii ────────────────────────────────────────── */
     --r:    16px;
     --r-sm:  12px;
     --r-xs:   8px;
+    /* ── Glass (card-like surfaces) ──────────────────── */
     --glass:        #ffffff;
     --glass-h:      #ffffff;
     --glass-border: rgba(0,0,0,0.08);
-    --glass-shadow: 0 1px 4px rgba(0,0,0,0.05);
-    --glass-shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+    --glass-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    --glass-shadow-lg: 0 4px 14px rgba(0,0,0,0.08);
   }
 
   /* ─── RESET ────────────────────────────────────────── */
@@ -228,8 +236,8 @@
   .btn-sm:hover         { background: var(--surface2); color: var(--text); border-color: var(--border2); }
   .btn-sm.primary       { background: var(--red); border-color: var(--red); color: #fff; }
   .btn-sm.primary:hover { background: var(--red-dark); border-color: var(--red-dark); }
-  .btn-sm.gold          { border-color: var(--gold-glow); color: var(--gold); }
-  .btn-sm.gold:hover    { background: var(--gold-light); border-color: rgba(184,127,0,0.4); color: var(--gold); }
+  .btn-sm.gold          { border-color: var(--gold-glow); color: var(--gold-dark); }
+  .btn-sm.gold:hover    { background: var(--gold-light); border-color: rgba(245,184,0,0.35); color: var(--gold-dark); }
   .btn-sm:active        { transform: scale(0.96); }
 
   .btn-logout {
@@ -342,7 +350,7 @@
   .page.active { display: block; }
 
   /* Page header */
-  .page-header { margin-bottom: 2.25rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .page-header { margin-bottom: 2.25rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
   .page-eyebrow { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
   .page-header h1 { font-family: 'Inter', system-ui, sans-serif; font-size: 1.75rem; font-weight: 700; letter-spacing: -0.01em; color: var(--white); line-height: 1.2; }
   .page-header p  { font-size: 0.84rem; color: var(--text2); margin-top: 0.4rem; line-height: 1.55; }
@@ -370,11 +378,11 @@
   /* ─── BADGES ─────────────────────────────────────────── */
   .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.22rem 0.65rem; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 100px; }
   .badge::before { content: ''; width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; }
-  .badge-green  { background: rgba(27,122,69,0.10);    border: 1px solid rgba(27,122,69,0.22);    color: var(--green); }  .badge-green::before  { background: var(--green); }
-  .badge-yellow { background: rgba(138,96,0,0.10);     border: 1px solid rgba(138,96,0,0.22);     color: var(--yellow); } .badge-yellow::before { background: var(--yellow); }
-  .badge-red    { background: rgba(198,40,40,0.10);    border: 1px solid rgba(198,40,40,0.22);    color: var(--red); }    .badge-red::before    { background: var(--red); }
-  .badge-blue   { background: rgba(59,130,246,0.10);   border: 1px solid rgba(59,130,246,0.20);   color: #3b82f6; }       .badge-blue::before   { background: #3b82f6; }
-  .badge-grey   { background: rgba(0,0,0,0.05);        border: 1px solid rgba(0,0,0,0.10);        color: var(--muted); }  .badge-grey::before   { background: var(--muted); }
+  .badge-green  { background: var(--green-light);       border: 1px solid rgba(22,163,74,0.22);    color: var(--green); }  .badge-green::before  { background: var(--green); }
+  .badge-yellow { background: var(--yellow-light);      border: 1px solid rgba(245,184,0,0.25);    color: var(--yellow); } .badge-yellow::before { background: var(--yellow); }
+  .badge-red    { background: var(--red-light);         border: 1px solid rgba(220,38,38,0.22);    color: var(--red); }    .badge-red::before    { background: var(--red); }
+  .badge-blue   { background: rgba(0,0,0,0.05);         border: 1px solid rgba(0,0,0,0.10);        color: var(--muted); }  .badge-blue::before   { background: var(--muted); }
+  .badge-grey   { background: rgba(0,0,0,0.05);         border: 1px solid rgba(0,0,0,0.10);        color: var(--muted); }  .badge-grey::before   { background: var(--muted); }
 
   /* ─── TABLE ──────────────────────────────────────────── */
   table    { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
@@ -394,9 +402,9 @@
   .dt-nombre    { font-weight: 500; color: var(--white); }
   .dt-fecha     { color: var(--text2); white-space: nowrap; font-size: 0.8rem; }
   .dt-actions   { text-align: right; white-space: nowrap; }
-  .dt-badge-new  { display: inline-flex; align-items: center; margin-left: 0.5rem; padding: 0.1rem 0.45rem; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border-radius: 4px; background: rgba(59,130,246,0.10); color: #3b82f6; border: 1px solid rgba(59,130,246,0.20); vertical-align: middle; }
-  .dt-badge-ok   { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.55rem; font-size: 0.62rem; font-weight: 600; border-radius: 4px; background: rgba(27,122,69,0.08); color: var(--green); border: 1px solid rgba(27,122,69,0.18); }
-  .dt-badge-pend { display: inline-flex; align-items: center; padding: 0.2rem 0.55rem; font-size: 0.62rem; font-weight: 600; border-radius: 4px; background: rgba(138,96,0,0.08); color: var(--gold); border: 1px solid rgba(138,96,0,0.18); }
+  .dt-badge-new  { display: inline-flex; align-items: center; margin-left: 0.5rem; padding: 0.1rem 0.45rem; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border-radius: 4px; background: var(--gold-light); color: var(--gold-dark); border: 1px solid var(--gold-glow); vertical-align: middle; }
+  .dt-badge-ok   { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.55rem; font-size: 0.62rem; font-weight: 600; border-radius: 4px; background: var(--green-light); color: var(--green); border: 1px solid rgba(22,163,74,0.2); }
+  .dt-badge-pend { display: inline-flex; align-items: center; padding: 0.2rem 0.55rem; font-size: 0.62rem; font-weight: 600; border-radius: 4px; background: var(--yellow-light); color: var(--yellow); border: 1px solid rgba(245,184,0,0.22); }
   .dt-btn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; border: 1px solid transparent; background: transparent; color: var(--muted); cursor: pointer; transition: background 0.12s, color 0.12s, border-color 0.12s; margin-left: 3px; }
   .dt-btn:hover { background: var(--surface2); color: var(--text); border-color: var(--border); }
   .dt-btn-sign:hover { background: rgba(184,127,0,0.08); color: var(--gold); border-color: rgba(184,127,0,0.25); }
@@ -405,7 +413,7 @@
   .doc-empty-title { font-size: 0.875rem; font-weight: 500; color: var(--text2); }
 
   /* ─── DOC ITEMS (dashboard preview) ────────────────── */
-  .doc-item { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.5rem; border-bottom: 1px solid var(--border); transition: background 0.12s; gap: 1rem; }
+  .doc-item { display: flex; align-items: center; justify-content: space-between; padding: 0.875rem 1.5rem; border-bottom: 1px solid var(--border); transition: background 0.12s; gap: 1rem; }
   .doc-item:last-child { border-bottom: none; }
   .doc-item:hover { background: var(--surface); }
   .doc-info  { display: flex; align-items: center; gap: 0.75rem; min-width: 0; flex: 1; }
@@ -682,18 +690,18 @@
   .cal-resumen { margin-top:1rem; }
   .cal-resumen-item {
     display:flex; align-items:center; gap:1rem; padding:0.875rem 1.25rem;
-    border-bottom:1px solid rgba(255,255,255,0.04);
+    border-bottom:1px solid var(--border);
     transition:background 0.15s;
   }
-  .cal-resumen-item:hover { background:rgba(255,255,255,0.02); }
+  .cal-resumen-item:hover { background:var(--surface2); }
   .cal-resumen-item:last-child { border-bottom:none; }
   .cal-resumen-fecha  { font-size:0.8rem; font-weight:600; color:var(--text2); min-width:5.5rem; }
   .cal-resumen-horas  { font-size:0.8rem; color:var(--muted); min-width:6rem; }
   .cal-resumen-lugar  { font-size:0.8rem; color:var(--muted); flex:1; }
 
   /* ─── VACACIONES ──────────────────────────────────────── */
-  .vac-item { display:flex; align-items:center; gap:1rem; padding:1rem 1.5rem; border-bottom:1px solid rgba(255,255,255,0.04); transition:background 0.15s; }
-  .vac-item:hover { background:rgba(255,255,255,0.02); }
+  .vac-item { display:flex; align-items:center; gap:1rem; padding:1rem 1.5rem; border-bottom:1px solid var(--border); transition:background 0.15s; }
+  .vac-item:hover { background:var(--surface2); }
   .vac-item:last-child { border-bottom:none; }
   .vac-tipo  { min-width:5.5rem; }
   .vac-fechas { flex:1; font-size:0.82rem; color:var(--text2); }
@@ -721,25 +729,18 @@
 
   /* ─── LIGHT MODE PATCHES ───────────────────────────────── */
   /* Gold button border uses new gold token */
-  .btn-sm.gold       { border-color: var(--gold-glow); color: var(--gold); }
-  .btn-sm.gold:hover { background: var(--gold-light); border-color: rgba(184,127,0,0.5); color: var(--gold); }
+  .btn-sm.gold       { border-color: var(--gold-glow); color: var(--gold-dark); }
+  .btn-sm.gold:hover { background: var(--gold-light); border-color: rgba(245,184,0,0.35); color: var(--gold-dark); }
   /* Primary button stays red but adapted */
   .btn-sm.primary       { background: var(--red); border-color: var(--red); }
   .btn-sm.primary:hover { background: var(--red-dark); border-color: var(--red-dark); }
-  /* Hardcoded rgba-white values flipped for light bg */
-  .page-header          { border-bottom-color: var(--border); }
-  .doc-item             { border-bottom-color: var(--border); }
   .doc-item:hover       { background: var(--surface2); }
   .doc-icon             { background: rgba(229,57,53,0.08); border-color: rgba(229,57,53,0.18); }
-  .vac-item             { border-bottom-color: var(--border); }
-  .vac-item:hover       { background: var(--surface2); }
   .empty                { border-color: var(--border); color: var(--muted); }
   .badge-grey           { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.13); color: var(--muted); }
   .badge-grey::before   { background: var(--muted); }
   .admin-tabs           { background: var(--surface-s); border-bottom-color: var(--border); }
   .admin-tab.active     { color: var(--text); }
-  .skel-doc-row         { border-bottom-color: var(--border); }
-  .skel-vac-row         { border-bottom-color: var(--border); }
   .nav-item:hover       { background: var(--surface2); }
   /* Cal pills — boosted contrast for light bg */
   .t-manana  { background:rgba(37,99,235,0.12);  color:#1d4ed8; }
@@ -755,8 +756,6 @@
   .cal-day:hover          { background: var(--surface2); border-color: var(--border); }
   .cal-day.has-shift      { background: var(--surface2); border-color: var(--border); }
   .cal-day.other-m        { opacity: 0.25; }
-  .cal-resumen-item       { border-bottom-color: var(--border); }
-  .cal-resumen-item:hover { background: var(--surface2); }
 
   /* Tables — dark-mode rgba-white → light-mode aware */
   th                { border-bottom-color: var(--border); background: rgba(0,0,0,0.018); }
@@ -775,7 +774,7 @@
   ::selection { background: rgba(184,127,0,0.18); color: var(--text); }
 
   /* Admin tab active — gold accent */
-  .admin-tab.active { color: var(--gold-mid); }
+  .admin-tab.active { color: var(--gold-dark); }
 
   /* ─── CUADRANTE ADMIN ──────────────────────────────────── */
   .cua-table { border-collapse:collapse; width:100%; font-size:0.72rem; }
@@ -812,7 +811,7 @@
   .skel-doc-row {
     display: flex; align-items: center; justify-content: space-between;
     padding: 1.1rem 1.5rem; gap: 1rem;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    border-bottom: 1px solid var(--border);
   }
   .skel-doc-row:last-child { border-bottom: none; }
   .skel-left { display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0; }
@@ -826,7 +825,7 @@
   .skel-vac-row {
     display: flex; align-items: center;
     padding: 1rem 1.5rem; gap: 1rem;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    border-bottom: 1px solid var(--border);
   }
   .skel-vac-row:last-child { border-bottom: none; }
   .skel-badge { height: 22px; width: 82px; flex-shrink: 0; border-radius: 100px; }
@@ -1201,25 +1200,25 @@
       <div id="turnoHoyBanner" style="display:none;margin-bottom:1rem"></div>
       <div class="quick-actions">
         <button class="quick-action-btn" onclick="navigateToPage('documentos')">
-          <div class="qa-icon" style="background:rgba(184,127,0,0.10);color:#92680a">
+          <div class="qa-icon" style="background:var(--gold-light);color:var(--gold-dark)">
             <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" style="width:1.2rem;height:1.2rem"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           </div>
           <span class="qa-label" data-i18n="ini.qa_docs">Documentos</span>
         </button>
         <button class="quick-action-btn" onclick="navigateToPage('calendario')">
-          <div class="qa-icon" style="background:rgba(37,99,235,0.09);color:#3b82f6">
+          <div class="qa-icon" style="background:rgba(0,0,0,0.05);color:var(--muted)">
             <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" style="width:1.2rem;height:1.2rem"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           </div>
           <span class="qa-label" data-i18n="ini.qa_turnos">Mis turnos</span>
         </button>
         <button class="quick-action-btn" onclick="navigateToPage('vacaciones')">
-          <div class="qa-icon" style="background:rgba(27,122,69,0.09);color:#1b7a45">
+          <div class="qa-icon" style="background:var(--green-light);color:var(--green)">
             <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" style="width:1.2rem;height:1.2rem"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
           </div>
           <span class="qa-label" data-i18n="ini.qa_vac">Vacaciones</span>
         </button>
         <button class="quick-action-btn" onclick="navigateToPage('solicitudes')">
-          <div class="qa-icon" style="background:rgba(124,58,237,0.09);color:#7c3aed">
+          <div class="qa-icon" style="background:var(--red-light);color:var(--red)">
             <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" style="width:1.2rem;height:1.2rem"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
           </div>
           <span class="qa-label" data-i18n="ini.qa_sol">Solicitudes</span>

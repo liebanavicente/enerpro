@@ -3438,9 +3438,9 @@ function docIconSVG(tipo) {
   return '<svg style="'+s+'" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>';
 }
 var _DOC_IC = {
-  nomina:    { bg:'rgba(184,127,0,0.10)',   color:'#92680a' },
-  cuadrante: { bg:'rgba(37,99,235,0.09)',   color:'#3b82f6' },
-  contrato:  { bg:'rgba(27,122,69,0.09)',   color:'#1b7a45' }
+  nomina:    { bg:'rgba(245,184,0,0.08)',   color:'#92680a' },
+  cuadrante: { bg:'rgba(0,0,0,0.05)',       color:'#6b7280' },
+  contrato:  { bg:'rgba(22,163,74,0.08)',   color:'#16a34a' }
 };
 
 // FIRMA DE DOCUMENTOS — avoids browser confirm() which is blocked in iOS PWA mode
