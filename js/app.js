@@ -2376,66 +2376,62 @@ function cerrarAprobarRegModal() {
 }
 
 async function confirmarAprobarRegistro() {
-  var id     = document.getElementById('aprobarRegId').value;
-  var email  = document.getElementById('aprobarRegEmail').value;
-  var nombre = document.getElementById('aprobarRegNombre').value;
-  var dni    = document.getElementById('aprobarRegDni').value;
-  var cargo  = document.getElementById('aprobarRegCargo').value;
-  var okEl   = document.getElementById('aprobarRegOk');
-  var errEl  = document.getElementById('aprobarRegError');
-  var btn    = document.getElementById('aprobarRegBtn');
-  okEl.style.display = 'none'; errEl.style.display = 'none';
-  btn.disabled = true; btn.textContent = 'Creando cuenta…';
+  var btn   = document.getElementById('aprobarRegBtn');
+  var errEl = document.getElementById('aprobarRegError');
+  var okEl  = document.getElementById('aprobarRegOk');
+  if (!btn || !errEl || !okEl) { alert('Error: modal no encontrado. Recarga la página.'); return; }
 
-  // Generar contraseña temporal segura
-  var tempPass = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-4).toUpperCase() + '!9';
+  try {
+    errEl.style.display = 'none';
+    okEl.style.display  = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Creando cuenta…';
 
-  // Guardar sesión admin
-  var { data: sessionData } = await sb.auth.getSession();
-  var adminSession = sessionData && sessionData.session;
+    var id     = document.getElementById('aprobarRegId').value;
+    var email  = document.getElementById('aprobarRegEmail').value;
+    var nombre = document.getElementById('aprobarRegNombre').value;
+    var dni    = document.getElementById('aprobarRegDni').value;
+    var cargo  = document.getElementById('aprobarRegCargo').value;
 
-  // Crear usuario Auth
-  var { data: authData, error: authError } = await sb.auth.signUp({ email: email, password: tempPass });
+    // Crear usuario Auth — guardar sesión admin primero
+    var { data: sessionData } = await sb.auth.getSession();
+    var adminSession = sessionData && sessionData.session;
+    var tempPass = Math.random().toString(36).slice(-10) + 'Aa1!';
+    var { data: authData, error: authError } = await sb.auth.signUp({ email: email, password: tempPass });
+    if (adminSession && authData && authData.session) {
+      await sb.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token });
+    }
+    if (authError && !authError.message.toLowerCase().includes('already registered')) {
+      throw new Error('Error al crear acceso: ' + authError.message);
+    }
 
-  // Restaurar sesión admin
-  if (adminSession && authData && authData.session) {
-    await sb.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token });
-  }
+    // Crear registro en tabla empleados
+    var { error: dbError } = await sb.from('empleados').insert({
+      nombre: nombre, email: email, dni: dni, cargo: cargo,
+      activo: true, debe_cambiar_password: true
+    });
+    if (dbError) throw new Error('Error al crear empleado: ' + dbError.message);
 
-  if (authError && !authError.message.toLowerCase().includes('already registered')) {
-    errEl.textContent = 'Error al crear acceso: ' + authError.message;
+    // Marcar solicitud como aprobada y enviar email de acceso
+    await sb.from('solicitudes_registro').update({ estado: 'aprobada' }).eq('id', id);
+    await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+
+    okEl.textContent = '✓ Cuenta creada. Email de acceso enviado a ' + email;
+    okEl.style.display = 'block';
+    showToast('✓ ' + nombre + ' — cuenta creada y email enviado', 'success');
+    setTimeout(function() {
+      cerrarAprobarRegModal();
+      cargarSolicitudesRegistro();
+      cargarEmpleados();
+      cargarBadgeAdmin();
+    }, 1800);
+
+  } catch(e) {
+    errEl.textContent = e.message || 'Error inesperado.';
     errEl.style.display = 'block';
-    btn.disabled = false; btn.textContent = t('reg.confirmar'); return;
+    btn.disabled = false;
+    btn.textContent = 'Aprobar y enviar acceso';
   }
-
-  // Crear registro en tabla empleados
-  var { error: dbError } = await sb.from('empleados').insert({
-    nombre: nombre, email: email, dni: dni, cargo: cargo,
-    activo: true, debe_cambiar_password: true
-  });
-  if (dbError) {
-    errEl.textContent = 'Error al crear empleado: ' + dbError.message;
-    errEl.style.display = 'block';
-    btn.disabled = false; btn.textContent = t('reg.confirmar'); return;
-  }
-
-  // Marcar solicitud como aprobada
-  await sb.from('solicitudes_registro').update({ estado: 'aprobada' }).eq('id', id);
-
-  // Enviar email de acceso (reset password actúa como invitación de primer acceso)
-  await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
-
-  okEl.textContent = '✓ Cuenta creada. Se ha enviado un email de acceso a ' + email;
-  okEl.style.display = 'block';
-  btn.textContent = t('reg.confirmar');
-  showToast('✓ ' + nombre + ' — cuenta creada y email enviado', 'success');
-
-  setTimeout(function() {
-    cerrarAprobarRegModal();
-    cargarSolicitudesRegistro();
-    cargarEmpleados();
-    cargarBadgeAdmin();
-  }, 1800);
 }
 
 async function rechazarRegistro(id, nombre) {
