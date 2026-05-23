@@ -1458,12 +1458,12 @@ async function cargarDocumentos() {
         : '';
       cFirmaHtml = '<span class="badge badge-green">' + t('doc.firmado') + (cFecha ? ' el ' + cFecha : '') + '</span>';
     } else {
-      cFirmaHtml = '<button class="btn-sm gold" onclick="firmarDoc(\'' + cuadrante.id + '\', \'' + cSafeName + '\')">' + t('doc.confirmar') + '</button>';
+      cFirmaHtml = '<button class="btn-sm gold" onclick="firmarDoc(\'' + cuadrante.id + '\', \'' + cSafeName + '\', this)">' + t('doc.confirmar') + '</button>';
     }
     if (cuadranteDiv) cuadranteDiv.innerHTML =
       '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">' +
       '<div style="display:flex;align-items:center;gap:1rem">' +
-      '<div style="width:48px;height:48px;background:var(--red-light);border:1px solid rgba(220,38,38,0.3);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">📅</div>' +
+      '<div class="doc-icon" style="width:44px;height:44px;flex-shrink:0;background:rgba(37,99,235,0.09);color:#3b82f6">' + docIconSVG('cuadrante') + '</div>' +
       '<div><div style="font-size:1rem;font-weight:600;color:var(--white)">' + cuadrante.nombre + '</div>' +
       '<div style="font-size:0.8rem;color:var(--muted);margin-top:2px">' + (cuadrante.fecha||'') + ' · ' + t('doc.cuad_sub') + '</div></div></div>' +
       '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">' +
@@ -1487,7 +1487,7 @@ function renderDocs(docs, containerId, limit) {
   }
   var delay = 0;
   container.innerHTML = list.map(function(doc) {
-    var icon = doc.tipo === 'nomina' ? '📄' : doc.tipo === 'cuadrante' ? '📅' : doc.tipo === 'contrato' ? '📋' : '📁';
+    var ic      = _DOC_IC[doc.tipo] || { bg:'var(--surface2)', color:'var(--text2)' };
     var safeName = doc.nombre.replace(/'/g, "\\'");
     var safeUrl  = doc.url.replace(/'/g, "\\'");
     var badgeNuevo  = doc.leido ? '' : '<span class="badge badge-red" style="margin-left:0.5rem">' + t('doc.nuevo') + '</span>';
@@ -1499,12 +1499,12 @@ function renderDocs(docs, containerId, limit) {
         : '';
       badgeFirma = '<span class="badge badge-green" style="margin-left:0.5rem">' + t('doc.firmado') + (fFecha ? ' ' + fFecha : '') + '</span>';
     } else {
-      btnFirma = '<button class="btn-sm gold" onclick="firmarDoc(\'' + doc.id + '\', \'' + safeName + '\')">' + t('doc.firmar') + '</button>';
+      btnFirma = '<button class="btn-sm gold" onclick="firmarDoc(\'' + doc.id + '\', \'' + safeName + '\', this)">' + t('doc.firmar') + '</button>';
     }
     var d = delay;
     delay += 50;
     return '<div class="doc-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
-      '<div class="doc-info"><div class="doc-icon">' + icon + '</div>' +
+      '<div class="doc-info"><div class="doc-icon" style="background:' + ic.bg + ';color:' + ic.color + '">' + docIconSVG(doc.tipo) + '</div>' +
       '<div><div class="doc-name">' + doc.nombre + badgeNuevo + badgeFirma + '</div>' +
       '<div class="doc-meta">' + (doc.fecha||'') + ' · ' + doc.tipo + '</div></div></div>' +
       '<div>' +
@@ -3214,15 +3214,47 @@ function exportarCuadranteCSV() {
   URL.revokeObjectURL(url);
 }
 
-// FIRMA DE DOCUMENTOS
-async function firmarDoc(docId, nombre) {
-  if (!confirm('¿Confirmas que has leído "' + nombre + '"?\n\nEsta acción quedará registrada con la fecha y hora actual.')) return;
-  var { error } = await sb.from('documentos').update({
+// DOC ICON SVG — returns an SVG string for each document type
+function docIconSVG(tipo) {
+  var s = 'width:1.15rem;height:1.15rem;flex-shrink:0';
+  if (tipo === 'nomina')    return '<svg style="'+s+'" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>';
+  if (tipo === 'cuadrante') return '<svg style="'+s+'" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+  if (tipo === 'contrato')  return '<svg style="'+s+'" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+  return '<svg style="'+s+'" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>';
+}
+var _DOC_IC = {
+  nomina:    { bg:'rgba(184,127,0,0.10)',   color:'#92680a' },
+  cuadrante: { bg:'rgba(37,99,235,0.09)',   color:'#3b82f6' },
+  contrato:  { bg:'rgba(27,122,69,0.09)',   color:'#1b7a45' }
+};
+
+// FIRMA DE DOCUMENTOS — avoids browser confirm() which is blocked in iOS PWA mode
+async function firmarDoc(docId, nombre, btn) {
+  if (btn && !btn.dataset.confirmando) {
+    btn.dataset.confirmando = '1';
+    var txtOrig = btn.innerHTML;
+    btn.innerHTML = '¿Confirmar?';
+    btn.classList.add('primary'); btn.classList.remove('gold');
+    setTimeout(function() {
+      if (btn && btn.dataset.confirmando) {
+        delete btn.dataset.confirmando;
+        btn.innerHTML = txtOrig;
+        btn.classList.remove('primary'); btn.classList.add('gold');
+      }
+    }, 3000);
+    return;
+  }
+  if (btn) { delete btn.dataset.confirmando; btn.disabled = true; btn.innerHTML = '...'; }
+  var res = await sb.from('documentos').update({
     firmado: true,
     fecha_firma: new Date().toISOString(),
     leido: true
   }).eq('id', docId);
-  if (error) { mostrarToast('❌ Error', 'No se pudo registrar la firma.'); return; }
+  if (res.error) {
+    mostrarToast('❌ Error', res.error.message || 'No se pudo registrar la firma.');
+    if (btn) { btn.disabled = false; btn.innerHTML = t('doc.firmar'); }
+    return;
+  }
   cargarDocumentos();
   mostrarToast(t('toast.firma_ok'), nombre);
 }
