@@ -1623,6 +1623,9 @@ async function verDoc(url, nombre) {
   var frame = document.getElementById('pdfFrame');
   var title = document.getElementById('pdfModalTitle');
   var link  = document.getElementById('pdfOpenLink');
+  var old = modal.querySelector('.pdf-fallback');
+  if (old) old.remove();
+  frame.style.display = 'block';
   title.textContent = nombre || 'Documento';
   frame.src = '';
   if (link) link.href = '#';
@@ -1636,7 +1639,6 @@ async function verDoc(url, nombre) {
       '<button class="btn-sm" onclick="cerrarVisor()">Cerrar</button></div>');
     return;
   }
-  frame.style.display = 'block';
   frame.src = data.signedUrl;
   if (link) link.href = data.signedUrl;
 }
@@ -1646,6 +1648,7 @@ function cerrarVisor() {
   var frame = document.getElementById('pdfFrame');
   modal.style.display = 'none';
   frame.src = '';
+  frame.style.display = 'block';
   var fallback = modal.querySelector('.pdf-fallback');
   if (fallback) fallback.remove();
 }
@@ -3326,9 +3329,14 @@ async function firmarDoc(docId, nombre, btn) {
     firmado: true,
     fecha_firma: new Date().toISOString(),
     leido: true
-  }).eq('id', docId);
+  }).eq('id', docId).select('id');
   if (res.error) {
     mostrarToast('❌ Error', res.error.message || 'No se pudo registrar la firma.');
+    if (btn) { btn.disabled = false; btn.innerHTML = t('doc.firmar'); }
+    return;
+  }
+  if (!res.data || !res.data.length) {
+    mostrarToast('❌ Sin permiso', 'No se pudo registrar la firma. Contacta con coordinación.');
     if (btn) { btn.disabled = false; btn.innerHTML = t('doc.firmar'); }
     return;
   }
