@@ -1726,6 +1726,17 @@ function _docStoragePath(url) {
   return m ? decodeURIComponent(m[1]) : url;
 }
 
+function _enrichDocsConEmpleados(docs) {
+  var map = {};
+  allEmpleados.forEach(function(e) { map[e.id] = { nombre: e.nombre, cargo: e.cargo }; });
+  return (docs || []).map(function(d) {
+    var copy = {};
+    Object.keys(d).forEach(function(k) { copy[k] = d[k]; });
+    copy.empleados = map[d.empleado_id] || null;
+    return copy;
+  });
+}
+
 /* Format a cuadrante fecha field into a readable "Mes YYYY" string.
    Falls back to extracting year/month from the document name. */
 function _formatFechaCuadrante(fecha, nombre) {
@@ -1754,7 +1765,15 @@ async function cargarDocumentos() {
   var query = sb.from('documentos').select('*').order('fecha', { ascending: false });
   if (currentEmpleado) query = query.eq('empleado_id', currentEmpleado.id);
   var { data, error } = await query;
-  if (error || !data) { allDocs = []; return; }
+  if (error || !data) {
+    allDocs = [];
+    var errMsg = error ? error.message : 'Sin datos';
+    var emptyHtml = '<div class="empty" style="border:none;padding:2rem">' + t('doc.empty') + '</div>';
+    if (error && docsEl) docsEl.innerHTML = '<div class="empty" style="border:none;padding:2rem;color:var(--red)">Error al cargar documentos</div>';
+    else if (docsEl) docsEl.innerHTML = emptyHtml;
+    if (recentEl) recentEl.innerHTML = emptyHtml;
+    return;
+  }
   allDocs = data;
 
   var unreadCount = data.filter(function(d){ return !d.leido; }).length;
@@ -3427,14 +3446,14 @@ async function cargarDashboard() {
     sb.from('empleados').select('*', { count:'exact', head:true }).eq('activo', true),
     sb.from('solicitudes').select('*', { count:'exact', head:true }).eq('estado', 'pendiente'),
     sb.from('vacaciones').select('*', { count:'exact', head:true }).eq('estado', 'pendiente'),
-    sb.from('documentos').select('firmado, empleados(nombre, cargo)').eq('tipo', 'cuadrante'),
+    sb.from('documentos').select('firmado, empleado_id').eq('tipo', 'cuadrante'),
     sb.from('solicitudes').select('*, empleados(nombre)').eq('estado', 'pendiente').order('created_at').limit(15)
   ]);
 
   var totalEmp  = empRes.count  || 0;
   var totalSol  = solRes.count  || 0;
   var totalVac  = vacRes.count  || 0;
-  var cuadrantes = cuadRes.data || [];
+  var cuadrantes = _enrichDocsConEmpleados(cuadRes.data || []);
   var firmados   = cuadrantes.filter(function(d){ return d.firmado; }).length;
   var sinFirmar  = cuadrantes.filter(function(d){ return !d.firmado; });
   var pct        = cuadrantes.length ? Math.round((firmados / cuadrantes.length) * 100) : 0;
@@ -4848,15 +4867,18 @@ async function cargarDocumentosAdmin() {
   if (!lista) return;
   lista.innerHTML = skelDocs(6);
 
+  if (!allEmpleados.length) await cargarEmpleados();
+
   var { data, error } = await sb.from('documentos')
-    .select('*, empleados(nombre, cargo)')
+    .select('*')
     .order('fecha', { ascending: false });
 
   if (error || !data) {
-    lista.innerHTML = '<div class="empty" style="border:none">Error al cargar documentos</div>';
+    lista.innerHTML = '<div class="empty" style="border:none">Error al cargar documentos' +
+      (error ? ': ' + error.message : '') + '</div>';
     return;
   }
-  allDocsAdmin = data;
+  allDocsAdmin = _enrichDocsConEmpleados(data);
 
   var countEl = document.getElementById('docsAdminCount');
   if (countEl) countEl.textContent = '· ' + data.length + ' documentos';
