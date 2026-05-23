@@ -1236,8 +1236,14 @@
         <div class="mobile-header-user" id="mobileUserName">Portal del empleado</div>
       </div>
     </div>
-    <button onclick="cambiarIdioma(_lang === 'es' ? 'ca' : 'es')" id="langToggleMobile" class="btn-logout-mobile" style="font-size:0.65rem;padding:0 0.625rem;min-width:36px">ES</button>
-    <button type="button" class="btn-logout-mobile" id="btnLogoutMobile" data-i18n="sidebar.salir">Salir</button>
+    <div style="display:flex;align-items:center;gap:0.5rem">
+      <button type="button" id="mobileAdminBtn" onclick="navigateToPage('admin')" class="admin-only" style="display:none;position:relative;background:none;border:none;padding:0.35rem 0.5rem;cursor:pointer;border-radius:6px" aria-label="Administración">
+        <svg fill="none" stroke="#8e92b0" stroke-width="2" viewBox="0 0 24 24" style="width:1.2rem;height:1.2rem;display:block"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <span id="adminBadgeHeader" style="display:none;position:absolute;top:-3px;right:-4px;background:#dc2626;color:#fff;font-size:0.48rem;font-weight:700;min-width:13px;height:13px;border-radius:100px;padding:0 2px;align-items:center;justify-content:center;line-height:1;box-shadow:0 0 0 2px #0f1117,0 0 6px rgba(220,38,38,0.6)"></span>
+      </button>
+      <button onclick="cambiarIdioma(_lang === 'es' ? 'ca' : 'es')" id="langToggleMobile" class="btn-logout-mobile" style="font-size:0.65rem;padding:0 0.625rem;min-width:36px">ES</button>
+      <button type="button" class="btn-logout-mobile" id="btnLogoutMobile" data-i18n="sidebar.salir">Salir</button>
+    </div>
   </header>
 
   <main class="main">

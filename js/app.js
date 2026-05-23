@@ -1200,10 +1200,12 @@ function animateValue(el, to, ms) {
 function actualizarBadgeAdmin(count) {
   var badge       = document.getElementById('adminBadge');
   var badgeMobile = document.getElementById('adminBadgeMobile');
+  var badgeHeader = document.getElementById('adminBadgeHeader');
   var label   = count > 99 ? '99+' : String(count);
   var mostrar = count > 0;
   if (badge)       { badge.textContent       = label; badge.style.display       = mostrar ? 'inline-flex' : 'none'; }
   if (badgeMobile) { badgeMobile.textContent = label; badgeMobile.style.display = mostrar ? 'flex'        : 'none'; }
+  if (badgeHeader) { badgeHeader.textContent = label; badgeHeader.style.display = mostrar ? 'inline-flex' : 'none'; }
 }
 
 async function cargarBadgeAdmin() {
