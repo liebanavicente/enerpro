@@ -5,6 +5,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 var currentUser = null;
+var _regCache = {};
 var currentEmpleado = null;
 var currentIsAdmin = false;
 var allDocs = [];
@@ -2322,8 +2323,9 @@ async function cargarSolicitudesRegistro() {
     var label = estadoLabel[r.estado] || r.estado;
     var acciones = '';
     if (r.estado === 'pendiente') {
-      acciones = '<button class="btn-sm primary" onclick="abrirAprobarRegistro(\'' + r.id + '\',\'' + _esc(r.nombre) + '\',\'' + _esc(r.email) + '\',\'' + _esc(r.dni) + '\',\'' + _esc(r.cargo) + '\')" style="margin-right:0.4rem" data-i18n="reg.aprobar">' + t('reg.aprobar') + '</button>' +
-        '<button class="btn-sm btn-danger" onclick="rechazarRegistro(\'' + r.id + '\',\'' + _esc(r.nombre) + '\')" data-i18n="reg.rechazar">' + t('reg.rechazar') + '</button>';
+      _regCache[r.id] = r;
+      acciones = '<button class="btn-sm primary" onclick="abrirAprobarRegistro(\'' + r.id + '\')" style="margin-right:0.4rem">' + t('reg.aprobar') + '</button>' +
+        '<button class="btn-sm btn-danger" onclick="rechazarRegistro(\'' + r.id + '\')">' + t('reg.rechazar') + '</button>';
     }
     html += '<tr>' +
       '<td style="color:var(--text);font-weight:500">' + _esc(r.nombre) + '</td>' +
@@ -2355,19 +2357,21 @@ function _actualizarBadgeRegistro(count) {
   }
 }
 
-function abrirAprobarRegistro(id, nombre, email, dni, cargo) {
-  document.getElementById('aprobarRegId').value    = id;
-  document.getElementById('aprobarRegEmail').value = email;
-  document.getElementById('aprobarRegNombre').value = nombre;
-  document.getElementById('aprobarRegDni').value   = dni;
-  document.getElementById('aprobarRegCargo').value = cargo;
-  document.getElementById('aprobarRegDias').value  = '22';
-  document.getElementById('aprobarRegOk').style.display   = 'none';
+function abrirAprobarRegistro(id) {
+  var r = _regCache[id];
+  if (!r) { showToast('Error: recarga la página e inténtalo de nuevo.', 'error'); return; }
+  document.getElementById('aprobarRegId').value     = r.id;
+  document.getElementById('aprobarRegEmail').value  = r.email;
+  document.getElementById('aprobarRegNombre').value = r.nombre;
+  document.getElementById('aprobarRegDni').value    = r.dni;
+  document.getElementById('aprobarRegCargo').value  = r.cargo;
+  document.getElementById('aprobarRegOk').style.display    = 'none';
   document.getElementById('aprobarRegError').style.display = 'none';
   document.getElementById('aprobarRegBtn').disabled = false;
+  document.getElementById('aprobarRegBtn').textContent = 'Aprobar y enviar acceso';
   document.getElementById('aprobarRegInfo').innerHTML =
-    '<strong>' + _esc(nombre) + '</strong> · ' + _esc(email) + '<br>' +
-    _esc(cargo) + ' · DNI: ' + _esc(dni);
+    '<strong>' + _esc(r.nombre) + '</strong> · ' + _esc(r.email) + '<br>' +
+    _esc(r.cargo) + ' · DNI: ' + _esc(r.dni);
   document.getElementById('aprobarRegModal').style.display = 'flex';
 }
 
@@ -2434,12 +2438,13 @@ async function confirmarAprobarRegistro() {
   }
 }
 
-async function rechazarRegistro(id, nombre) {
-  var nota = window.prompt('Motivo del rechazo (opcional, se guardará internamente):');
-  if (nota === null) return; // cancelled
+async function rechazarRegistro(id) {
+  var r = _regCache[id] || {};
+  var nota = window.prompt('Motivo del rechazo (opcional):');
+  if (nota === null) return;
   var { error } = await sb.from('solicitudes_registro').update({ estado: 'rechazada', nota: nota || null }).eq('id', id);
   if (error) { showToast('Error: ' + error.message, 'error'); return; }
-  showToast('Solicitud de ' + nombre + ' rechazada.', 'info');
+  showToast('Solicitud de ' + (r.nombre || id) + ' rechazada.', 'info');
   cargarSolicitudesRegistro();
   cargarBadgeAdmin();
 }
