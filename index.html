@@ -490,6 +490,11 @@
   .admin-tab.active { color: var(--text); border-bottom-color: var(--gold); }
   .admin-tab-content { display: none; }
   .admin-tab-content.active { display: block; }
+  .card-dash-action { cursor: pointer; transition: border-color 0.2s, transform 0.15s; }
+  .card-dash-action:hover { border-color: var(--gold-glow, rgba(212,175,55,0.35)); transform: translateY(-1px); }
+  .card-dash-action:active { transform: scale(0.99); }
+  .dash-nav-row { cursor: pointer; transition: background 0.15s; }
+  .dash-nav-row:hover { background: var(--surface2); }
 
   /* ─── BOTTOM NAV ─────────────────────────────────────── */
   .bottom-nav {
@@ -1525,17 +1530,17 @@
         <p data-i18n="adm.sub">Gestión de empleados y documentos</p>
       </div>
       <div class="admin-tabs">
-        <button class="admin-tab active" onclick="switchTab('dashboard', this)" data-i18n="tab.dashboard">📊 Dashboard</button>
-        <button class="admin-tab" onclick="switchTab('empleados', this)" data-i18n="tab.empleados">Empleados</button>
-        <button class="admin-tab" onclick="switchTab('subir', this)" data-i18n="tab.subir">Subir documento</button>
-        <button class="admin-tab" onclick="switchTab('masivo', this)" data-i18n="tab.masivo">Subida masiva ZIP</button>
-        <button class="admin-tab" onclick="switchTab('registro-admin', this)" data-i18n="tab.registro" id="tabBtnRegistro">Registro <span id="regPendBadge" style="display:none;background:var(--red);color:#fff;border-radius:100px;font-size:0.65rem;font-weight:700;padding:1px 6px;margin-left:4px;vertical-align:middle"></span></button>
-        <button class="admin-tab" onclick="switchTab('solicitudes-admin', this)" data-i18n="tab.solicitudes">Solicitudes</button>
-        <button class="admin-tab" onclick="switchTab('turnos-admin', this)" data-i18n="tab.turnos">Turnos</button>
-        <button class="admin-tab" onclick="switchTab('importar', this)" data-i18n="tab.importar">Importar Excel</button>
-        <button class="admin-tab" onclick="switchTab('vacaciones-admin', this)" data-i18n="tab.vacaciones">Vacaciones</button>
-        <button class="admin-tab" onclick="switchTab('resumen-vac', this)" data-i18n="tab.resumen">📋 Resumen vacacional</button>
-        <button class="admin-tab" onclick="switchTab('docs-admin', this)" data-i18n="tab.docs">📂 Documentos</button>
+        <button class="admin-tab active" data-tab="dashboard" onclick="switchTab('dashboard', this)" data-i18n="tab.dashboard">📊 Dashboard</button>
+        <button class="admin-tab" data-tab="empleados" onclick="switchTab('empleados', this)" data-i18n="tab.empleados">Empleados</button>
+        <button class="admin-tab" data-tab="subir" onclick="switchTab('subir', this)" data-i18n="tab.subir">Subir documento</button>
+        <button class="admin-tab" data-tab="masivo" onclick="switchTab('masivo', this)" data-i18n="tab.masivo">Subida masiva ZIP</button>
+        <button class="admin-tab" data-tab="registro-admin" onclick="switchTab('registro-admin', this)" data-i18n="tab.registro" id="tabBtnRegistro">Registro <span id="regPendBadge" style="display:none;background:var(--red);color:#fff;border-radius:100px;font-size:0.65rem;font-weight:700;padding:1px 6px;margin-left:4px;vertical-align:middle"></span></button>
+        <button class="admin-tab" data-tab="solicitudes-admin" onclick="switchTab('solicitudes-admin', this)" data-i18n="tab.solicitudes">Solicitudes</button>
+        <button class="admin-tab" data-tab="turnos-admin" onclick="switchTab('turnos-admin', this)" data-i18n="tab.turnos">Turnos</button>
+        <button class="admin-tab" data-tab="importar" onclick="switchTab('importar', this)" data-i18n="tab.importar">Importar Excel</button>
+        <button class="admin-tab" data-tab="vacaciones-admin" onclick="switchTab('vacaciones-admin', this)" data-i18n="tab.vacaciones">Vacaciones</button>
+        <button class="admin-tab" data-tab="resumen-vac" onclick="switchTab('resumen-vac', this)" data-i18n="tab.resumen">📋 Resumen vacacional</button>
+        <button class="admin-tab" data-tab="docs-admin" onclick="switchTab('docs-admin', this)" data-i18n="tab.docs">📂 Documentos</button>
       </div>
 
       <!-- TAB DASHBOARD -->
@@ -1545,15 +1550,19 @@
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;align-items:start">
           <div class="card" style="padding:0">
-            <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem">
               <span class="section-label" data-i18n="dash.sin_firmar">Sin firmar cuadrante</span>
-              <button class="btn-sm" onclick="cargarDashboard()" data-i18n="dash.actualizar">↺ Actualizar</button>
+              <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+                <button class="btn-sm" onclick="irAdminTab('docs-admin', { docsTipo: 'cuadrante', docsFirmado: 'false' })" data-i18n="dash.ver_docs">Ver documentos →</button>
+                <button class="btn-sm" onclick="cargarDashboard()" data-i18n="dash.actualizar">↺ Actualizar</button>
+              </div>
             </div>
             <div id="dashSinFirmar"><div class="loading" data-i18n="g.cargando">Cargando...</div></div>
           </div>
           <div class="card" style="padding:0">
-            <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border)">
+            <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem">
               <span class="section-label" data-i18n="dash.solicitudes">Solicitudes pendientes</span>
+              <button class="btn-sm" onclick="irAdminTab('solicitudes-admin', { filtro: 'pendiente' })" data-i18n="dash.ver_todas">Ver todas →</button>
             </div>
             <div id="dashSolicitudes"><div class="loading">Cargando...</div></div>
           </div>

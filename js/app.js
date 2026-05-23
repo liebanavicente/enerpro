@@ -314,6 +314,9 @@ var I18N = {
     'dash.todos_firm':   '✓ Todos han firmado su cuadrante',
     'dash.sin_sol':      '✓ Sin solicitudes pendientes',
     'dash.gestionar':    'Gestionar →',
+    'dash.ver_todas':    'Ver todas →',
+    'dash.ver_docs':     'Ver documentos →',
+    'dash.ir_empleados': 'Ver plantilla →',
     // Empleados admin
     'emp.titulo':        'Empleados registrados',
     'emp.exportar':      '⬇ Exportar Excel',
@@ -812,6 +815,9 @@ var I18N = {
     'dash.todos_firm':   '✓ Tots han signat el seu quadrant',
     'dash.sin_sol':      '✓ Sense sol·licituds pendents',
     'dash.gestionar':    'Gestionar →',
+    'dash.ver_todas':    'Veure totes →',
+    'dash.ver_docs':     'Veure documents →',
+    'dash.ir_empleados': 'Veure plantilla →',
     // Empleados admin
     'emp.titulo':        'Empleats registrats',
     'emp.exportar':      '⬇ Exportar Excel',
@@ -1645,6 +1651,7 @@ function navigateToPage(page) {
   if (page === 'solicitudes') cargarMisSolicitudes();
   if (page === 'documentos') actualizarBadgeDocumentos(0);
   if (page === 'perfil') cargarPerfil();
+  if (page === 'admin') switchTab(currentAdminTab, adminTabBtn(currentAdminTab));
 }
 
 document.querySelectorAll('.nav-item').forEach(function(btn){
@@ -2287,11 +2294,46 @@ async function confirmarSolicitud(id, estado) {
 }
 
 // TABS ADMIN
+function adminTabBtn(tab) {
+  var tabs = document.querySelector('#page-admin .admin-tabs');
+  if (!tabs) return null;
+  return tabs.querySelector('.admin-tab[data-tab="' + tab + '"]');
+}
+
+function irAdminTab(tab, opts) {
+  opts = opts || {};
+  if (tab === 'solicitudes-admin' && opts.filtro) {
+    var sf = document.getElementById('solAdminFiltro');
+    if (sf) sf.value = opts.filtro;
+  }
+  if (tab === 'vacaciones-admin' && opts.filtro) {
+    var vf = document.getElementById('vacAdminFiltro');
+    if (vf) vf.value = opts.filtro;
+  }
+  if (tab === 'docs-admin') {
+    if (opts.docsTipo) {
+      var dt = document.getElementById('docsAdminTipo');
+      if (dt) dt.value = opts.docsTipo;
+    }
+    if (opts.docsFirmado !== undefined) {
+      var df = document.getElementById('docsAdminFirmado');
+      if (df) df.value = opts.docsFirmado;
+    }
+    if (opts.docsEmp) {
+      var de = document.getElementById('docsAdminEmp');
+      if (de) de.value = opts.docsEmp;
+    }
+  }
+  currentAdminTab = tab;
+  navigateToPage('admin');
+}
+
 function switchTab(tab, el) {
   currentAdminTab = tab;
   document.querySelectorAll('.admin-tab').forEach(function(t){ t.classList.remove('active'); });
   document.querySelectorAll('.admin-tab-content').forEach(function(t){ t.style.display='none'; });
-  if (el) el.classList.add('active');
+  var btn = el || adminTabBtn(tab);
+  if (btn) btn.classList.add('active');
   var tabEl = document.getElementById('tab-' + tab);
   if (tabEl) tabEl.style.display = 'block';
   if (tab === 'dashboard') cargarDashboard();
@@ -3458,22 +3500,22 @@ async function cargarDashboard() {
 
   // Cards de stats
   statsEl.innerHTML =
-    '<div class="card card-accent" style="margin:0;animation:scaleIn 0.3s ease both;animation-delay:0ms">' +
+    '<div class="card card-accent card-dash-action" style="margin:0;animation:scaleIn 0.3s ease both;animation-delay:0ms" onclick="irAdminTab(\'empleados\')" role="button" tabindex="0">' +
       '<div class="card-label">' + t('dash.emp_activos') + '</div>' +
       '<div class="card-value" id="d-emp">0</div>' +
-      '<div class="card-sub">' + t('dash.plantilla') + '</div>' +
+      '<div class="card-sub">' + t('dash.ir_empleados') + '</div>' +
     '</div>' +
-    '<div class="card" style="margin:0;cursor:pointer;animation:scaleIn 0.3s ease both;animation-delay:60ms" onclick="switchTab(\'solicitudes-admin\', document.querySelector(\'[onclick*=\\\"solicitudes-admin\\\"]\'))">' +
+    '<div class="card card-dash-action" style="margin:0;animation:scaleIn 0.3s ease both;animation-delay:60ms" onclick="irAdminTab(\'solicitudes-admin\', { filtro: \'pendiente\' })" role="button" tabindex="0">' +
       '<div class="card-label">' + t('dash.sol_pend') + '</div>' +
       '<div class="card-value" id="d-sol" style="color:' + (totalSol > 0 ? 'var(--yellow)' : 'var(--green)') + '">0</div>' +
       '<div class="card-sub">' + t('dash.revision') + '</div>' +
     '</div>' +
-    '<div class="card" style="margin:0;cursor:pointer;animation:scaleIn 0.3s ease both;animation-delay:120ms" onclick="switchTab(\'vacaciones-admin\', document.querySelector(\'[onclick*=\\\"vacaciones-admin\\\"]\'))">' +
+    '<div class="card card-dash-action" style="margin:0;animation:scaleIn 0.3s ease both;animation-delay:120ms" onclick="irAdminTab(\'vacaciones-admin\', { filtro: \'pendiente\' })" role="button" tabindex="0">' +
       '<div class="card-label">' + t('dash.vac_pend') + '</div>' +
       '<div class="card-value" id="d-vac" style="color:' + (totalVac > 0 ? 'var(--yellow)' : 'var(--green)') + '">0</div>' +
       '<div class="card-sub">' + t('dash.revision') + '</div>' +
     '</div>' +
-    '<div class="card" style="margin:0;animation:scaleIn 0.3s ease both;animation-delay:180ms">' +
+    '<div class="card card-dash-action" style="margin:0;animation:scaleIn 0.3s ease both;animation-delay:180ms" onclick="irAdminTab(\'docs-admin\', { docsTipo: \'cuadrante\' })" role="button" tabindex="0">' +
       '<div class="card-label">' + t('dash.cuad_firm') + '</div>' +
       '<div class="card-value" style="color:var(--green)"><span id="d-firm">0</span><span style="font-size:1rem;color:var(--muted)"> / ' + cuadrantes.length + '</span></div>' +
       '<div class="card-sub" style="display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem">' +
@@ -3504,7 +3546,7 @@ async function cargarDashboard() {
       sinFirmarEl.innerHTML = sinFirmar.map(function(d) {
         var nombre = d.empleados ? d.empleados.nombre : '—';
         var cargo  = d.empleados ? d.empleados.cargo  : '';
-        return '<div class="doc-item" style="padding:0.75rem 1.25rem">' +
+        return '<div class="doc-item dash-nav-row" style="padding:0.75rem 1.25rem" onclick="irAdminTab(\'docs-admin\', { docsTipo: \'cuadrante\', docsFirmado: \'false\', docsEmp: \'' + d.empleado_id + '\' })" role="button" tabindex="0">' +
           '<div class="doc-info">' +
             '<div class="doc-icon" style="width:34px;height:34px;font-size:0.9rem">⏳</div>' +
             '<div><div class="doc-name" style="font-size:0.85rem">' + nombre + '</div>' +
@@ -3525,13 +3567,13 @@ async function cargarDashboard() {
       solicEl.innerHTML = sols.map(function(s) {
         var nombre = s.empleados ? s.empleados.nombre : '—';
         var fecha  = new Date(s.created_at).toLocaleDateString('es-ES', { day:'numeric', month:'short' });
-        return '<div class="doc-item" style="padding:0.75rem 1.25rem">' +
+        return '<div class="doc-item dash-nav-row" style="padding:0.75rem 1.25rem" onclick="irAdminTab(\'solicitudes-admin\', { filtro: \'pendiente\' })" role="button" tabindex="0">' +
           '<div class="doc-info">' +
             '<div class="doc-icon" style="width:34px;height:34px;font-size:0.9rem">📋</div>' +
             '<div><div class="doc-name" style="font-size:0.85rem">' + nombre + '</div>' +
             '<div class="doc-meta">' + s.tipo + ' · ' + fecha + '</div></div>' +
           '</div>' +
-          '<button class="btn-sm" onclick="switchTab(\'solicitudes-admin\',document.querySelector(\'[onclick*=\\\"solicitudes-admin\\\"]\'))">' + t('dash.gestionar') + '</button>' +
+          '<span class="btn-sm" style="pointer-events:none">' + t('dash.gestionar') + '</span>' +
         '</div>';
       }).join('');
     }
