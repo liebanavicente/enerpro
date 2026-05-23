@@ -343,9 +343,46 @@
       letter-spacing: 0.1em;
     }
     .hint { font-size: 0.68rem; color: var(--muted); }
+    .slide-dense h2 { margin-bottom: 0.65rem; font-size: clamp(1.65rem, 3.2vw, 2.35rem); }
+    .slide-dense .sub { margin-top: 0; margin-bottom: 0.65rem; font-size: 0.88rem; max-width: 52rem; }
+    .toc-cols {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;
+      max-width: 56rem; margin-top: 1rem;
+    }
+    .toc-block {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.15rem 1.25rem;
+    }
+    .toc-block h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 0.65rem;
+    }
+    .toc-block ul { list-style: none; }
+    .toc-block li {
+      font-size: 0.8rem; color: var(--text2);
+      padding: 0.3rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .toc-block li:last-child { border-bottom: none; }
+    .feat-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0.45rem 1.5rem; max-width: 56rem; margin-top: 0.5rem;
+    }
+    .feat-item {
+      font-size: 0.79rem; color: var(--text2); line-height: 1.45;
+      padding-left: 1rem; position: relative;
+    }
+    .feat-item::before {
+      content: '✓'; position: absolute; left: 0;
+      color: var(--gold); font-weight: 700; font-size: 0.72rem;
+    }
+    .feat-item strong { color: var(--text); font-weight: 600; }
     @media (max-width: 900px) {
       .slide { padding: 2rem 1.5rem 5rem; }
-      .grid-2, .grid-3, .grid-4, .compare { grid-template-columns: 1fr; }
+      .grid-2, .grid-3, .grid-4, .compare, .toc-cols, .feat-grid { grid-template-columns: 1fr; }
       .ui-body { grid-template-columns: 1fr; }
       .ui-sidebar { display: none; }
     }
@@ -395,93 +432,249 @@
     </div>
   </section>
 
-  <!-- 3 EMPLEADO -->
-  <section class="slide" data-slide="3">
-    <div class="eyebrow">Experiencia empleado</div>
-    <h2>Mi área personal</h2>
-    <div class="grid-4">
-      <div class="card card-accent">
-        <div class="card-label">Documentos</div>
-        <div class="card-title">Nóminas y cuadrantes</div>
-        <p>Ver PDF, descargar y firmar cuadrante con registro de fecha.</p>
+  <!-- 3 MAPA -->
+  <section class="slide slide-dense" data-slide="3">
+    <div class="eyebrow">Estructura</div>
+    <h2>Mapa funcional del portal</h2>
+    <p class="sub">Dos perfiles de acceso sobre la misma aplicación: empleado (plantilla) y coordinador (administración).</p>
+    <div class="toc-cols">
+      <div class="toc-block">
+        <h3>👤 Empleado</h3>
+        <ul>
+          <li>Inicio — resumen y accesos rápidos</li>
+          <li>Documentos — nóminas, cuadrantes, contratos</li>
+          <li>Solicitudes — permisos y consultas</li>
+          <li>Vacaciones — días, peticiones y estados</li>
+          <li>Turnos — calendario mensual + iCal</li>
+          <li>Mi perfil — datos personales y contraseña</li>
+        </ul>
       </div>
-      <div class="card">
+      <div class="toc-block">
+        <h3>⚙️ Coordinador</h3>
+        <ul>
+          <li>Dashboard — métricas y gráficas</li>
+          <li>Empleados — alta, edición, import/export</li>
+          <li>Documentos — subida individual y masiva ZIP</li>
+          <li>Solicitudes y vacaciones — aprobar / rechazar</li>
+          <li>Turnos — creación, Excel, cuadrante visual</li>
+          <li>Resumen vacacional — balance anual por empleado</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 ACCESO -->
+  <section class="slide slide-dense" data-slide="4">
+    <div class="eyebrow">Módulo · Acceso</div>
+    <h2>Autenticación y cuenta</h2>
+    <div class="feat-grid">
+      <div class="feat-item"><strong>Login corporativo</strong> — Email + contraseña vía Supabase Auth</div>
+      <div class="feat-item"><strong>Sesión persistente</strong> — Al recargar o reabrir la PWA sigues dentro</div>
+      <div class="feat-item"><strong>Recuperar contraseña</strong> — Enlace por email, flujo self-service</div>
+      <div class="feat-item"><strong>Cambio obligatorio</strong> — Primera entrada con contraseña temporal</div>
+      <div class="feat-item"><strong>Cambio desde perfil</strong> — El empleado actualiza su contraseña</div>
+      <div class="feat-item"><strong>Cuenta inactiva</strong> — Bloqueo automático si el empleado está de baja</div>
+      <div class="feat-item"><strong>Idioma ES / CA</strong> — Selector en login, sidebar y móvil</div>
+      <div class="feat-item"><strong>PWA instalable</strong> — Añadir a pantalla de inicio (Android / iOS)</div>
+    </div>
+  </section>
+
+  <!-- 5 INICIO -->
+  <section class="slide slide-dense" data-slide="5">
+    <div class="eyebrow">Módulo · Inicio</div>
+    <h2>Panel principal del empleado</h2>
+    <div class="feat-grid">
+      <div class="feat-item"><strong>Bienvenida personalizada</strong> — Nombre, cargo y mes actual</div>
+      <div class="feat-item"><strong>Stats documentos</strong> — Total disponibles y sin leer</div>
+      <div class="feat-item"><strong>Cuadrante destacado</strong> — Acceso directo al cuadrante del mes</div>
+      <div class="feat-item"><strong>Firma de cuadrante</strong> — Confirmación de lectura con fecha registrada</div>
+      <div class="feat-item"><strong>Últimos documentos</strong> — Vista rápida de lo más reciente</div>
+      <div class="feat-item"><strong>Notificación realtime</strong> — Aviso cuando suben un documento nuevo</div>
+    </div>
+  </section>
+
+  <!-- 6 DOCUMENTOS -->
+  <section class="slide slide-dense" data-slide="6">
+    <div class="eyebrow">Módulo · Documentos</div>
+    <h2>Mis documentos</h2>
+    <div class="feat-grid">
+      <div class="feat-item"><strong>Tipos</strong> — Nóminas, cuadrantes, contratos y otros</div>
+      <div class="feat-item"><strong>Filtros</strong> — Por tipo con un clic</div>
+      <div class="feat-item"><strong>Visor PDF integrado</strong> — Ver documento sin salir del portal</div>
+      <div class="feat-item"><strong>Descarga</strong> — Guardar copia local</div>
+      <div class="feat-item"><strong>Firma / confirmación</strong> — Cuadrantes con registro de fecha y hora</div>
+      <div class="feat-item"><strong>Estado leído</strong> — Control de documentos pendientes de revisar</div>
+      <div class="feat-item"><strong>Almacenamiento seguro</strong> — Supabase Storage por empleado</div>
+      <div class="feat-item"><strong>Badge contador</strong> — Indicador de documentos sin leer en navegación</div>
+    </div>
+  </section>
+
+  <!-- 7 VACACIONES + SOLICITUDES -->
+  <section class="slide slide-dense" data-slide="7">
+    <div class="eyebrow">Módulo · Vacaciones y solicitudes</div>
+    <h2>Gestión de permisos</h2>
+    <div class="grid-2" style="margin-top:0.5rem">
+      <div class="card card-accent" style="margin:0">
         <div class="card-label">Vacaciones</div>
-        <div class="card-title">Días y solicitudes</div>
-        <p>Contador anual, historial y petición de días libres.</p>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item"><strong>Contador anual</strong> — Días totales, usados y restantes</div>
+          <div class="feat-item"><strong>Tipos</strong> — Vacaciones, permiso, asuntos propios, baja médica</div>
+          <div class="feat-item"><strong>Solicitud online</strong> — Fechas, notas y cálculo automático de días</div>
+          <div class="feat-item"><strong>Validación</strong> — Sin solapamientos ni exceder días disponibles</div>
+          <div class="feat-item"><strong>Historial</strong> — Todas las peticiones con estado y comentario admin</div>
+          <div class="feat-item"><strong>Cancelar pendiente</strong> — El empleado puede anular antes de aprobar</div>
+        </div>
       </div>
-      <div class="card">
-        <div class="card-label">Turnos</div>
-        <div class="card-title">Calendario</div>
-        <p>Vista mensual de turnos asignados. Exportación iCal.</p>
-      </div>
-      <div class="card">
-        <div class="card-label">Perfil</div>
-        <div class="card-title">Cuenta propia</div>
-        <p>Datos personales, cambio de contraseña, idioma ES/CA.</p>
+      <div class="card" style="margin:0">
+        <div class="card-label">Solicitudes generales</div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item"><strong>Formulario</strong> — Tipo, fechas y descripción del motivo</div>
+          <div class="feat-item"><strong>Tipos</strong> — Cambio turno, permiso, consulta general…</div>
+          <div class="feat-item"><strong>Estados</strong> — Pendiente → aprobada / rechazada</div>
+          <div class="feat-item"><strong>Notificación</strong> — Toast + push al cambiar el estado</div>
+          <div class="feat-item"><strong>Historial propio</strong> — Listado con badges de color</div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- 4 ADMIN -->
-  <section class="slide" data-slide="4">
-    <div class="eyebrow">Experiencia coordinador</div>
-    <h2>Panel de administración</h2>
-    <div class="grid-3">
-      <div class="card card-accent">
+  <!-- 8 TURNOS + PERFIL -->
+  <section class="slide slide-dense" data-slide="8">
+    <div class="eyebrow">Módulo · Turnos y perfil</div>
+    <h2>Calendario y cuenta personal</h2>
+    <div class="grid-2" style="margin-top:0.5rem">
+      <div class="card card-accent" style="margin:0">
+        <div class="card-label">Mis turnos</div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item"><strong>Calendario mensual</strong> — Nav anterior / siguiente / hoy</div>
+          <div class="feat-item"><strong>Pills por turno</strong> — Mañana, tarde, noche, guardia, libre</div>
+          <div class="feat-item"><strong>Detalle del mes</strong> — Listado con fecha, horas y lugar</div>
+          <div class="feat-item"><strong>Exportar iCal</strong> — Sincronizar con calendario del móvil</div>
+        </div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-label">Mi perfil</div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item"><strong>Hero card</strong> — Avatar, nombre, cargo, email, estado activo</div>
+          <div class="feat-item"><strong>Datos personales</strong> — Nombre, DNI, email, cargo</div>
+          <div class="feat-item"><strong>Resumen vacaciones</strong> — Contador integrado en perfil</div>
+          <div class="feat-item"><strong>Cambiar contraseña</strong> — Modal desde la propia cuenta</div>
+          <div class="feat-item"><strong>Copiar email</strong> — Un clic con toast de confirmación</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 ADMIN DASHBOARD + EMPLEADOS -->
+  <section class="slide slide-dense" data-slide="9">
+    <div class="eyebrow">Admin · Dashboard y plantilla</div>
+    <h2>Vista global y empleados</h2>
+    <div class="grid-2" style="margin-top:0.5rem">
+      <div class="card card-accent" style="margin:0">
         <div class="card-label">Dashboard</div>
-        <div class="card-title">Vista global</div>
-        <p>Empleados activos, pendientes, cuadrantes sin firmar y gráficas.</p>
-      </div>
-      <div class="card">
-        <div class="card-label">Cuadrante</div>
-        <div class="card-title">Tabla empleado × día</div>
-        <p>Nav mes, filtro por cargo, tooltips, export CSV, avatares.</p>
-      </div>
-      <div class="card">
-        <div class="card-label">Operativa</div>
-        <div class="card-title">Gestión diaria</div>
-        <p>Empleados, subida masiva ZIP, turnos Excel, resumen vacacional.</p>
-      </div>
-    </div>
-    <ul class="clean" style="margin-top:1.25rem">
-      <li>Buscador en tiempo real + filtro de estado en solicitudes y vacaciones</li>
-      <li>Notificaciones realtime cuando entra una nueva petición</li>
-      <li>Export Excel de empleados, solicitudes y vacaciones</li>
-    </ul>
-  </section>
-
-  <!-- 5 UI MOCK -->
-  <section class="slide" data-slide="5">
-    <div class="eyebrow">Interfaz</div>
-    <h2>Diseño premium</h2>
-    <p class="sub">Tema claro con chrome oscuro — sidebar, header y bottom nav negros. Optimizado para móvil e instalable como PWA.</p>
-    <div class="ui-mock">
-      <div class="ui-bar">
-        <span class="ui-dot"></span><span class="ui-dot"></span><span class="ui-dot"></span>
-        <span style="font-size:0.7rem;color:var(--muted);margin-left:0.5rem">portal-enerpro.vercel.app</span>
-      </div>
-      <div class="ui-body">
-        <div class="ui-sidebar">
-          <div class="ui-nav active"></div>
-          <div class="ui-nav"></div>
-          <div class="ui-nav"></div>
-          <div class="ui-nav"></div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item"><strong>KPIs animados</strong> — Empleados, solicitudes, vacaciones, firmas</div>
+          <div class="feat-item"><strong>Gráfica solicitudes</strong> — Últimos 6 meses (canvas nativo)</div>
+          <div class="feat-item"><strong>Gráfica vacaciones</strong> — Días por empleado, año actual</div>
+          <div class="feat-item"><strong>Cuadrantes sin firmar</strong> — Listado de pendientes con acceso directo</div>
+          <div class="feat-item"><strong>Badge admin</strong> — Contador realtime de pendientes totales</div>
         </div>
-        <div class="ui-main">
-          <div class="ui-line w40" style="margin-bottom:12px"></div>
-          <div class="ui-cards">
-            <div class="ui-card"><div class="ui-line w60"></div><div class="ui-line w40"></div></div>
-            <div class="ui-card"><div class="ui-line w60"></div><div class="ui-line w40"></div></div>
-            <div class="ui-card"><div class="ui-line w60"></div><div class="ui-line w40"></div></div>
-          </div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-label">Empleados</div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item"><strong>Alta completa</strong> — Auth + ficha en BD con contraseña inicial</div>
+          <div class="feat-item"><strong>Edición</strong> — Datos, cargo, días vacaciones, activo/inactivo</div>
+          <div class="feat-item"><strong>Filtros</strong> — Por cargo: vigilantes, auxiliares, coordinadores…</div>
+          <div class="feat-item"><strong>Buscador</strong> — Nombre, email o DNI en tiempo real</div>
+          <div class="feat-item"><strong>Import Excel</strong> — Carga masiva con plantilla descargable</div>
+          <div class="feat-item"><strong>Export Excel</strong> — Listado completo de plantilla</div>
+          <div class="feat-item"><strong>Forzar cambio pass</strong> — Obligar reset en próximo acceso</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 6 STACK -->
-  <section class="slide" data-slide="6">
+  <!-- 10 ADMIN DOCS + APROBACIONES -->
+  <section class="slide slide-dense" data-slide="10">
+    <div class="eyebrow">Admin · Documentos y aprobaciones</div>
+    <h2>Contenido y revisiones</h2>
+    <div class="grid-2" style="margin-top:0.5rem">
+      <div class="card card-accent" style="margin:0">
+        <div class="card-label">Documentos</div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item"><strong>Subida individual</strong> — PDF por empleado y tipo</div>
+          <div class="feat-item"><strong>Subida masiva ZIP</strong> — Match automático por DNI en nombre archivo</div>
+          <div class="feat-item"><strong>Gestión central</strong> — Tab docs-admin con filtros y visor</div>
+          <div class="feat-item"><strong>Barra de progreso</strong> — Feedback en subidas masivas</div>
+        </div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-label">Solicitudes y vacaciones</div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item"><strong>Aprobar / rechazar</strong> — Con comentario opcional al empleado</div>
+          <div class="feat-item"><strong>Buscador realtime</strong> — Filtrar por nombre de empleado</div>
+          <div class="feat-item"><strong>Filtro por estado</strong> — Pendientes, aprobadas, rechazadas, todas</div>
+          <div class="feat-item"><strong>Export Excel</strong> — Solicitudes y vacaciones con todos los campos</div>
+          <div class="feat-item"><strong>Notificación empleado</strong> — Toast + push al resolver petición</div>
+          <div class="feat-item"><strong>Email scaffold</strong> — Edge Function preparada para avisos por correo</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 ADMIN TURNOS -->
+  <section class="slide slide-dense" data-slide="11">
+    <div class="eyebrow">Admin · Turnos y cuadrante</div>
+    <h2>Planificación del servicio</h2>
+    <div class="feat-grid">
+      <div class="feat-item"><strong>Crear turno</strong> — Empleado, fecha, tipo, horas y lugar</div>
+      <div class="feat-item"><strong>Asignación masiva</strong> — Por rango de fechas o varios empleados</div>
+      <div class="feat-item"><strong>Import Excel</strong> — Carga de turnos desde hoja de cálculo</div>
+      <div class="feat-item"><strong>Cuadrante visual</strong> — Tabla empleado × día del mes</div>
+      <div class="feat-item"><strong>Nav mes</strong> — Anterior / siguiente / hoy + filtro por cargo</div>
+      <div class="feat-item"><strong>Avatares</strong> — Iniciales con color por empleado, agrupados por cargo</div>
+      <div class="feat-item"><strong>Tooltips</strong> — Detalle al pasar sobre cada celda</div>
+      <div class="feat-item"><strong>Export CSV</strong> — Cuadrante del mes descargable</div>
+      <div class="feat-item"><strong>Resumen vacacional</strong> — Balance anual por empleado, filtro cargo, export</div>
+      <div class="feat-item"><strong>Columna «hoy»</strong> — Resaltada en el cuadrante del mes actual</div>
+    </div>
+  </section>
+
+  <!-- 12 UX TRANSVERSAL -->
+  <section class="slide slide-dense" data-slide="12">
+    <div class="eyebrow">Experiencia transversal</div>
+    <h2>UX, diseño y movilidad</h2>
+    <div class="grid-3" style="margin-top:0.5rem">
+      <div class="card card-accent" style="margin:0">
+        <div class="card-label">Diseño</div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item">Tema claro + chrome negro (sidebar, header, bottom nav)</div>
+          <div class="feat-item">Cards, badges, animaciones y skeleton loaders</div>
+          <div class="feat-item">Contraste WCAG revisado</div>
+        </div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-label">Móvil</div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item">Bottom navigation con 5–6 accesos</div>
+          <div class="feat-item">Header compacto con idioma ES/CA</div>
+          <div class="feat-item">Tablas responsive (cards en móvil)</div>
+        </div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-label">Tiempo real</div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item">Toasts in-app con estilo premium</div>
+          <div class="feat-item">Notificaciones del navegador (permiso)</div>
+          <div class="feat-item">Supabase Realtime en docs, solicitudes y vacaciones</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13 STACK -->
+  <section class="slide slide-dense" data-slide="13">
     <div class="eyebrow">Tecnología</div>
     <h2>Stack técnico</h2>
     <div class="grid-2">
@@ -489,33 +682,34 @@
         <div class="card-label">Frontend</div>
         <ul class="clean">
           <li>HTML + JavaScript vanilla (sin frameworks)</li>
-          <li>i18n ES / CA integrado</li>
-          <li>PWA instalable + service worker</li>
-          <li>Canvas nativo para gráficas dashboard</li>
+          <li>i18n ES / CA — claves en app.js</li>
+          <li>PWA + service worker (cache shell)</li>
+          <li>Gráficas dashboard con canvas nativo</li>
+          <li>JSZip + SheetJS para import/export</li>
         </ul>
       </div>
       <div class="card">
-        <div class="card-label">Backend</div>
+        <div class="card-label">Backend e infra</div>
         <ul class="clean">
-          <li>Supabase Auth + PostgreSQL</li>
-          <li>Storage para documentos PDF</li>
-          <li>Realtime para notificaciones</li>
+          <li>Supabase Auth, PostgreSQL, Storage, Realtime</li>
+          <li>Edge Function scaffold (notificar-email)</li>
           <li>Deploy automático GitHub → Vercel</li>
+          <li>Tablas: empleados, documentos, solicitudes, vacaciones, turnos</li>
         </ul>
       </div>
     </div>
   </section>
 
-  <!-- 7 ESTADO -->
-  <section class="slide" data-slide="7">
+  <!-- 14 ESTADO -->
+  <section class="slide slide-dense" data-slide="14">
     <div class="eyebrow">Estado del proyecto</div>
     <h2>¿Dónde está el portal?</h2>
-    <p class="sub" style="margin-top:0;margin-bottom:0.25rem;font-size:0.9rem">Avance del desarrollo del Portal del Empleado para ENERPRO.</p>
+    <p class="sub">Avance del Portal del Empleado desarrollado para ENERPRO.</p>
     <div class="grid-3">
       <div class="card card-light">
-        <div class="card-value">~65%</div>
+        <div class="card-value">~75%</div>
         <div class="card-label">Core funcional</div>
-        <p>Portal empleado + admin operativo en producción.</p>
+        <p>Empleado + admin operativos en producción.</p>
       </div>
       <div class="card card-light">
         <div class="card-value" style="color:var(--green)">Live</div>
@@ -528,15 +722,15 @@
         <p>Selector en login, sidebar y móvil.</p>
       </div>
     </div>
-    <ul class="clean" style="margin-top:1.25rem">
-      <li><span class="tag tag-ok">Hecho</span> PWA, recuperar contraseña, sesión persistente, cuadrante visual, dashboard</li>
-      <li><span class="tag tag-next">Próximo</span> Validación vacaciones, emails automáticos, RLS Supabase</li>
-      <li><span class="tag tag-fut">Futuro</span> Justificantes bajas, calendario equipo, auditoría firmas</li>
+    <ul class="clean" style="margin-top:1rem">
+      <li><span class="tag tag-ok">Hecho</span> PWA · sesión persistente · recuperar pass · validación vacaciones · cuadrante visual · dashboard · bloqueo inactivos</li>
+      <li><span class="tag tag-next">Próximo</span> Emails automáticos (Edge Function) · RLS Supabase · banner cuadrante sin firmar</li>
+      <li><span class="tag tag-fut">Futuro</span> Justificantes bajas · calendario equipo · auditoría firmas</li>
     </ul>
   </section>
 
-  <!-- 8 DEMO -->
-  <section class="slide" data-slide="8">
+  <!-- 15 DEMO -->
+  <section class="slide" data-slide="15">
     <div class="eyebrow">Demo en vivo</div>
     <h2>Pruébalo ahora</h2>
     <p class="sub">Escanea el QR o abre el portal. Instálalo en el móvil: Compartir → Añadir a pantalla de inicio.</p>
@@ -544,11 +738,11 @@
       <div class="qr-placeholder" id="qrCode">QR al portal<br><small>(sustituir URL Vercel)</small></div>
       <div style="font-size:0.85rem;color:var(--text2)" id="portalUrl">https://tu-dominio.vercel.app</div>
     </div>
-    <p class="hint" style="margin-top:1rem">Demo sugerida: Carlos (empleado) → documentos → vacaciones · Admin → aprobar → cuadrante</p>
+    <p class="hint" style="margin-top:1rem">Ruta demo: Carlos → documentos → vacaciones · Coordinador → badge pendientes → aprobar → cuadrante admin</p>
   </section>
 
-  <!-- 9 CIERRE -->
-  <section class="slide" data-slide="9">
+  <!-- 16 CIERRE -->
+  <section class="slide" data-slide="16">
     <div class="eyebrow">Gracias</div>
     <h1>Portal del <span>Empleado</span></h1>
     <p class="sub" style="font-size:1.2rem;margin-top:1.5rem">Proyecto web para <strong style="color:var(--text);font-weight:600">ENERPRO</strong> — empresa de seguridad privada y servicios auxiliares.</p>
@@ -560,8 +754,8 @@
 
 <div class="controls">
   <div class="controls-left">
-    <span class="progress" id="slideNum">1 / 9</span>
-    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:11%"></div></div>
+    <span class="progress" id="slideNum">1 / 16</span>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:6%"></div></div>
     <span class="hint">← → navegar · F pantalla completa</span>
   </div>
   <div style="display:flex;gap:0.5rem">
