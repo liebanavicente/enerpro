@@ -4179,7 +4179,6 @@ function _pdfBuscarEmpleado(nombrePDF, empleados) {
 async function parsearPDFCuadrante(arrayBuffer) {
   var pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-  // Collect all text items with x/y positions across all pages
   var allItems = [];
   for (var p = 1; p <= pdf.numPages; p++) {
     var page = await pdf.getPage(p);
@@ -4192,109 +4191,116 @@ async function parsearPDFCuadrante(arrayBuffer) {
 
   var rows = _pdfAgruparFilas(allItems);
   var nombre = null, mes = null, anio = null;
-  var diaHeaderRowIdx = -1, diaXMap = {};
 
-  rows.forEach(function(row, idx) {
+  rows.forEach(function(row) {
     var line = row.map(function(i) { return i.str; }).join(' ');
+    // "PERSONAL: 000836 - MARTINEZ, CARLOS"
+    var mP = line.match(/PERSONAL\s*:\s*\d+\s*[-–]\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑa-záéíóúñü ,]+)/);
+    if (mP && !nombre) nombre = mP[1].trim();
+    // Fallback: "000836 - GARCIA, LUIS"
+    if (!nombre) {
+      var mE = line.match(/\d{3,8}\s*[-–]\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑa-záéíóúñü ,]{3,})/);
+      if (mE) nombre = mE[1].trim();
+    }
+    var mM = line.match(/MES\s+SERVICIO\D{0,6}(\d{1,2})\D{1,40}(\d{4})/);
+    if (mM && !mes) { mes = parseInt(mM[1], 10); anio = parseInt(mM[2], 10); }
+  });
 
-    // "000836 - GARCIA BURGOS, LUIS JOSE"
-    var mEmp = line.match(/\d{3,8}\s*[-–]\s*([A-ZÁÉÍÓÚÑÜA-Za-záéíóúñü][A-ZÁÉÍÓÚÑÜA-Za-záéíóúñü ,]{3,})/);
-    if (mEmp && !nombre) nombre = mEmp[1].trim();
+  if (!nombre)       throw new Error('No se encontró el nombre del empleado en el PDF.');
+  if (!mes || !anio) throw new Error('No se encontró el mes/año en el PDF.');
 
-    // "MES SERVICIO: 01 (ENERO / 2026)"
-    var mMes = line.match(/MES\s+SERVICIO\D{0,6}(\d{1,2})\D{1,40}(\d{4})/);
-    if (mMes && !mes) { mes = parseInt(mMes[1], 10); anio = parseInt(mMes[2], 10); }
-
-    // Day-header row: ≥20 items whose text is a bare integer 1–31
-    if (diaHeaderRowIdx === -1) {
-      var nums = row.filter(function(item) {
-        var n = parseInt(item.str, 10);
-        return !isNaN(n) && n >= 1 && n <= 31 && String(n) === item.str.trim();
-      });
-      if (nums.length >= 20) {
-        diaHeaderRowIdx = idx;
-        nums.forEach(function(item) { diaXMap[parseInt(item.str, 10)] = item.x; });
-      }
+  // Find day header: row with the most items that are integers 1-31
+  // FIX: use regex instead of String(n)===str so "01"–"09" with leading zero are included
+  var diaXMap = {}, bestDiaCount = 0;
+  rows.forEach(function(row) {
+    var nums = row.filter(function(it) {
+      var n = parseInt(it.str.trim(), 10);
+      return /^\d{1,2}$/.test(it.str.trim()) && n >= 1 && n <= 31;
+    });
+    if (nums.length > bestDiaCount) {
+      bestDiaCount = nums.length;
+      diaXMap = {};
+      nums.forEach(function(it) { diaXMap[parseInt(it.str, 10)] = it.x; });
     }
   });
 
-  if (!nombre)              throw new Error('No se encontró el nombre del empleado en el PDF.');
-  if (!mes || !anio)        throw new Error('No se encontró el mes/año en el PDF.');
-  if (diaHeaderRowIdx < 0)  throw new Error('No se encontró la tabla de turnos (fila de días 1-31).');
+  if (bestDiaCount < 10) throw new Error('No se encontró la fila de días en el PDF (encontrados: ' + bestDiaCount + ').');
 
-  // Column snap tolerance = half the average inter-column gap
   var diasKeys = Object.keys(diaXMap).map(Number).sort(function(a, b) { return a - b; });
-  var colTol   = 10;
-  if (diasKeys.length >= 2) {
-    var span = diaXMap[diasKeys[diasKeys.length - 1]] - diaXMap[diasKeys[0]];
-    colTol   = Math.max(8, Math.ceil(span / (diasKeys.length - 1) / 2) + 2);
+  var minDiaX  = diaXMap[diasKeys[0]];
+  var span     = diasKeys.length >= 2
+    ? diaXMap[diasKeys[diasKeys.length - 1]] - minDiaX : 200;
+  var colTol   = Math.max(6, Math.ceil(span / Math.max(diasKeys.length - 1, 1) / 2) + 3);
+
+  // A "hora row" has all its data-area items as bare integers 0-23 (hour values)
+  function isHoraRow(row) {
+    var items = row.filter(function(it) { return it.x >= minDiaX - colTol; });
+    if (!items.length || items.length > 31) return false;
+    return items.every(function(it) {
+      var n = parseInt(it.str.trim(), 10);
+      return /^\d{1,2}$/.test(it.str.trim()) && n >= 0 && n <= 23;
+    });
   }
-  var minDiaX = diaXMap[diasKeys[0]];
 
-  var turnos = [];
-  var debugRows = []; // raw text of data rows for diagnostics
+  // Get service name: look backward from rowIdx for first non-address left-side text
+  function getServicio(ri) {
+    for (var k = ri - 1; k >= Math.max(0, ri - 10); k--) {
+      var left = rows[k].filter(function(it) { return it.x < minDiaX - colTol; });
+      if (!left.length) continue;
+      var text = left.map(function(it) { return it.str; }).join(' ').trim();
+      if (!text) continue;
+      if (/^C\/\.|^AVDA|^PL\.|^\(|^ENERPRO|NRO\.|TOTAL|PERSONAL|MES\s+SERV|FECHA|PAGINA|Orden|Atendiendo|obligaci/.test(text)) continue;
+      return text.replace(/^\d+\s+/, '').trim(); // strip leading "1 ", "2 "…
+    }
+    return null;
+  }
 
-  for (var i = diaHeaderRowIdx + 1; i < rows.length; i++) {
-    var row = rows[i];
-    if (!row.length) continue;
+  var turnos = [], debugRows = [];
 
-    var nameItems = row.filter(function(it) { return it.x < minDiaX - 5; });
-    var dataItems = row.filter(function(it) { return it.x >= minDiaX - 5; });
-    if (!dataItems.length) continue;
+  // Beta10 format: service rows appear BEFORE the day header.
+  // Each service has: [name row] [address row?] [start-times row] [end-times row]
+  // Scan ALL rows for consecutive isHoraRow pairs → start+end times for a service.
+  var i = 0;
+  while (i < rows.length) {
+    if (!isHoraRow(rows[i])) { i++; continue; }
 
-    var ubicacion = nameItems.map(function(it) { return it.str; }).join(' ').trim() || null;
+    var startRow = rows[i];
+    // Find next hora row (end times)
+    var j = i + 1;
+    while (j < rows.length && !isHoraRow(rows[j])) j++;
+    if (j >= rows.length) { i++; continue; }
 
-    // Collect raw strings for debug panel
-    if (debugRows.length < 6) {
-      debugRows.push((ubicacion ? '[' + ubicacion + '] ' : '') +
-        dataItems.map(function(it) { return '"' + it.str + '"'; }).join(' '));
+    var endRow   = rows[j];
+    var servicio = getServicio(i);
+
+    var sItems = startRow.filter(function(it) { return it.x >= minDiaX - colTol; });
+    var eItems = endRow.filter(function(it)   { return it.x >= minDiaX - colTol; });
+
+    if (debugRows.length < 8) {
+      debugRows.push((servicio ? '[' + servicio + '] ' : '[?] ') +
+        sItems.map(function(it) { return it.str; }).join(' ') +
+        ' → ' + eItems.map(function(it) { return it.str; }).join(' '));
     }
 
-    // Build cells: merge items within 10pt of each other (handles "07" + "/" + "19" splits)
-    var cells = [];
-    dataItems.forEach(function(it) {
-      if (cells.length && Math.abs(it.x - cells[cells.length - 1].x) < 10) {
-        cells[cells.length - 1].str += it.str;
-      } else {
-        cells.push({ str: it.str, x: it.x });
-      }
+    sItems.forEach(function(si) {
+      var dia = _pdfXADia(si.x, diaXMap, colTol);
+      if (!dia) return;
+      // Closest end item by X
+      var best = eItems.reduce(function(b, ei) {
+        return Math.abs(ei.x - si.x) < Math.abs(b.x - si.x) ? ei : b;
+      }, eItems[0]);
+      if (!best || Math.abs(best.x - si.x) > colTol * 2) return;
+
+      var hi  = ('0' + parseInt(si.str,   10)).slice(-2) + ':00';
+      var hf  = ('0' + parseInt(best.str, 10)).slice(-2) + ':00';
+      var mm2 = ('0' + mes).slice(-2);
+      var dd2 = ('0' + dia).slice(-2);
+      turnos.push({ fecha: anio + '-' + mm2 + '-' + dd2,
+                    hora_inicio: hi, hora_fin: hf,
+                    tipo: _pdfInferirTipo(hi), ubicacion: servicio });
     });
 
-    // Multi-fragment window scan: try 1, 2 or 3 consecutive cells combined
-    var ci = 0;
-    while (ci < cells.length) {
-      var matched = false;
-      for (var win = 3; win >= 1; win--) {
-        if (ci + win > cells.length) continue;
-        var combined = '';
-        for (var w = 0; w < win; w++) combined += cells[ci + w].str;
-        combined = combined.replace(/\s/g, '');
-
-        // Accept: "07/19"  "07:00/19:00"  "07-19"  "07 19" (any separator between two numbers)
-        var mTime = combined.match(/^(\d{1,2})(?::00)?[\/\-:](\d{1,2})(?::00)?$/) ||
-                    combined.match(/^(\d{2})(\d{2})$/);
-        if (mTime) {
-          var dia = _pdfXADia(cells[ci].x, diaXMap, colTol);
-          if (dia) {
-            var hi = ('0' + parseInt(mTime[1], 10)).slice(-2) + ':00';
-            var hf = ('0' + parseInt(mTime[2], 10)).slice(-2) + ':00';
-            var mm2 = ('0' + mes).slice(-2);
-            var dd2 = ('0' + dia).slice(-2);
-            turnos.push({
-              fecha:       anio + '-' + mm2 + '-' + dd2,
-              hora_inicio: hi,
-              hora_fin:    hf,
-              tipo:        _pdfInferirTipo(hi),
-              ubicacion:   ubicacion
-            });
-          }
-          ci += win;
-          matched = true;
-          break;
-        }
-      }
-      if (!matched) ci++;
-    }
+    i = j + 1; // skip past the end row
   }
 
   return { nombre: nombre, mes: mes, anio: anio, turnos: turnos, debugRows: debugRows };
