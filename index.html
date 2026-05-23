@@ -639,6 +639,34 @@
   .t-libre   { background:rgba(5,150,105,0.12);  color:#047857; }
   .t-turno   { background:rgba(180,130,0,0.14);  color:#92680a; }
 
+  /* Calendar cells — dark-mode rgba-white → light-mode aware */
+  .cal-mes                { color: var(--text); }
+  .cal-day                { background: var(--surface); }
+  .cal-day:hover          { background: var(--surface2); border-color: var(--border); }
+  .cal-day.has-shift      { background: var(--surface2); border-color: var(--border); }
+  .cal-day.other-m        { opacity: 0.25; }
+  .cal-resumen-item       { border-bottom-color: var(--border); }
+  .cal-resumen-item:hover { background: var(--surface2); }
+
+  /* Tables — dark-mode rgba-white → light-mode aware */
+  th                { border-bottom-color: var(--border); background: rgba(0,0,0,0.018); }
+  td                { border-bottom-color: var(--border); }
+  tr:hover td       { background: var(--surface2); }
+
+  /* File input for light bg */
+  input[type="file"]       { background: var(--surface); border-color: var(--border2); color: var(--text2); }
+  input[type="file"]:hover { background: var(--surface2); border-color: rgba(184,127,0,0.5); color: var(--text); }
+
+  /* Mobile tap feedback */
+  .doc-item:active { background: var(--surface2) !important; }
+  .vac-item:active { background: var(--surface2) !important; }
+
+  /* Text selection */
+  ::selection { background: rgba(184,127,0,0.18); color: var(--text); }
+
+  /* Admin tab active — gold accent */
+  .admin-tab.active { color: var(--gold-mid); }
+
   /* ─── CUADRANTE ADMIN ──────────────────────────────────── */
   .cua-table { border-collapse:collapse; width:100%; font-size:0.72rem; }
   .cua-table th, .cua-table td { border:1px solid var(--border); padding:0; text-align:center; white-space:nowrap; }
@@ -756,8 +784,10 @@
   /* ─── CUSTOM SCROLLBAR ────────────────────────────────── */
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(245,184,0,0.32); }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.13); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(184,127,0,0.4); }
+  .sidebar ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.09); }
+  .sidebar ::-webkit-scrollbar-thumb:hover { background: rgba(245,184,0,0.35); }
 
   /* ─── EMPTY STATE ─────────────────────────────────────── */
   .empty {
@@ -780,10 +810,10 @@
     .doc-item:active { background: rgba(255,255,255,0.04) !important; }
     .vac-item:active { background: rgba(255,255,255,0.03) !important; }
     .bottom-nav-item.active::before {
-      content: ''; position: absolute; top: 4px; left: 50%; transform: translateX(-50%);
-      width: 4px; height: 4px; border-radius: 50%; background: var(--gold);
-      box-shadow: 0 0 6px rgba(245,184,0,0.75);
-      animation: dotPulse 2s ease-in-out infinite;
+      content: ''; position: absolute; top: 3px; left: 50%; transform: translateX(-50%);
+      width: 24px; height: 2.5px; border-radius: 0 0 3px 3px; background: var(--gold);
+      box-shadow: 0 0 8px rgba(245,184,0,0.65);
+      animation: none;
     }
   }
 
