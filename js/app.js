@@ -18,6 +18,9 @@ var vacacionesChannel  = null;
 var adminSolicitudesChannel = null;
 var adminVacacionesChannel  = null;
 var calTurnos = [];
+var _idleLastActivity = 0;
+var _idleCheckInterval = null;
+var IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30 min sin actividad → cerrar sesión
 var _docBadgeCount = 0;
 var currentAdminTab = 'dashboard';
 var _solAdminData = [];
@@ -515,6 +518,8 @@ var I18N = {
     'toast.doc_elim_msg':'El documento ha sido eliminado correctamente.',
     'toast.pass_ok':     '🔑 Contraseña actualizada',
     'toast.pass_ok_msg': 'Tu contraseña ha sido cambiada correctamente.',
+    'session.idle_title': 'Sesión cerrada',
+    'session.idle_msg':   'Por inactividad. Vuelve a iniciar sesión.',
     'toast.sin_datos':   'ℹ️ Sin datos',
     'toast.no_emp':      'No hay empleados para exportar.',
     'toast.no_sol':      'No hay solicitudes para exportar.',
@@ -1011,6 +1016,8 @@ var I18N = {
     'toast.doc_elim_msg':'El document ha estat eliminat correctament.',
     'toast.pass_ok':     '🔑 Contrasenya actualitzada',
     'toast.pass_ok_msg': 'La teva contrasenya ha estat canviada correctament.',
+    'session.idle_title': 'Sessió tancada',
+    'session.idle_msg':   'Per inactivitat. Torna a iniciar sessió.',
     'toast.sin_datos':   'ℹ️ Sense dades',
     'toast.no_emp':      'No hi ha empleats per exportar.',
     'toast.no_sol':      'No hi ha sol·licituds per exportar.',
@@ -1584,6 +1591,7 @@ function iniciarApp() {
     suscribirVacacionesAdmin();
     cargarBadgeAdmin();
   }
+  _startIdleWatch();
 }
 
 async function confirmarCambioPassword() {
@@ -1644,7 +1652,45 @@ document.querySelectorAll('.nav-item').forEach(function(btn){
 });
 
 // LOGOUT
+function _resetIdleTimer() {
+  _idleLastActivity = Date.now();
+}
+
+function _onIdleVisibilityChange() {
+  if (!document.hidden) _checkIdleTimeout();
+}
+
+function _startIdleWatch() {
+  _stopIdleWatch();
+  _resetIdleTimer();
+  ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function(ev) {
+    document.addEventListener(ev, _resetIdleTimer, { passive: true });
+  });
+  document.addEventListener('visibilitychange', _onIdleVisibilityChange);
+  _idleCheckInterval = setInterval(_checkIdleTimeout, 60000);
+}
+
+function _stopIdleWatch() {
+  if (_idleCheckInterval) {
+    clearInterval(_idleCheckInterval);
+    _idleCheckInterval = null;
+  }
+  ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function(ev) {
+    document.removeEventListener(ev, _resetIdleTimer);
+  });
+  document.removeEventListener('visibilitychange', _onIdleVisibilityChange);
+}
+
+async function _checkIdleTimeout() {
+  if (!currentUser) return;
+  if (Date.now() - _idleLastActivity < IDLE_TIMEOUT_MS) return;
+  _stopIdleWatch();
+  mostrarToast(t('session.idle_title'), t('session.idle_msg'));
+  await doLogout();
+}
+
 async function doLogout() {
+  _stopIdleWatch();
   if (realtimeChannel)         { sb.removeChannel(realtimeChannel);         realtimeChannel         = null; }
   if (solicitudesChannel)      { sb.removeChannel(solicitudesChannel);      solicitudesChannel      = null; }
   if (vacacionesChannel)       { sb.removeChannel(vacacionesChannel);       vacacionesChannel       = null; }
@@ -2688,6 +2734,7 @@ async function subirMasivo() {
 // SESIÓN
 sb.auth.onAuthStateChange(function(event, session) {
   if (event === 'SIGNED_OUT') {
+    _stopIdleWatch();
     currentUser = null;
     currentEmpleado = null;
     currentIsAdmin = false;
