@@ -1944,13 +1944,29 @@ async function confirmarParseCuadrante() {
   btn.disabled = true; btn.textContent = 'Importando…';
 
   var empId = currentEmpleado.id;
+  var mes   = _cqParseDatos.mes;
+  var anio  = _cqParseDatos.anio;
+  var mm    = ('0' + mes).slice(-2);
+  var pri   = anio + '-' + mm + '-01';
+  var ult   = anio + '-' + mm + '-' + new Date(anio, mes, 0).getDate();
   var rows  = _cqParseDatos.turnos.map(function(tt) {
     return { empleado_id: empId, fecha: tt.fecha, hora_inicio: tt.hora_inicio,
              hora_fin: tt.hora_fin, tipo: tt.tipo, ubicacion: tt.ubicacion || null };
   });
 
-  // Upsert by empleado_id + fecha to avoid duplicates
-  var { error } = await sb.from('turnos').upsert(rows, { onConflict: 'empleado_id,fecha' });
+  var { error: delErr } = await sb.from('turnos').delete()
+    .eq('empleado_id', empId).gte('fecha', pri).lte('fecha', ult);
+  if (delErr) {
+    errEl.textContent = 'Error al limpiar turnos previos: ' + delErr.message;
+    errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = t('cq.importar'); return;
+  }
+
+  var error = null;
+  if (rows.length) {
+    var res = await sb.from('turnos').insert(rows);
+    error = res.error;
+  }
   btn.disabled = false; btn.textContent = t('cq.importar');
   if (error) { errEl.textContent = 'Error: ' + error.message; errEl.style.display = 'block'; return; }
 
