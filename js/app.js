@@ -2359,7 +2359,7 @@ function _actualizarBadgeRegistro(count) {
 
 function abrirAprobarRegistro(id) {
   var r = _regCache[id];
-  if (!r) { showToast('Error: recarga la página e inténtalo de nuevo.', 'error'); return; }
+  if (!r) { mostrarToast('Error', 'Recarga la página e inténtalo de nuevo.'); return; }
   document.getElementById('aprobarRegId').value     = r.id;
   document.getElementById('aprobarRegEmail').value  = r.email;
   document.getElementById('aprobarRegNombre').value = r.nombre;
@@ -2422,7 +2422,7 @@ async function confirmarAprobarRegistro() {
 
     okEl.textContent = '✓ Cuenta creada. Email de acceso enviado a ' + email;
     okEl.style.display = 'block';
-    showToast('✓ ' + nombre + ' — cuenta creada y email enviado', 'success');
+    mostrarToast('✓ Registro aprobado', nombre + ' — cuenta creada y email enviado');
     setTimeout(function() {
       cerrarAprobarRegModal();
       cargarSolicitudesRegistro();
@@ -2443,8 +2443,8 @@ async function rechazarRegistro(id) {
   var nota = window.prompt('Motivo del rechazo (opcional):');
   if (nota === null) return;
   var { error } = await sb.from('solicitudes_registro').update({ estado: 'rechazada', nota: nota || null }).eq('id', id);
-  if (error) { showToast('Error: ' + error.message, 'error'); return; }
-  showToast('Solicitud de ' + (r.nombre || id) + ' rechazada.', 'info');
+  if (error) { mostrarToast('Error', error.message); return; }
+  mostrarToast('Solicitud rechazada', (r.nombre || id));
   cargarSolicitudesRegistro();
   cargarBadgeAdmin();
 }
