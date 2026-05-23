@@ -997,8 +997,80 @@
     </ul>
   </section>
 
-  <!-- 15 DEMO -->
-  <section class="slide" data-slide="15">
+  <!-- 15 DE DEMO A PRODUCCIÓN — QUÉ SE NECESITA -->
+  <section class="slide slide-dense" data-slide="15">
+    <div class="eyebrow">Puesta en marcha</div>
+    <h2>De la demo a datos reales</h2>
+    <p class="sub" style="margin-top:0;margin-bottom:1rem;font-size:0.88rem">El portal está desplegado y funcional. Solo hace falta sustituir los datos de demo por los datos reales de ENERPRO.</p>
+    <div class="grid-2" style="margin-top:0">
+
+      <div class="card card-accent" style="margin:0">
+        <div class="card-label">Qué necesitamos de ENERPRO</div>
+        <ul class="clean" style="margin-top:0.5rem">
+          <li>Lista de empleados — nombre, email corporativo, DNI y cargo</li>
+          <li>Días de vacaciones anuales por empleado (suele ser 22–25)</li>
+          <li>PDFs de nóminas y cuadrantes actuales para subir</li>
+          <li>Decidir quién será el Coordinador (acceso admin)</li>
+          <li>Un email corporativo activo por empleado para el acceso</li>
+        </ul>
+      </div>
+
+      <div class="card" style="margin:0">
+        <div class="card-label">Qué ya está listo y no cambia</div>
+        <ul class="clean" style="margin-top:0.5rem">
+          <li>Infraestructura cloud — Supabase + Vercel operativos</li>
+          <li>Portal desplegado en producción con deploy automático</li>
+          <li>Importador Excel de empleados — una hoja, un clic</li>
+          <li>Subida masiva de PDFs — ZIP con match automático por DNI</li>
+          <li>Acceso móvil, bilingüe (ES/CA) y PWA instalable</li>
+          <li>Flujo de contraseñas — temporal en primer acceso, cambio self-service</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 16 PUESTA EN MARCHA — 4 PASOS -->
+  <section class="slide slide-dense" data-slide="16">
+    <div class="eyebrow">Puesta en marcha</div>
+    <h2>Activación en 4 pasos</h2>
+    <p class="sub" style="margin-top:0;margin-bottom:1rem;font-size:0.88rem">El coordinador lo gestiona todo desde el panel de administración. Tiempo estimado con una plantilla de 20–30 personas: <strong style="color:var(--gold)">menos de una hora</strong>.</p>
+
+    <div class="grid-4" style="margin-top:0">
+
+      <div class="card" style="margin:0;border-top:2px solid rgba(245,184,0,0.5);position:relative">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:800;color:rgba(245,184,0,0.18);line-height:1;margin-bottom:0.5rem">01</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.04em;margin-bottom:0.4rem;color:var(--text)">Preparar Excel</div>
+        <p>Rellenar la plantilla descargable del portal con nombre, email, DNI, cargo y días de vacaciones de cada empleado.</p>
+      </div>
+
+      <div class="card card-accent" style="margin:0">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:800;color:rgba(245,184,0,0.25);line-height:1;margin-bottom:0.5rem">02</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.04em;margin-bottom:0.4rem;color:var(--text)">Importar plantilla</div>
+        <p>Admin → Empleados → Importar Excel. El portal crea las cuentas con contraseña temporal y las fichas completas en BD.</p>
+      </div>
+
+      <div class="card" style="margin:0;border-top:2px solid rgba(245,184,0,0.5)">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:800;color:rgba(245,184,0,0.18);line-height:1;margin-bottom:0.5rem">03</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.04em;margin-bottom:0.4rem;color:var(--text)">Subir documentos</div>
+        <p>Agrupar PDFs en un ZIP nombrando cada archivo con el DNI del empleado. Un clic sube y asigna todos automáticamente.</p>
+      </div>
+
+      <div class="card" style="margin:0;border-top:2px solid rgba(245,184,0,0.5)">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:800;color:rgba(245,184,0,0.18);line-height:1;margin-bottom:0.5rem">04</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.04em;margin-bottom:0.4rem;color:var(--text)">Comunicar acceso</div>
+        <p>Enviar a cada empleado su email y la contraseña temporal. En el primer acceso el portal les pide que la cambien.</p>
+      </div>
+
+    </div>
+
+    <div style="margin-top:1rem;padding:0.75rem 1rem;background:rgba(245,184,0,0.07);border:1px solid rgba(245,184,0,0.18);border-radius:10px;max-width:56rem">
+      <span style="font-size:0.78rem;color:var(--text2)"><strong style="color:var(--gold)">Opcional</strong> — Los turnos se pueden cargar desde Excel o crear directamente en el panel. Los cuadrantes PDF también se pueden subir de golpe con el ZIP. El borrado de los empleados demo es un clic en Admin → Demo.</span>
+    </div>
+  </section>
+
+  <!-- 17 DEMO -->
+  <section class="slide" data-slide="17">
     <div class="eyebrow">Demo en vivo</div>
     <h2>Pruébalo ahora</h2>
     <p class="sub">Escanea el QR o abre el portal. Instálalo en el móvil: Compartir → Añadir a pantalla de inicio.</p>
@@ -1009,8 +1081,8 @@
     <p class="hint" style="margin-top:1rem">Ruta demo: Carlos → documentos → vacaciones · Coordinador → badge pendientes → aprobar → cuadrante admin</p>
   </section>
 
-  <!-- 16 CIERRE -->
-  <section class="slide" data-slide="16">
+  <!-- 18 CIERRE -->
+  <section class="slide" data-slide="18">
     <div class="eyebrow">Gracias</div>
     <h1>Portal del <span>Empleado</span></h1>
     <p class="sub" style="font-size:1.2rem;margin-top:1.5rem">Proyecto web para <strong style="color:var(--text);font-weight:600">ENERPRO</strong> — empresa de seguridad privada y servicios auxiliares.</p>
@@ -1022,8 +1094,8 @@
 
 <div class="controls">
   <div class="controls-left">
-    <span class="progress" id="slideNum">1 / 18</span>
-    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:5.5%"></div></div>
+    <span class="progress" id="slideNum">1 / 20</span>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:5%"></div></div>
     <span class="hint">← → navegar · F pantalla completa</span>
   </div>
   <div class="controls-nav">
