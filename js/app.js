@@ -1974,6 +1974,7 @@ async function confirmarParseCuadrante() {
   okEl.textContent = '✓ ' + _cqParseDatos.turnos.length + ' ' + t('cq.parse_ok');
   okEl.style.display = 'block';
   mostrarToast('✓ Turnos importados', _cqParseDatos.turnos.length + ' turnos para ' + _cqParseDatos.anio + '-' + ('0' + _cqParseDatos.mes).slice(-2));
+  if (document.getElementById('page-calendario')) cargarCalendario();
   setTimeout(cerrarCqParseModal, 2000);
 }
 
@@ -4434,16 +4435,18 @@ async function parsearPDFCuadrante(arrayBuffer) {
   if (!nombre)       throw new Error('No se encontró el nombre del empleado en el PDF.');
   if (!mes || !anio) throw new Error('No se encontró el mes/año en el PDF.');
 
-  // Find day header: row with the most items that are integers 1-31
-  // FIX: use regex instead of String(n)===str so "01"–"09" with leading zero are included
+  // Day header: row with many distinct day numbers (1–31), not repeated hour rows (07 07 07…)
   var diaXMap = {}, bestDiaCount = 0;
   rows.forEach(function(row) {
     var nums = row.filter(function(it) {
       var n = parseInt(it.str.trim(), 10);
       return /^\d{1,2}$/.test(it.str.trim()) && n >= 1 && n <= 31;
     });
-    if (nums.length > bestDiaCount) {
-      bestDiaCount = nums.length;
+    var unique = {};
+    nums.forEach(function(it) { unique[parseInt(it.str, 10)] = true; });
+    var uniqueCount = Object.keys(unique).length;
+    if (nums.length >= 20 && uniqueCount >= 20 && uniqueCount > bestDiaCount) {
+      bestDiaCount = uniqueCount;
       diaXMap = {};
       nums.forEach(function(it) { diaXMap[parseInt(it.str, 10)] = it.x; });
     }
@@ -4457,75 +4460,103 @@ async function parsearPDFCuadrante(arrayBuffer) {
     ? diaXMap[diasKeys[diasKeys.length - 1]] - minDiaX : 200;
   var colTol   = Math.max(6, Math.ceil(span / Math.max(diasKeys.length - 1, 1) / 2) + 3);
 
-  // A "hora row" has all its data-area items as bare integers 0-23 (hour values)
-  function isHoraRow(row) {
-    var items = row.filter(function(it) { return it.x >= minDiaX - colTol; });
-    if (!items.length || items.length > 31) return false;
-    return items.every(function(it) {
+  function horaItems(row) {
+    return row.filter(function(it) {
+      if (it.x < minDiaX - colTol) return false;
       var n = parseInt(it.str.trim(), 10);
       return /^\d{1,2}$/.test(it.str.trim()) && n >= 0 && n <= 23;
     });
   }
 
-  // Get service name: look backward from rowIdx for first non-address left-side text
+  function isHoraRow(row) {
+    var items = horaItems(row);
+    if (!items.length || items.length > 31) return false;
+    return items.length === row.filter(function(it) { return it.x >= minDiaX - colTol; }).length;
+  }
+
+  function isTwoRowFormat(startItems, endItems) {
+    if (!startItems.length || !endItems.length) return false;
+    var sAvg = startItems.reduce(function(a, it) { return a + parseInt(it.str, 10); }, 0) / startItems.length;
+    var eAvg = endItems.reduce(function(a, it) { return a + parseInt(it.str, 10); }, 0) / endItems.length;
+    return Math.abs(eAvg - sAvg) >= 2;
+  }
+
+  function isPairInRowFormat(items) {
+    if (items.length < 2 || items.length % 2 !== 0 || items.length > 12) return false;
+    var diff = 0, pairs = items.length / 2;
+    for (var k = 0; k + 1 < items.length; k += 2) {
+      if (parseInt(items[k].str, 10) !== parseInt(items[k + 1].str, 10)) diff++;
+    }
+    return diff >= Math.max(1, Math.ceil(pairs * 0.5));
+  }
+
   function getServicio(ri) {
-    for (var k = ri - 1; k >= Math.max(0, ri - 10); k--) {
+    for (var k = ri; k >= Math.max(0, ri - 10); k--) {
       var left = rows[k].filter(function(it) { return it.x < minDiaX - colTol; });
       if (!left.length) continue;
       var text = left.map(function(it) { return it.str; }).join(' ').trim();
       if (!text) continue;
-      if (/^C\/\.|^AVDA|^PL\.|^\(|^ENERPRO|NRO\.|TOTAL|PERSONAL|MES\s+SERV|FECHA|PAGINA|Orden|Atendiendo|obligaci/.test(text)) continue;
-      return text.replace(/^\d+\s+/, '').trim(); // strip leading "1 ", "2 "…
+      if (/^C\/\.|^AVDA|^PL\.|^\(\s*\)|^ENERPRO|NRO\.|TOTAL|PERSONAL|MES\s+SERV|FECHA|PAGINA|Orden|Atendiendo|obligaci/i.test(text)) continue;
+      text = text.replace(/^\d+\s+/, '').replace(/\s+\d{1,2}(\s+\d{1,2})+$/, '').trim();
+      if (text.length > 2) return text;
     }
     return null;
   }
 
+  function pushTurno(dia, hiStr, hfStr, servicio) {
+    if (!dia || hiStr === hfStr) return;
+    var hi = ('0' + parseInt(hiStr, 10)).slice(-2) + ':00';
+    var hf = ('0' + parseInt(hfStr, 10)).slice(-2) + ':00';
+    var mm2 = ('0' + mes).slice(-2);
+    var dd2 = ('0' + dia).slice(-2);
+    turnos.push({ fecha: anio + '-' + mm2 + '-' + dd2,
+                  hora_inicio: hi, hora_fin: hf,
+                  tipo: _pdfInferirTipo(hi), ubicacion: servicio });
+  }
+
   var turnos = [], debugRows = [];
 
-  // Beta10 format: service rows appear BEFORE the day header.
-  // Each service has: [name row] [address row?] [start-times row] [end-times row]
-  // Scan ALL rows for consecutive isHoraRow pairs → start+end times for a service.
   var i = 0;
   while (i < rows.length) {
     if (!isHoraRow(rows[i])) { i++; continue; }
 
-    var startRow = rows[i];
-    // Find next hora row (end times)
+    var sItems = horaItems(rows[i]);
+    var servicio = getServicio(i);
     var j = i + 1;
     while (j < rows.length && !isHoraRow(rows[j])) j++;
-    if (j >= rows.length) { i++; continue; }
 
-    var endRow   = rows[j];
-    var servicio = getServicio(i);
-
-    var sItems = startRow.filter(function(it) { return it.x >= minDiaX - colTol; });
-    var eItems = endRow.filter(function(it)   { return it.x >= minDiaX - colTol; });
-
-    if (debugRows.length < 8) {
-      debugRows.push((servicio ? '[' + servicio + '] ' : '[?] ') +
-        sItems.map(function(it) { return it.str; }).join(' ') +
-        ' → ' + eItems.map(function(it) { return it.str; }).join(' '));
+    if (j < rows.length && isTwoRowFormat(sItems, horaItems(rows[j]))) {
+      var eItems = horaItems(rows[j]);
+      if (debugRows.length < 8) {
+        debugRows.push((servicio ? '[' + servicio + '] ' : '[?] ') +
+          sItems.map(function(it) { return it.str; }).join(' ') +
+          ' → ' + eItems.map(function(it) { return it.str; }).join(' '));
+      }
+      sItems.forEach(function(si) {
+        var dia = _pdfXADia(si.x, diaXMap, colTol);
+        if (!dia) return;
+        var best = null, bestDist = Infinity;
+        eItems.forEach(function(ei) {
+          var d = Math.abs(ei.x - si.x);
+          if (d < bestDist) { bestDist = d; best = ei; }
+        });
+        if (!best || bestDist > colTol * 2) return;
+        pushTurno(dia, si.str, best.str, servicio);
+      });
+      i = j + 1;
+    } else if (isPairInRowFormat(sItems)) {
+      if (debugRows.length < 8) {
+        debugRows.push((servicio ? '[' + servicio + '] ' : '[?] ') +
+          'par ' + sItems.map(function(it) { return it.str; }).join('/'));
+      }
+      for (var k = 0; k + 1 < sItems.length; k += 2) {
+        var dia = _pdfXADia(sItems[k].x, diaXMap, colTol);
+        pushTurno(dia, sItems[k].str, sItems[k + 1].str, servicio);
+      }
+      i++;
+    } else {
+      i++;
     }
-
-    sItems.forEach(function(si) {
-      var dia = _pdfXADia(si.x, diaXMap, colTol);
-      if (!dia) return;
-      // Closest end item by X
-      var best = eItems.reduce(function(b, ei) {
-        return Math.abs(ei.x - si.x) < Math.abs(b.x - si.x) ? ei : b;
-      }, eItems[0]);
-      if (!best || Math.abs(best.x - si.x) > colTol * 2) return;
-
-      var hi  = ('0' + parseInt(si.str,   10)).slice(-2) + ':00';
-      var hf  = ('0' + parseInt(best.str, 10)).slice(-2) + ':00';
-      var mm2 = ('0' + mes).slice(-2);
-      var dd2 = ('0' + dia).slice(-2);
-      turnos.push({ fecha: anio + '-' + mm2 + '-' + dd2,
-                    hora_inicio: hi, hora_fin: hf,
-                    tipo: _pdfInferirTipo(hi), ubicacion: servicio });
-    });
-
-    i = j + 1; // skip past the end row
   }
 
   return { nombre: nombre, mes: mes, anio: anio, turnos: turnos, debugRows: debugRows };
