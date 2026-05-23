@@ -2580,12 +2580,12 @@ function dibujarBarChart(canvasId, labels, values, color, maxVal) {
   var gap     = chartW / n;
 
   // Horizontal guide lines (3)
-  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.strokeStyle = 'rgba(0,0,0,0.07)';
   ctx.lineWidth   = 1;
   [0.25, 0.5, 0.75, 1].forEach(function(pct) {
     var y = padTop + chartH - chartH * pct;
     ctx.beginPath(); ctx.moveTo(padLeft, y); ctx.lineTo(W - padRight, y); ctx.stroke();
-    ctx.fillStyle = 'rgba(255,255,255,0.22)';
+    ctx.fillStyle = 'rgba(0,0,0,0.38)';
     ctx.font = '10px system-ui,sans-serif';
     ctx.textAlign = 'right';
     ctx.fillText(Math.round(mx * pct), padLeft - 4, y + 3.5);
@@ -2608,14 +2608,14 @@ function dibujarBarChart(canvasId, labels, values, color, maxVal) {
 
     // Value label on top
     if (val > 0) {
-      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
       ctx.font = 'bold 10px system-ui,sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(val, bx + barW / 2, by - 3);
     }
 
     // X label
-    ctx.fillStyle = 'rgba(255,255,255,0.38)';
+    ctx.fillStyle = 'rgba(0,0,0,0.38)';
     ctx.font = '10px system-ui,sans-serif';
     ctx.textAlign = 'center';
     var lbl = labels[i] || '';
@@ -2896,7 +2896,7 @@ function renderCuadranteAdmin() {
         tbody += '<td class="' + (esHoy2 ? 'cua-hoy-col' : '') + '" title="' + tooltip.replace(/"/g, '&quot;') + '">' +
           '<div class="cua-cell"><span class="cua-pill t-' + info.tipo + '">' + (abrev[info.tipo] || info.tipo.charAt(0).toUpperCase()) + '</span></div></td>';
       } else {
-        tbody += '<td class="' + (esHoy2 ? 'cua-hoy-col' : '') + '" style="color:rgba(255,255,255,0.08)">·</td>';
+        tbody += '<td class="' + (esHoy2 ? 'cua-hoy-col' : '') + '" style="color:var(--border2)">·</td>';
       }
     }
     tbody += '</tr>';
