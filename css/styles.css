@@ -306,7 +306,7 @@
       .doc-info { align-items:flex-start; gap:0.75rem; min-width:0; }
       .doc-name { font-size:0.95rem; line-height:1.35; word-break:break-word; }
       .doc-meta { font-size:0.78rem; line-height:1.35; }
-      .doc-item > div:last-child { display:grid; grid-template-columns:1fr; gap:0.5rem; width:100%; }
+      .doc-item > div:last-child:not(.doc-card-foot) { display:grid; grid-template-columns:1fr; gap:0.5rem; width:100%; }
       .btn-sm, .btn-primary, button[type="submit"] {
         min-height:48px !important;
         width:100%;

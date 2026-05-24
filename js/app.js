@@ -131,8 +131,10 @@ var I18N = {
     'ini.empleado':      'empleado',
     'ini.stat_docs':     'Documentos disponibles',
     'ini.stat_docs_sub': 'Nóminas y cuadrantes',
+    'ini.stat_docs_go':  'Ver documentos →',
     'ini.stat_unread':   'Sin leer',
     'ini.stat_unread_sub':'Documentos nuevos',
+    'ini.stat_unread_go':'Ver sin leer →',
     'ini.stat_estado':   'Estado',
     'ini.stat_estado_sub':'Servicio en curso',
     'ini.stat_vac':      'Vacaciones',
@@ -633,8 +635,10 @@ var I18N = {
     'ini.empleado':      'empleat',
     'ini.stat_docs':     'Documents disponibles',
     'ini.stat_docs_sub': 'Nòmines i quadrants',
+    'ini.stat_docs_go':  'Veure documents →',
     'ini.stat_unread':   'Sense llegir',
     'ini.stat_unread_sub':'Documents nous',
+    'ini.stat_unread_go':'Veure sense llegir →',
     'ini.stat_estado':   'Estat',
     'ini.stat_estado_sub':'Servei en curs',
     'ini.stat_vac':      'Vacances',
@@ -2015,67 +2019,49 @@ function renderDocs(docs, containerId, limit) {
     container.innerHTML = emptyState('<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>', t('doc.empty'), t('doc.empty_sub'));
     return;
   }
-  // For dashboard preview (limit=3): keep compact card rows
-  if (limit) {
-    container.innerHTML = list.map(function(doc) {
-      var ic = _DOC_IC[doc.tipo] || { bg:'var(--surface2)', color:'var(--text2)' };
-      var safeName = doc.nombre.replace(/'/g, "\\'");
-      var safeUrl  = doc.url.replace(/'/g, "\\'");
-      var unread = doc.leido ? '' : '<span class="dt-badge-new">' + t('doc.nuevo') + '</span>';
-      return '<div class="doc-item">' +
-        '<div class="doc-info"><div class="doc-icon" style="background:' + ic.bg + ';color:' + ic.color + '">' + docIconSVG(doc.tipo) + '</div>' +
-        '<div><div class="doc-name">' + doc.nombre + unread + '</div>' +
-        '<div class="doc-meta">' + (doc.fecha||'') + ' · ' + doc.tipo + '</div></div></div>' +
-        '<button class="btn-sm primary" onclick="verDoc(\'' + safeUrl + '\', \'' + safeName + '\')">' + t('doc.ver') + '</button>' +
-        '</div>';
-    }).join('');
-    return;
-  }
-  // Full doc list: proper table
-  var tipos = { nomina: t('doc.nominas'), cuadrante: t('doc.cuadrantes'), contrato: t('doc.contratos') };
-  var rows = list.map(function(doc, i) {
-    var ic = _DOC_IC[doc.tipo] || { bg:'var(--surface2)', color:'var(--text2)' };
-    var safeName = doc.nombre.replace(/'/g, "\\'");
-    var safeUrl  = doc.url.replace(/'/g, "\\'");
-    var unread   = doc.leido ? '' : '<span class="dt-badge-new">' + t('doc.nuevo') + '</span>';
-    var estadoCell = doc.firmado
-      ? '<span class="dt-badge-ok"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:0.75rem;height:0.75rem"><polyline points="20 6 9 17 4 12"/></svg>' + t('doc.firmado') + '</span>'
-      : '<span class="dt-badge-pend">' + t('doc.firmar') + '</span>';
-    var actions =
-      '<button class="dt-btn" onclick="verDoc(\'' + safeUrl + '\', \'' + safeName + '\')" title="' + t('doc.ver') + '">' +
-        '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:0.85rem;height:0.85rem"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' +
-      '</button>' +
-      '<button class="dt-btn" onclick="descargarDoc(\'' + doc.id + '\', \'' + safeUrl + '\', \'' + safeName + '\')" title="' + t('doc.descargar') + '">' +
-        '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:0.85rem;height:0.85rem"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
-      '</button>' +
-      (!doc.firmado ? '<button class="dt-btn dt-btn-sign" onclick="firmarDoc(\'' + doc.id + '\', \'' + safeName + '\', this)" title="' + t('doc.firmar') + '">' +
-        '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:0.85rem;height:0.85rem"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>' +
-      '</button>' : '') +
-      (currentIsAdmin ? '<button class="dt-btn dt-btn-del" onclick="eliminarDoc(\'' + doc.id + '\', \'' + safeUrl + '\')" title="Eliminar">' +
-        '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:0.85rem;height:0.85rem"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>' +
-      '</button>' : '');
-    var fechaLabel = doc.tipo === 'cuadrante'
-      ? _formatFechaCuadrante(doc.fecha, doc.nombre)
-      : (doc.fecha || '—');
-    return '<tr style="animation:fadeIn 0.22s ease both;animation-delay:' + (i * 30) + 'ms">' +
-      '<td class="dt-tipo-cell"><div class="doc-icon" style="background:' + ic.bg + ';color:' + ic.color + '">' + docIconSVG(doc.tipo) + '</div></td>' +
-      '<td><span class="dt-nombre">' + doc.nombre + '</span>' + unread + '</td>' +
-      '<td class="dt-fecha">' + fechaLabel + '</td>' +
-      '<td>' + estadoCell + '</td>' +
-      '<td class="dt-actions">' + actions + '</td>' +
-      '</tr>';
+  container.innerHTML = list.map(function(doc, i) {
+    return _renderDocCardHtml(doc, { compact: !!limit, delay: i * 30 });
   }).join('');
-  container.innerHTML =
-    '<table class="doc-table">' +
-      '<thead><tr>' +
-        '<th style="width:3rem"></th>' +
-        '<th>' + t('doc.col_nombre') + '</th>' +
-        '<th>' + t('doc.col_fecha') + '</th>' +
-        '<th>' + t('doc.col_estado') + '</th>' +
-        '<th style="text-align:right">' + t('doc.col_acc') + '</th>' +
-      '</tr></thead>' +
-      '<tbody>' + rows + '</tbody>' +
-    '</table>';
+}
+
+function _renderDocCardHtml(doc, opts) {
+  opts = opts || {};
+  var ic = _DOC_IC[doc.tipo] || { bg:'var(--surface2)', color:'var(--text2)' };
+  var safeName = doc.nombre.replace(/'/g, "\\'");
+  var safeUrl  = doc.url.replace(/'/g, "\\'");
+  var unread   = doc.leido ? '' : '<span class="dt-badge-new">' + t('doc.nuevo') + '</span>';
+  var fechaLabel = doc.tipo === 'cuadrante'
+    ? _formatFechaCuadrante(doc.fecha, doc.nombre)
+    : (doc.fecha || '—');
+  var tipoLabel = { nomina: t('doc.nominas'), cuadrante: t('doc.cuadrantes'), contrato: t('doc.contratos') }[doc.tipo] || doc.tipo;
+  var delay = opts.delay || 0;
+  var verBtn = '<button class="btn-sm primary" onclick="verDoc(\'' + safeUrl + '\', \'' + safeName + '\')">' + t('doc.ver') + '</button>';
+  var dlBtn  = '<button class="btn-sm" onclick="descargarDoc(\'' + doc.id + '\', \'' + safeUrl + '\', \'' + safeName + '\')">' + t('doc.descargar') + '</button>';
+  var signBtn = !doc.firmado
+    ? '<button class="btn-sm gold" onclick="firmarDoc(\'' + doc.id + '\', \'' + safeName + '\', this)">' + t('doc.confirmar') + '</button>'
+    : '';
+  var delBtn = currentIsAdmin
+    ? '<button class="btn-sm btn-danger" onclick="eliminarDoc(\'' + doc.id + '\', \'' + safeUrl + '\')">' + t('cq.eliminar') + '</button>'
+    : '';
+  var estadoBadge = doc.firmado
+    ? '<span class="dt-badge-ok"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:0.75rem;height:0.75rem"><polyline points="20 6 9 17 4 12"/></svg>' + t('doc.firmado') + '</span>'
+    : '<span class="dt-badge-pend">' + t('doc.firmar') + '</span>';
+  var actions = opts.compact
+    ? verBtn
+    : verBtn + dlBtn + signBtn + delBtn;
+  var foot = opts.compact
+    ? actions
+    : '<div class="doc-card-foot">' + estadoBadge + '<div class="doc-card-actions">' + actions + '</div></div>';
+  return '<div class="doc-item doc-card-full' + (opts.compact ? '' : ' doc-card-full--expanded') + '" style="animation:fadeIn 0.22s ease both;animation-delay:' + delay + 'ms">' +
+    '<div class="doc-info">' +
+      '<div class="doc-icon" style="background:' + ic.bg + ';color:' + ic.color + '">' + docIconSVG(doc.tipo) + '</div>' +
+      '<div class="doc-card-body">' +
+        '<div class="doc-name">' + doc.nombre + unread + '</div>' +
+        '<div class="doc-meta">' + fechaLabel + ' · ' + tipoLabel + '</div>' +
+      '</div>' +
+    '</div>' +
+    foot +
+  '</div>';
 }
 
 function filterDocs(tipo) {
