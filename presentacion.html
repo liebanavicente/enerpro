@@ -675,7 +675,7 @@
     </div>
     <div class="eyebrow">Proyecto web</div>
     <h1>Portal del <span>Empleado</span></h1>
-    <p class="sub">Aplicación desarrollada para la plantilla de ENERPRO. Nóminas, cuadrantes PDF, turnos, vacaciones y solicitudes — optimizada para móvil, bilingüe ES/CA, con autoregistro y parser de cuadrantes.</p>
+    <p class="sub">Aplicación desarrollada para la plantilla de ENERPRO. Nóminas, cuadrantes PDF con reemplazo mensual e import al calendario, vacaciones y solicitudes — optimizada para móvil, bilingüe ES/CA, con autoregistro y parser Beta10.</p>
   </section>
 
   <!-- 2 PROBLEMA -->
@@ -718,7 +718,7 @@
           <li>Documentos — nóminas, cuadrantes, contratos</li>
           <li>Solicitudes — permisos y consultas</li>
           <li>Vacaciones — días, peticiones y estados</li>
-          <li>Turnos — cuadrantes PDF, parser automático y calendario</li>
+          <li>Turnos — subir cuadrante, reemplazo automático del mes e import al calendario</li>
           <li>Mi perfil — datos personales y contraseña</li>
           <li>Autoregistro — solicitar acceso desde registro.html</li>
         </ul>
@@ -728,7 +728,7 @@
         <ul>
           <li>Dashboard — métricas y gráficas</li>
           <li>Empleados — alta, edición, import/export</li>
-          <li>Documentos — subida individual y masiva ZIP</li>
+          <li>Documentos — subida individual (cuadrante reemplaza mes + import turnos)</li>
           <li>Solicitudes y vacaciones — aprobar / rechazar</li>
           <li>Turnos — creación, Excel, cuadrante visual</li>
           <li>Registro — aprobar altas solicitadas por empleados</li>
@@ -761,7 +761,7 @@
         </div>
         <div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Mis turnos</div>
-          <p>Lista de cuadrantes PDF del mes: sube el tuyo, visualiza, descarga, firma y parsea turnos al calendario. Vista calendario + iCal en un clic.</p>
+          <p>Lista de cuadrantes PDF: sube el tuyo y el portal <strong>reemplaza el del mismo mes</strong>, importa turnos al calendario al vuelo y deja «Ver turnos» para reimportar manualmente. Vista calendario + iCal en un clic.</p>
         </div>
       </div>
 
@@ -791,7 +791,7 @@
         </div>
         <div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Cuadrantes PDF</div>
-          <p>Sube tu cuadrante mensual, reconoce turnos automáticamente (parser Beta10) y confirma lectura con firma registrada.</p>
+          <p>Sube tu cuadrante mensual: si ya había uno de ese mes, se sustituye. Parser Beta10 importa turnos al calendario automáticamente y puedes confirmar lectura con firma.</p>
         </div>
       </div>
 
@@ -831,7 +831,7 @@
         </div>
         <div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Documentos</div>
-          <p>Sube nóminas y cuadrantes uno a uno o en lote (ZIP con match automático por DNI del archivo).</p>
+          <p>Sube nóminas y cuadrantes uno a uno o en lote (ZIP con match automático por DNI). Un cuadrante PDF nuevo del mismo mes reemplaza al anterior e importa turnos.</p>
         </div>
       </div>
 
@@ -1011,8 +1011,10 @@
         <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
           <div class="feat-item"><strong>Vista principal</strong> — Lista de cuadrantes PDF del mes</div>
           <div class="feat-item"><strong>Subir cuadrante</strong> — El empleado sube su PDF mensual</div>
-          <div class="feat-item"><strong>Parser Beta10</strong> — Reconoce turnos y los importa al calendario</div>
-          <div class="feat-item"><strong>Acciones</strong> — Ver, descargar, firmar, parsear y eliminar</div>
+          <div class="feat-item"><strong>Reemplazo por mes</strong> — Un cuadrante nuevo del mismo mes sustituye al anterior (sin duplicados)</div>
+          <div class="feat-item"><strong>Import automático</strong> — Al subir, parser Beta10 → calendario sin paso extra</div>
+          <div class="feat-item"><strong>Parser manual</strong> — «Ver turnos» para revisar preview e importar de nuevo si hace falta</div>
+          <div class="feat-item"><strong>Acciones</strong> — Ver, descargar, firmar y eliminar</div>
           <div class="feat-item"><strong>Calendario secundario</strong> — Desplegable «Ver en calendario» + iCal</div>
           <div class="feat-item"><strong>Pills por turno</strong> — Mañana, tarde, noche, guardia, libre</div>
         </div>
@@ -1097,7 +1099,8 @@
       <div class="feat-item"><strong>Crear turno</strong> — Empleado, fecha, tipo, horas y lugar</div>
       <div class="feat-item"><strong>Asignación masiva</strong> — Por rango de fechas o varios empleados</div>
       <div class="feat-item"><strong>Import Excel</strong> — Carga de turnos desde hoja de cálculo</div>
-      <div class="feat-item"><strong>Importar PDF Beta10</strong> — Parser de cuadrantes reales → turnos en BD</div>
+      <div class="feat-item"><strong>Subir cuadrante (admin)</strong> — PDF por empleado: reemplaza mes e importa turnos al calendario</div>
+      <div class="feat-item"><strong>Importar PDF Beta10</strong> — Parser de cuadrantes reales → turnos en BD (reemplaza mes)</div>
       <div class="feat-item"><strong>Preview antes de importar</strong> — Modal con turnos detectados</div>
       <div class="feat-item"><strong>Cuadrante visual</strong> — Tabla empleado × día del mes</div>
       <div class="feat-item"><strong>Nav mes</strong> — Anterior / siguiente / hoy + filtro por cargo</div>
@@ -1190,8 +1193,8 @@
       </div>
     </div>
     <ul class="clean" style="margin-top:1rem">
-      <li><span class="tag tag-ok">Hecho</span> Autoregistro · parser PDF Beta10 · cuadrante self-service · idle logout 5 min · móvil responsive · PWA · cuadrante visual · dashboard</li>
-      <li><span class="tag tag-next">Próximo</span> Emails automáticos (Edge Function) · RLS Supabase completo · deduplicar cuadrantes por mes</li>
+      <li><span class="tag tag-ok">Hecho</span> Autoregistro · parser PDF Beta10 · cuadrante self-service · reemplazo cuadrante por mes · import auto al calendario · idle logout 5 min · móvil responsive · PWA · cuadrante visual · dashboard</li>
+      <li><span class="tag tag-next">Próximo</span> Emails automáticos (Edge Function) · RLS Supabase completo</li>
       <li><span class="tag tag-fut">Futuro</span> Justificantes bajas · calendario equipo · auditoría firmas</li>
     </ul>
   </section>
@@ -1224,7 +1227,7 @@
           <li>Acceso móvil, bilingüe (ES/CA) y PWA instalable</li>
           <li>Flujo de contraseñas — temporal en primer acceso, cambio self-service</li>
           <li>Autoregistro — registro.html + aprobación coordinador</li>
-          <li>Parser PDF cuadrantes Beta10 — importación automática de turnos</li>
+          <li>Parser PDF cuadrantes Beta10 — importación automática al subir o desde Importar (reemplaza turnos del mes)</li>
         </ul>
       </div>
 
@@ -1266,7 +1269,7 @@
     </div>
 
     <div class="callout-box">
-      <strong style="color:var(--gold)">Tip cuadrantes</strong> — Los empleados pueden subir su PDF en Mis turnos y parsear turnos al calendario. Admin → Importar hace lo mismo a escala. Los PDFs Beta10 (CTTI1/2, sindicales) ya están soportados.
+      <strong style="color:var(--gold)">Tip cuadrantes</strong> — Al subir un PDF en Mis turnos (o Admin → Subir documento → Cuadrante), el portal sustituye el cuadrante del mismo mes e importa turnos al calendario. Si hay cambios, vuelve a subir el PDF revisado. Admin → Importar sigue disponible para preview manual. PDFs Beta10 (CTTI1/2, sindicales) soportados.
     </div>
   </section>
 
