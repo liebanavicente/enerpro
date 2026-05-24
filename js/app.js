@@ -127,7 +127,7 @@ var I18N = {
     'bnav.admin':        'Admin',
     // Inicio
     'ini.eyebrow':       'Panel principal',
-    'ini.bienvenido':    'Bienvenido',
+    'ini.bienvenido':    'Bienvenid@',
     'ini.empleado':      'empleado',
     'ini.stat_docs':     'Documentos disponibles',
     'ini.stat_docs_sub': 'Nóminas y cuadrantes',
@@ -629,7 +629,7 @@ var I18N = {
     'bnav.admin':        'Admin',
     // Inicio
     'ini.eyebrow':       'Tauler principal',
-    'ini.bienvenido':    'Benvingut',
+    'ini.bienvenido':    'Benvingut/da',
     'ini.empleado':      'empleat',
     'ini.stat_docs':     'Documents disponibles',
     'ini.stat_docs_sub': 'Nòmines i quadrants',
