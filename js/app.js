@@ -90,6 +90,54 @@ function getEstadoBadge(estado) {
   return { cls: cls, lbl: t('est.' + estado) || estado };
 }
 
+function _homeWidgetStorageKey() {
+  var id = currentEmpleado && (currentEmpleado.id || currentEmpleado.email);
+  return 'enerpro_home_hidden_' + (id || 'anon');
+}
+function _getHiddenHomeWidgets() {
+  try {
+    return JSON.parse(localStorage.getItem(_homeWidgetStorageKey()) || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+function _isHomeWidgetHidden(widget) {
+  return _getHiddenHomeWidgets().indexOf(widget) !== -1;
+}
+function _setHomeWidgetHidden(widget, hidden) {
+  var list = _getHiddenHomeWidgets().filter(function(w) { return w !== widget; });
+  if (hidden) list.push(widget);
+  localStorage.setItem(_homeWidgetStorageKey(), JSON.stringify(list));
+}
+function _applyHomeWidgetState(widget) {
+  var cfg = {
+    cuadrantes: { card:'homeCuadranteCard', archived:'cuadranteArchived' },
+    ultimos:    { card:'homeRecentDocsCard', archived:'recentDocsArchived' }
+  }[widget];
+  if (!cfg) return;
+  var hidden = _isHomeWidgetHidden(widget);
+  var card = document.getElementById(cfg.card);
+  var archived = document.getElementById(cfg.archived);
+  if (card) card.classList.toggle('is-archived', hidden);
+  if (archived) archived.style.display = hidden ? 'flex' : 'none';
+}
+function ocultarHomeWidget(widget) {
+  _setHomeWidgetHidden(widget, true);
+  if (widget === 'pendientes') {
+    cargarPendientesAtencion(allDocs);
+  } else {
+    _applyHomeWidgetState(widget);
+  }
+}
+function mostrarHomeWidget(widget) {
+  _setHomeWidgetHidden(widget, false);
+  if (widget === 'pendientes') {
+    cargarPendientesAtencion(allDocs);
+  } else {
+    _applyHomeWidgetState(widget);
+  }
+}
+
 function cambiarIdioma(lang) {
   if (lang === _lang) return;
   _lang = lang;
@@ -516,10 +564,28 @@ async function cargarPendientesAtencion(docs) {
     return;
   }
   var total = sinFirmar.length + solResp.length;
+  if (_isHomeWidgetHidden('pendientes')) {
+    section.innerHTML =
+      '<div class="card home-panel is-archived" style="padding:0;border-top:2px solid var(--gold)">' +
+        '<div class="home-panel-header">' +
+          '<div class="section-label">' + t('ini.pend_titulo') + '</div>' +
+          '<span class="badge badge-yellow">' + total + '</span>' +
+        '</div>' +
+        '<div class="home-archived">' +
+          '<span>Pendientes ocultos en el panel de inicio.</span>' +
+          '<button type="button" class="btn-sm" onclick="mostrarHomeWidget(\'pendientes\')">Mostrar</button>' +
+        '</div>' +
+      '</div>';
+    section.style.display = 'block';
+    return;
+  }
   var html = '<div class="card" style="padding:0;border-top:2px solid var(--gold)">' +
     '<div class="pend-header">' +
       '<span>' + t('ini.pend_titulo') + '</span>' +
-      '<span class="badge badge-yellow">' + total + '</span>' +
+      '<div style="display:flex;align-items:center;gap:0.75rem">' +
+        '<span class="badge badge-yellow">' + total + '</span>' +
+        '<button type="button" class="home-panel-action" onclick="ocultarHomeWidget(\'pendientes\')">Ocultar</button>' +
+      '</div>' +
     '</div>';
   sinFirmar.slice(0, 3).forEach(function(doc) {
     html +=
@@ -789,6 +855,7 @@ async function cargarDocumentos() {
   renderDocs(data, 'recentDocs', 3);
   renderDocs(data, 'docsList');
   cargarPendientesAtencion(data);
+  _applyHomeWidgetState('ultimos');
   var cuadrantes = data.filter(function(d){ return d.tipo === 'cuadrante'; });
   var cuadranteDiv = document.getElementById('cuadranteDestacado');
   var cuadranteMes = document.getElementById('cuadranteMes');
@@ -818,6 +885,7 @@ async function cargarDocumentos() {
     if (cuadranteMes) cuadranteMes.style.display = 'none';
     if (cuadranteDiv) cuadranteDiv.innerHTML = '<div style="color:var(--muted);font-size:var(--text-base);padding:1.5rem">' + t('doc.no_cuad') + '</div>';
   }
+  _applyHomeWidgetState('cuadrantes');
   _renderCuadrantesEnTurnos(cuadrantes);
 }
 
