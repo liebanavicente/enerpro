@@ -2088,13 +2088,17 @@ async function cargarVacaciones() {
       : '';
     var d = delay; delay += 50;
     return '<div class="vac-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
-      '<span class="badge ' + (VAC_TIPO_CLASS[v.tipo]||'badge-blue') + ' vac-tipo">' + getTipoVac(v.tipo) + '</span>' +
-      '<span class="vac-fechas">' + desde + ' → ' + hasta +
-        (v.notas     ? '<br><span style="font-size:0.72rem;color:var(--muted)">' + v.notas      + '</span>' : '') +
-        (v.comentario ? '<br><span style="font-size:0.72rem;color:var(--gold)">💬 ' + v.comentario + '</span>' : '') + '</span>' +
-      '<span class="vac-dias">' + dias + ' d.</span>' +
-      '<span class="badge ' + eb.cls + '">' + eb.lbl + '</span>' +
-      btnCancelar +
+      '<div class="vac-main">' +
+        '<span class="badge ' + (VAC_TIPO_CLASS[v.tipo]||'badge-blue') + ' vac-tipo">' + getTipoVac(v.tipo) + '</span>' +
+        '<span class="vac-fechas">' + desde + ' → ' + hasta +
+          (v.notas     ? '<br><span style="font-size:0.72rem;color:var(--muted)">' + v.notas      + '</span>' : '') +
+          (v.comentario ? '<br><span style="font-size:0.72rem;color:var(--gold)">💬 ' + v.comentario + '</span>' : '') + '</span>' +
+      '</div>' +
+      '<div class="vac-side">' +
+        '<span class="vac-dias">' + dias + ' d.</span>' +
+        '<span class="badge ' + eb.cls + '">' + eb.lbl + '</span>' +
+        btnCancelar +
+      '</div>' +
       '</div>';
   }).join('');
 }

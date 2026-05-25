@@ -100,18 +100,17 @@
   .login-wrap {
     min-height: 100vh;
     display: flex;
-    background: #0d0f1c;
+    background: #0b0d16;
     overflow: hidden;
   }
   /* Left: brand panel */
   .login-brand-panel {
-    flex: 0 0 52%;
+    flex: 0 0 48%;
     display: flex; flex-direction: column; justify-content: center;
-    padding: 3.5rem 4rem;
+    padding: clamp(2.5rem, 5vw, 5rem);
     background:
-      radial-gradient(ellipse 80% 70% at 25% 110%, rgba(212,157,0,0.22) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 88% 8%,  rgba(229,57,53,0.10)  0%, transparent 55%),
-      radial-gradient(ellipse 45% 45% at 8%  20%, rgba(100,80,220,0.07) 0%, transparent 55%),
+      radial-gradient(ellipse 78% 60% at 20% 112%, rgba(212,157,0,0.16) 0%, transparent 62%),
+      radial-gradient(ellipse 52% 38% at 92% 6%, rgba(220,38,38,0.08) 0%, transparent 58%),
       #0f1117;
     border-right: 1px solid rgba(255,255,255,0.055);
     position: relative; overflow: hidden;
@@ -127,16 +126,16 @@
   .lbp-logo img { width: 60px; height: 60px; margin-bottom: 1rem; object-fit: contain; display: block; filter: drop-shadow(0 4px 16px rgba(220,38,38,0.4)); }
   .lbp-logo .brand     { font-family: 'Barlow Condensed', sans-serif; font-size: 3rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: #f0f1ff; }
   .lbp-logo .brand span { color: #f5b800; text-shadow: 0 0 40px rgba(245,184,0,0.5); }
-  .lbp-logo .brand-sub { font-size: var(--text-xs); color: #4e5270; letter-spacing: 0.02em; margin-top: 6px; }
+  .lbp-logo .brand-sub { font-size: var(--text-xs); color: #747895; letter-spacing: 0.02em; margin-top: 6px; }
   .lbp-tagline {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.65rem; font-weight: 700; color: #c8ccdf;
+    font-size: 1.7rem; font-weight: 700; color: #d5d8e6;
     line-height: 1.25; margin-bottom: 2rem; max-width: 26rem;
   }
   .lbp-features { list-style: none; padding: 0; margin: 0 0 2.75rem; }
   .lbp-features li {
     display: flex; align-items: center; gap: 0.75rem;
-    font-size: var(--text-base); color: #6e729a;
+    font-size: var(--text-base); color: #9095b3;
     padding: 0.65rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
   }
   .lbp-features li:last-child { border-bottom: none; }
@@ -144,13 +143,15 @@
     content: ''; display: inline-block; flex-shrink: 0;
     width: 6px; height: 6px; border-radius: 50%; background: #f5b800;
   }
-  .lbp-footer { font-size: var(--text-xs); color: #2e3148; letter-spacing: 0.01em; }
+  .lbp-footer { font-size: var(--text-xs); color: #686d88; letter-spacing: 0.01em; }
   /* Right: form panel */
   .login-form-panel {
     flex: 1;
     display: flex; align-items: center; justify-content: center;
     padding: 2.5rem 3rem;
-    background: #11132b;
+    background:
+      radial-gradient(ellipse 80% 70% at 55% 5%, rgba(245,184,0,0.06) 0%, transparent 56%),
+      #101327;
   }
   .login-card {
     --white: #f0f1ff; --text: #e0e2f0; --text2: #9295b0; --muted: #6a6e85;
@@ -160,22 +161,18 @@
     --surface2: rgba(255,255,255,0.07); --surface3: rgba(255,255,255,0.12);
     --glass-border: rgba(255,255,255,0.12);
     --gold-light: rgba(245,184,0,0.12);
-    background: #14162a;
-    backdrop-filter: blur(48px) saturate(1.6);
-    -webkit-backdrop-filter: blur(48px) saturate(1.6);
-    border: 1px solid rgba(255,255,255,0.09);
-    border-top: 2px solid #f5b800;
-    border-radius: 22px;
-    padding: 2.75rem 2.25rem;
-    width: 100%; max-width: 400px;
+    background: #15182d;
+    border: 1px solid rgba(255,255,255,0.11);
+    border-radius: 14px;
+    padding: 2.65rem 2.25rem;
+    width: 100%; max-width: 420px;
     box-shadow:
       0 0 0 1px rgba(255,255,255,0.04),
-      0 40px 80px rgba(0,0,0,0.45),
-      0 0 60px rgba(245,184,0,0.08),
-      inset 0 1px 0 rgba(255,255,255,0.07);
+      0 28px 70px rgba(0,0,0,0.42),
+      inset 0 1px 0 rgba(255,255,255,0.06);
     animation: fadeUp 0.55s cubic-bezier(0.22,1,0.36,1);
   }
-  .login-logo   { text-align: center; margin-bottom: 2rem; }
+  .login-logo   { text-align: center; margin-bottom: 1.85rem; }
   .brand        { font-family: 'Barlow Condensed', sans-serif; font-size: 2.5rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--white); }
   .brand span   { color: var(--gold); text-shadow: 0 0 32px rgba(245,184,0,0.45); }
   .brand-sub    { font-size: var(--text-xs); color: var(--muted); letter-spacing: 0.02em; margin-top: 7px; }
@@ -191,10 +188,10 @@
   .form-group input,
   .form-group select,
   .form-group textarea {
-    width: 100%; padding: 0.75rem 1rem;
+    width: 100%; min-height: 46px; padding: 0.8rem 0.95rem;
     background: var(--surface-s);
     border: 1px solid var(--border);
-    border-radius: var(--r-sm);
+    border-radius: var(--r-xs);
     color: var(--text); font-size: var(--text-base); font-family: inherit;
     outline: none;
     transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
@@ -217,7 +214,7 @@
     padding: 0.9rem 1.5rem;
     background: var(--gold);
     color: #000;
-    border: none; border-radius: var(--r-sm);
+    border: none; border-radius: var(--r-xs);
     font-size: var(--text-md); font-weight: 700;
     letter-spacing: 0.01em;
     transition: all 0.18s cubic-bezier(0.22,1,0.36,1);
@@ -710,18 +707,31 @@
     .card { -webkit-tap-highlight-color: transparent; transition: background 0.15s; }
     .card:active { background: var(--surface3) !important; }
     /* Login split → stack */
-    .login-wrap { flex-direction: column; }
+    .login-wrap {
+      flex-direction: column;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
     .login-brand-panel {
-      flex: 0 0 auto; padding: 1.75rem 1.5rem;
+      flex: 0 0 auto; padding: 1rem 1.25rem;
       border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06);
     }
-    .lbp-tagline { font-size: 1.15rem; margin-bottom: 0.85rem; }
+    .lbp-tagline { display: none; }
     .lbp-features { display: none; }
     .lbp-footer   { display: none; }
-    .lbp-logo     { margin-bottom: 1rem; }
-    .lbp-logo img { width: 44px; height: 44px; margin-bottom: 0.5rem; }
-    .lbp-logo .brand { font-size: 2.25rem; }
-    .login-form-panel { padding: 1.75rem 1.25rem 2.5rem; }
+    .lbp-logo     { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0; }
+    .lbp-logo img { width: 34px; height: 34px; margin: 0; }
+    .lbp-logo .brand { font-size: 1.75rem; line-height: 1; }
+    .lbp-logo .brand-sub { margin-top: 2px; }
+    .login-form-panel { align-items: flex-start; padding: 1rem 1rem 1.25rem; }
+    .login-card { padding: 1.35rem 1.15rem; border-radius: 12px; }
+    .login-logo { margin-bottom: 1rem; }
+    .login-logo img { width: 64px !important; margin-bottom: 0.5rem !important; }
+    .login-card .brand { font-size: 2rem; line-height: 1; }
+    .divider { margin: 1rem 0; }
+    .login-wrap .form-group { margin-bottom: 1rem; }
+    .login-wrap .form-group input { min-height: 44px; }
     /* Quick actions */
     .quick-actions { grid-template-columns: repeat(2, 1fr); gap: 0.625rem; }
     .quick-action-btn { padding: 1rem 0.5rem; }
@@ -935,19 +945,38 @@
   .cal-toggle[open] > summary .cal-toggle-chevron { transform: rotate(90deg); }
 
   /* ─── VACACIONES ──────────────────────────────────────── */
-  .vac-item { display:flex; align-items:center; gap:1rem; padding:1rem 1.5rem; border-bottom:1px solid var(--border); transition:background 0.15s; }
+  .vac-item {
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) auto;
+    align-items:center;
+    gap:0.75rem 1rem;
+    padding:1rem 1.5rem;
+    border-bottom:1px solid var(--border);
+    transition:background 0.15s;
+  }
   .vac-item:hover { background:var(--surface2); }
   .vac-item:last-child { border-bottom:none; }
-  .vac-tipo  { min-width:5.5rem; }
-  .vac-fechas { flex:1; font-size:var(--text-base); color:var(--text2); }
-  .vac-dias  { font-size:var(--text-sm); color:var(--muted); min-width:4rem; text-align:right; }
+  .vac-main { min-width:0; display:grid; grid-template-columns:auto minmax(0, 1fr); align-items:center; gap:0.75rem; }
+  .vac-side { display:flex; align-items:center; justify-content:flex-end; gap:0.625rem; white-space:nowrap; }
+  .vac-tipo  { width:max-content; max-width:100%; justify-content:center; }
+  .vac-fechas { min-width:0; font-size:var(--text-base); color:var(--text2); line-height:1.35; }
+  .vac-dias  { font-size:var(--text-sm); color:var(--muted); min-width:2.5rem; text-align:right; }
+
+  @media (max-width:1180px) {
+    #page-vacaciones .vac-layout { grid-template-columns:1fr !important; }
+  }
+
+  @media (max-width:960px) {
+    .vac-item { grid-template-columns:1fr; align-items:stretch; gap:0.65rem; }
+    .vac-main { grid-template-columns:1fr; align-items:flex-start; gap:0.5rem; }
+    .vac-side { justify-content:space-between; white-space:normal; }
+    .vac-dias { text-align:left; }
+  }
 
   @media (max-width:767px) {
     #page-vacaciones > div { grid-template-columns:1fr !important; }
     #page-perfil .stats-grid { grid-template-columns:repeat(3,1fr) !important; }
     #page-perfil > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns:1fr !important; }
-    .vac-item { flex-direction:column; align-items:stretch; gap:0.5rem; }
-    .vac-dias { text-align:left; }
   }
 
   @media (max-width:767px) {
@@ -2060,7 +2089,7 @@
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:1.5rem;align-items:start">
+      <div class="vac-layout" style="display:grid;grid-template-columns:1fr 1.6fr;gap:1.5rem;align-items:start">
 
         <!-- Formulario solicitud -->
         <div class="card">
