@@ -93,6 +93,8 @@ Si quieres control total (logo, dominio `@enerpro.com`, sin plantillas de Supaba
 
 La app intentará primero la Edge Function; si no está desplegada, usará la plantilla de Supabase (Opción A).
 
+Para avisos al **aprobar/rechazar solicitudes y vacaciones**, despliega también `notificar-email` — ver [`functions/README.md`](./functions/README.md).
+
 ---
 
 ## Qué ve el empleado según el flujo

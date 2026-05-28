@@ -4010,11 +4010,9 @@ function registrarServiceWorker() {
   });
 }
 
-// ─── EMAIL NOTIFICATIONS SCAFFOLD ────────────────────────
-// Calls the 'notificar-email' Supabase Edge Function.
-// Deploy the function at supabase/functions/notificar-email/index.ts
-// and configure RESEND_API_KEY + FROM_EMAIL in Supabase secrets.
-// This call is fire-and-forget: failures are silent so UX is unaffected.
+// ─── EMAIL NOTIFICATIONS ─────────────────────────────────
+// Edge Functions: notificar-email, enviar-acceso-empleado (ver supabase/functions/README.md)
+// Failures are silent so UX is unaffected.
 function notificarEmail(tipo, empleadoId, extra) {
   if (!empleadoId) return;
   sb.functions.invoke('notificar-email', {

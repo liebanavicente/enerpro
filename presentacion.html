@@ -1085,7 +1085,8 @@
           <div class="feat-item"><strong>Filtro por estado</strong> — Pendientes, aprobadas, rechazadas, todas</div>
           <div class="feat-item"><strong>Export Excel</strong> — Solicitudes y vacaciones con todos los campos</div>
           <div class="feat-item"><strong>Notificación empleado</strong> — Toast + push al resolver petición</div>
-          <div class="feat-item"><strong>Email scaffold</strong> — Edge Function preparada para avisos por correo</div>
+          <div class="feat-item"><strong>Email automático</strong> — Aviso al empleado al aprobar/rechazar solicitud o vacación (Edge Function + Resend)</div>
+          <div class="feat-item"><strong>Email acceso</strong> — Bienvenida ENERPRO al aprobar registro</div>
         </div>
       </div>
     </div>
@@ -1162,7 +1163,7 @@
         <div class="card-label">Backend e infra</div>
         <ul class="clean">
           <li>Supabase Auth, PostgreSQL, Storage, Realtime + RLS por empleado/coordinador</li>
-          <li>Edge Function scaffold (notificar-email)</li>
+          <li>Edge Functions email (notificar-email · enviar-acceso-empleado)</li>
           <li>Deploy automático GitHub → Vercel</li>
           <li>Tablas: empleados, documentos, solicitudes, vacaciones, turnos, solicitudes_registro</li>
         </ul>
@@ -1193,8 +1194,8 @@
       </div>
     </div>
     <ul class="clean" style="margin-top:1rem">
-      <li><span class="tag tag-ok">Hecho</span> Autoregistro · parser PDF Beta10 · cuadrante self-service · reemplazo cuadrante por mes · import auto al calendario · RLS Supabase · idle logout 5 min · móvil responsive · PWA · cuadrante visual · dashboard</li>
-      <li><span class="tag tag-next">Próximo</span> Emails automáticos (Edge Function)</li>
+      <li><span class="tag tag-ok">Hecho</span> Autoregistro · parser PDF Beta10 · cuadrante self-service · reemplazo cuadrante por mes · import auto al calendario · RLS Supabase · idle logout 5 min · móvil responsive · PWA · cuadrante visual · dashboard · plantillas email ENERPRO</li>
+      <li><span class="tag tag-next">Próximo</span> Desplegar Edge Functions email (Resend) · datos reales ENERPRO</li>
       <li><span class="tag tag-fut">Futuro</span> Justificantes bajas · calendario equipo · auditoría firmas</li>
     </ul>
   </section>
