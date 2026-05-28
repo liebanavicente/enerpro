@@ -1517,8 +1517,8 @@ function toggleSolJustificanteField() {
 
 function _textoAdmiteJustificante(texto) {
   var s = String(texto || '').toLowerCase();
-  if (s.indexOf('consulta') >= 0 || s.indexOf('turno') >= 0) return false;
-  return s.indexOf('permiso') >= 0 || s.indexOf('baja') >= 0 || s.indexOf('vacacion') >= 0
+  if (s.indexOf('consulta') >= 0 || s.indexOf('turno') >= 0 || s.indexOf('vacacion') >= 0) return false;
+  return s.indexOf('permiso') >= 0 || s.indexOf('baja') >= 0
     || s.indexOf('visita') >= 0 || s.indexOf('asunto') >= 0;
 }
 
