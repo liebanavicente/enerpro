@@ -1324,9 +1324,8 @@ function _renderDocCardHtml(doc, opts) {
   var signBtn = !doc.firmado
     ? '<button class="btn-sm gold" onclick="firmarDoc(\'' + doc.id + '\', \'' + safeName + '\', this)">' + t('doc.confirmar') + '</button>'
     : '';
-  var delBtn = currentIsAdmin
-    ? '<button class="btn-sm btn-danger" onclick="eliminarDoc(\'' + doc.id + '\', \'' + safeUrl + '\')">' + t('cq.eliminar') + '</button>'
-    : '';
+  var delBtn = opts.compact ? ''
+    : '<button class="btn-sm btn-danger" onclick="eliminarDoc(\'' + doc.id + '\', \'' + safeUrl + '\')" title="' + t('doc.eliminar') + '">' + t('doc.eliminar') + '</button>';
   var estadoBadge = doc.firmado
     ? '<span class="dt-badge-ok"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:0.75rem;height:0.75rem"><polyline points="20 6 9 17 4 12"/></svg>' + t('doc.firmado') + '</span>'
     : '<span class="dt-badge-pend">' + t('doc.firmar') + '</span>';
@@ -1357,9 +1356,21 @@ function filterDocs(tipo) {
 }
 
 async function eliminarDoc(docId, url) {
-  if (!confirm('¿Eliminar este documento?')) return;
-  await sb.storage.from('documentos').remove([_docStoragePath(url)]);
-  await sb.from('documentos').delete().eq('id', docId);
+  if (!confirm(t('doc.eliminar_confirm'))) return;
+  var path = _docStoragePath(url);
+  if (path) {
+    var { error: stErr } = await sb.storage.from('documentos').remove([path]);
+    if (stErr) {
+      mostrarToast('❌ Error', stErr.message || 'No se pudo borrar el archivo.');
+      return;
+    }
+  }
+  var { error } = await sb.from('documentos').delete().eq('id', docId);
+  if (error) {
+    mostrarToast('❌ Error', error.message);
+    return;
+  }
+  mostrarToast(t('toast.doc_elim'), t('toast.doc_elim_msg'));
   cargarDocumentos();
 }
 
@@ -4503,9 +4514,20 @@ function renderDocsAdmin(docs) {
 }
 
 async function eliminarDocAdmin(docId, url) {
-  if (!confirm('¿Eliminar este documento?')) return;
-  await sb.storage.from('documentos').remove([_docStoragePath(url)]);
-  await sb.from('documentos').delete().eq('id', docId);
+  if (!confirm(t('doc.eliminar_confirm'))) return;
+  var path = _docStoragePath(url);
+  if (path) {
+    var { error: stErr } = await sb.storage.from('documentos').remove([path]);
+    if (stErr) {
+      mostrarToast('❌ Error', stErr.message || 'No se pudo borrar el archivo.');
+      return;
+    }
+  }
+  var { error } = await sb.from('documentos').delete().eq('id', docId);
+  if (error) {
+    mostrarToast('❌ Error', error.message);
+    return;
+  }
   mostrarToast(t('toast.doc_elim'), t('toast.doc_elim_msg'));
   cargarDocumentosAdmin();
 }
