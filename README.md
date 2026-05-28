@@ -65,7 +65,9 @@ El frontend contiene la URL publica del proyecto y la anon key de Supabase. Esto
 - Storage protegido por politicas equivalentes a las de base de datos.
 - Acciones sensibles delegadas a Edge Functions cuando requieran privilegios elevados.
 
-Ver tambien [`docs/supabase-checklist.md`](docs/supabase-checklist.md).
+Ver tambien [`docs/supabase-checklist.md`](docs/supabase-checklist.md) y [`supabase/email-templates.md`](supabase/email-templates.md).
+
+**Email:** en fase demo basta con plantillas Supabase Auth. Correo transaccional con dominio propio (Resend + Edge Functions) queda pendiente de la aprobacion del proyecto por ENERPRO.
 
 ## Desarrollo local
 

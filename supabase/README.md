@@ -37,6 +37,8 @@ Los emails de **aprobar registro** y **olvidé contraseña** los envía Supabase
 
 → **[email-templates.md](./email-templates.md)** (paso a paso + HTML listo para copiar)
 
-**Edge Functions** (Resend) para emails 100 % ENERPRO:
+**Edge Functions** (Resend + dominio propio) — **código listo, despliegue pendiente de aprobación ENERPRO**:
 
 → **[functions/README.md](./functions/README.md)** — `enviar-acceso-empleado` + `notificar-email`
+
+Mientras tanto, las plantillas Supabase (Opción A) cubren acceso y recuperación de contraseña.

@@ -1,5 +1,7 @@
 # Correos de acceso — Portal ENERPRO
 
+> **Fase actual (demo / pre-aprobación):** no hace falta dominio propio ni Resend. Basta la **Opción A** (plantillas Supabase). Las Edge Functions + dominio `@enerpro.com` quedan para cuando ENERPRO apruebe el proyecto y el go-live.
+
 Cuando se aprueba un registro o se recupera la contraseña, la app llama a **Supabase Auth** (`resetPasswordForEmail`).  
 El remitente puede decir «ENERPRO» (si lo configuraste), pero **el texto del cuerpo** sale de las plantillas de Auth en Supabase — por eso aparece «Supabase» y confunde a los empleados.
 
@@ -7,9 +9,9 @@ Hay dos formas de solucionarlo:
 
 ---
 
-## Opción A — Rápida (solo panel Supabase, ~5 min)
+## Opción A — Rápida (solo panel Supabase, ~5 min) ← **usar ahora**
 
-No requiere desplegar código. Personaliza las plantillas de Auth.
+No requiere desplegar código ni dominio verificado. Personaliza las plantillas de Auth.
 
 ### 1. URL del sitio
 
@@ -83,9 +85,9 @@ Usa el mismo estilo; sustituye el párrafo por «Confirma tu correo para activar
 
 ---
 
-## Opción B — Email 100 % personalizado (Edge Function + Resend)
+## Opción B — Email 100 % personalizado (Edge Function + Resend) — **pendiente de aprobación del proyecto**
 
-Si quieres control total (logo, dominio `@enerpro.com`, sin plantillas de Supabase):
+Cuando ENERPRO apruebe el portal y dispongáis de dominio (p. ej. `portal@enerpro.com`):
 
 1. Cuenta en [Resend](https://resend.com) y dominio verificado.
 2. Despliega la función `enviar-acceso-empleado` (ver [`functions/enviar-acceso-empleado/README.md`](./functions/enviar-acceso-empleado/README.md)).

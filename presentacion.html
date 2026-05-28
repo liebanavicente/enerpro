@@ -1085,8 +1085,8 @@
           <div class="feat-item"><strong>Filtro por estado</strong> — Pendientes, aprobadas, rechazadas, todas</div>
           <div class="feat-item"><strong>Export Excel</strong> — Solicitudes y vacaciones con todos los campos</div>
           <div class="feat-item"><strong>Notificación empleado</strong> — Toast + push al resolver petición</div>
-          <div class="feat-item"><strong>Email automático</strong> — Aviso al empleado al aprobar/rechazar solicitud o vacación (Edge Function + Resend)</div>
-          <div class="feat-item"><strong>Email acceso</strong> — Bienvenida ENERPRO al aprobar registro</div>
+          <div class="feat-item"><strong>Email acceso</strong> — Plantilla Supabase con marca ENERPRO (activo en demo)</div>
+          <div class="feat-item"><strong>Email automático</strong> — Avisos al aprobar/rechazar (Edge Function + Resend; pendiente dominio y aprobación proyecto)</div>
         </div>
       </div>
     </div>
@@ -1163,7 +1163,7 @@
         <div class="card-label">Backend e infra</div>
         <ul class="clean">
           <li>Supabase Auth, PostgreSQL, Storage, Realtime + RLS por empleado/coordinador</li>
-          <li>Edge Functions email (notificar-email · enviar-acceso-empleado)</li>
+          <li>Edge Functions email (código listo; despliegue pendiente aprobación ENERPRO)</li>
           <li>Deploy automático GitHub → Vercel</li>
           <li>Tablas: empleados, documentos, solicitudes, vacaciones, turnos, solicitudes_registro</li>
         </ul>
@@ -1194,8 +1194,8 @@
       </div>
     </div>
     <ul class="clean" style="margin-top:1rem">
-      <li><span class="tag tag-ok">Hecho</span> Autoregistro · parser PDF Beta10 · cuadrante self-service · reemplazo cuadrante por mes · import auto al calendario · RLS Supabase · idle logout 5 min · móvil responsive · PWA · cuadrante visual · dashboard · plantillas email ENERPRO</li>
-      <li><span class="tag tag-next">Próximo</span> Desplegar Edge Functions email (Resend) · datos reales ENERPRO</li>
+      <li><span class="tag tag-ok">Hecho</span> Autoregistro · parser PDF Beta10 · cuadrante self-service · reemplazo cuadrante por mes · import auto al calendario · RLS Supabase · idle logout 5 min · móvil responsive · PWA · cuadrante visual · dashboard · plantillas email ENERPRO (Supabase Auth)</li>
+      <li><span class="tag tag-next">Próximo</span> Aprobación proyecto ENERPRO · datos reales · dominio email · desplegar Resend</li>
       <li><span class="tag tag-fut">Futuro</span> Justificantes bajas · calendario equipo · auditoría firmas</li>
     </ul>
   </section>
@@ -1215,6 +1215,7 @@
           <li>PDFs de nóminas y cuadrantes actuales para subir</li>
           <li>Decidir quién será el Coordinador (acceso admin)</li>
           <li>Un email corporativo activo por empleado para el acceso</li>
+          <li>Dominio de correo verificado (<code>portal@enerpro.com</code>) — pendiente aprobación del proyecto</li>
         </ul>
       </div>
 
@@ -1227,6 +1228,7 @@
           <li>Subida masiva de PDFs — ZIP con match automático por DNI</li>
           <li>Acceso móvil, bilingüe (ES/CA) y PWA instalable</li>
           <li>Flujo de contraseñas — temporal en primer acceso, cambio self-service</li>
+          <li>Emails de acceso — plantilla ENERPRO en Supabase Auth (sin dominio propio en demo)</li>
           <li>Autoregistro — registro.html + aprobación coordinador</li>
           <li>Parser PDF cuadrantes Beta10 — importación automática al subir o desde Importar (reemplaza turnos del mes)</li>
         </ul>
