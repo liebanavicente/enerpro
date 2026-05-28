@@ -39,8 +39,10 @@ var adminSolicitudesChannel = null;
 var adminVacacionesChannel  = null;
 var calTurnos = [];
 var _idleLastActivity = 0;
+var _idleHiddenAt = 0;
 var _idleCheckInterval = null;
-var IDLE_TIMEOUT_MS = 5 * 60 * 1000; // 5 min sin actividad → cerrar sesión
+var IDLE_TIMEOUT_MS = 10 * 60 * 1000; // 10 min sin actividad → cerrar sesión
+var IDLE_CHECK_MS = 15000; // comprobar cada 15 s
 var _docBadgeCount = 0;
 var _solBadgeCount = 0;
 var _vacBadgeCount = 0;
@@ -759,22 +761,85 @@ document.querySelectorAll('.nav-item').forEach(function(btn){
 });
 
 // LOGOUT
+var _idleModalScrollEls = [];
+
+function _lockPageScroll() {
+  document.documentElement.style.overflow = 'hidden';
+  document.body.style.overflow = 'hidden';
+}
+
+function _unlockPageScrollIfNoModals() {
+  var open = false;
+  document.querySelectorAll('.modal-overlay, .pdf-overlay, .cp-wrap').forEach(function(el) {
+    if (el.style.display === 'flex' || el.style.display === 'block') open = true;
+  });
+  if (!open) {
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+  }
+}
+
+function _abrirModalOverlay(el) {
+  if (!el) return;
+  el.scrollTop = 0;
+  el.style.display = 'flex';
+  _lockPageScroll();
+}
+
+function _cerrarModalOverlay(el) {
+  if (!el) return;
+  el.style.display = 'none';
+  _unlockPageScrollIfNoModals();
+}
+
+function _bindModalScrollIdle() {
+  _unbindModalScrollIdle();
+  document.querySelectorAll('.modal-body, .modal-overlay').forEach(function(el) {
+    el.addEventListener('scroll', _resetIdleTimer, { passive: true });
+    _idleModalScrollEls.push(el);
+  });
+}
+
+function _unbindModalScrollIdle() {
+  _idleModalScrollEls.forEach(function(el) {
+    el.removeEventListener('scroll', _resetIdleTimer);
+  });
+  _idleModalScrollEls = [];
+}
+
 function _resetIdleTimer() {
   _idleLastActivity = Date.now();
 }
 
 function _onIdleVisibilityChange() {
-  if (!document.hidden) _checkIdleTimeout();
+  if (document.hidden) {
+    _idleHiddenAt = Date.now();
+    return;
+  }
+  if (_idleHiddenAt && Date.now() - _idleHiddenAt >= IDLE_TIMEOUT_MS) {
+    _idleLastActivity = 0;
+  }
+  _idleHiddenAt = 0;
+  _checkIdleTimeout();
+}
+
+function _onPageShowIdleCheck() {
+  _checkIdleTimeout();
 }
 
 function _startIdleWatch() {
   _stopIdleWatch();
   _resetIdleTimer();
-  ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function(ev) {
-    document.addEventListener(ev, _resetIdleTimer, { passive: true });
+  _idleHiddenAt = 0;
+  var activityEvents = ['mousedown', 'keydown', 'touchstart', 'click', 'scroll', 'wheel'];
+  activityEvents.forEach(function(ev) {
+    document.addEventListener(ev, _resetIdleTimer, { passive: true, capture: true });
   });
   document.addEventListener('visibilitychange', _onIdleVisibilityChange);
-  _idleCheckInterval = setInterval(_checkIdleTimeout, 60000);
+  window.addEventListener('pageshow', _onPageShowIdleCheck);
+  window.addEventListener('focus', _resetIdleTimer);
+  _bindModalScrollIdle();
+  _idleCheckInterval = setInterval(_checkIdleTimeout, IDLE_CHECK_MS);
 }
 
 function _stopIdleWatch() {
@@ -782,16 +847,32 @@ function _stopIdleWatch() {
     clearInterval(_idleCheckInterval);
     _idleCheckInterval = null;
   }
-  ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function(ev) {
-    document.removeEventListener(ev, _resetIdleTimer);
+  var activityEvents = ['mousedown', 'keydown', 'touchstart', 'click', 'scroll', 'wheel'];
+  activityEvents.forEach(function(ev) {
+    document.removeEventListener(ev, _resetIdleTimer, { capture: true });
   });
   document.removeEventListener('visibilitychange', _onIdleVisibilityChange);
+  window.removeEventListener('pageshow', _onPageShowIdleCheck);
+  window.removeEventListener('focus', _resetIdleTimer);
+  _unbindModalScrollIdle();
+  _idleHiddenAt = 0;
+}
+
+function _cerrarModalesAbiertos() {
+  document.querySelectorAll('.modal-overlay, .pdf-overlay, .cp-wrap').forEach(function(el) {
+    if (el.style.display === 'flex' || el.style.display === 'block') el.style.display = 'none';
+  });
+  document.documentElement.style.overflow = '';
+  document.body.style.overflow = '';
 }
 
 async function _checkIdleTimeout() {
   if (!currentUser) return;
-  if (Date.now() - _idleLastActivity < IDLE_TIMEOUT_MS) return;
+  var idleMs = Date.now() - _idleLastActivity;
+  if (_idleHiddenAt && Date.now() - _idleHiddenAt >= IDLE_TIMEOUT_MS) idleMs = IDLE_TIMEOUT_MS;
+  if (idleMs < IDLE_TIMEOUT_MS) return;
   _stopIdleWatch();
+  _cerrarModalesAbiertos();
   mostrarToast(t('session.idle_title'), t('session.idle_msg'));
   await doLogout();
 }
@@ -1146,7 +1227,7 @@ async function parsearCuadrantePropio(url, docId) {
   okEl.style.display = 'none'; errEl.style.display = 'none';
   actions.style.display = 'none';
   content.textContent = 'Procesando PDF…';
-  modal.style.display = 'flex';
+  _abrirModalOverlay(modal);
 
   try {
     await _cargarPdfjsLib();
@@ -1208,7 +1289,7 @@ async function confirmarParseCuadrante() {
 }
 
 function cerrarCqParseModal() {
-  document.getElementById('cqParseModal').style.display = 'none';
+  _cerrarModalOverlay(document.getElementById('cqParseModal'));
   _cqParseDatos = null;
 }
 
@@ -1696,12 +1777,12 @@ function abrirEditEmp(id) {
   var delBtn = document.getElementById('editEmpDeleteBtn');
   if (delBtn) { delBtn.disabled = false; delBtn.textContent = t('edit.eliminar_btn'); }
   var modal = document.getElementById('editEmpModal');
-  modal.style.display = 'flex';
+  _abrirModalOverlay(modal);
   setTimeout(function(){ document.getElementById('editEmpNombre').focus(); }, 80);
 }
 
 function cerrarEditEmp() {
-  document.getElementById('editEmpModal').style.display = 'none';
+  _cerrarModalOverlay(document.getElementById('editEmpModal'));
 }
 
 async function guardarEmpleado() {
@@ -1844,13 +1925,12 @@ function showAddEmpleado() {
   document.getElementById('empNombre').value = '';
   document.getElementById('empEmail').value = '';
   document.getElementById('empDni').value = '';
-  modal.style.display = 'flex';
+  _abrirModalOverlay(modal);
   setTimeout(function(){ document.getElementById('empNombre').focus(); }, 80);
 }
 
 function hideAddEmpleado() {
-  var modal = document.getElementById('addEmpModal');
-  if (modal) modal.style.display = 'none';
+  _cerrarModalOverlay(document.getElementById('addEmpModal'));
 }
 
 function _generarPasswordTemporal() {
@@ -4086,12 +4166,12 @@ function abrirCambioPassPerfil() {
   document.getElementById('cpPerfilError').style.display = 'none';
   document.getElementById('cpPerfilOk').style.display    = 'none';
   var modal = document.getElementById('cambioPassPerfilModal');
-  modal.style.display = 'flex';
+  _abrirModalOverlay(modal);
   setTimeout(function() { document.getElementById('cpPerfilNueva').focus(); }, 80);
 }
 
 function cerrarCambioPassPerfil() {
-  document.getElementById('cambioPassPerfilModal').style.display = 'none';
+  _cerrarModalOverlay(document.getElementById('cambioPassPerfilModal'));
 }
 
 async function guardarCambioPassPerfil() {
