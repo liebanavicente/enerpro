@@ -673,9 +673,9 @@
         <div class="client-tag">Cliente · Empresa de seguridad privada</div>
       </div>
     </div>
-    <div class="eyebrow">Proyecto web</div>
+    <div class="eyebrow">Proyecto web · Mayo 2026</div>
     <h1>Portal del <span>Empleado</span></h1>
-    <p class="sub">Aplicación desarrollada para la plantilla de ENERPRO. Nóminas, cuadrantes PDF con reemplazo mensual e import al calendario, vacaciones y solicitudes — optimizada para móvil, bilingüe ES/CA, altas centralizadas por coordinación y parser Beta10.</p>
+    <p class="sub">Documentos, turnos, vacaciones y solicitudes en un solo sitio — pensado para móvil, en castellano y catalán, con gestión centralizada por coordinación.</p>
   </section>
 
   <!-- 2 PROBLEMA -->
@@ -708,594 +708,221 @@
   <!-- 3 MAPA -->
   <section class="slide slide-dense" data-slide="3">
     <div class="eyebrow">Estructura</div>
-    <h2>Mapa funcional del portal</h2>
-    <p class="sub">Dos perfiles de acceso sobre la misma aplicación: empleado (plantilla) y coordinador (administración).</p>
+    <h2>Dos perfiles, una aplicación</h2>
     <div class="toc-cols">
       <div class="toc-block">
         <h3>👤 Empleado</h3>
         <ul>
-          <li>Inicio — resumen y accesos rápidos</li>
           <li>Documentos — nóminas, cuadrantes, contratos</li>
-          <li>Solicitudes — permisos y consultas</li>
-          <li>Vacaciones — días, peticiones y estados</li>
-          <li>Turnos — subir cuadrante, reemplazo automático del mes e import al calendario</li>
-          <li>Mi perfil — datos personales y contraseña</li>
-          <li>Acceso — email corporativo; el alta la gestiona coordinación</li>
+          <li>Turnos — subir cuadrante PDF e importar al calendario</li>
+          <li>Vacaciones — días, balance y estados</li>
+          <li>Solicitudes — permisos, bajas, cambios de turno</li>
+          <li>Perfil — datos y contraseña</li>
         </ul>
       </div>
       <div class="toc-block">
         <h3>⚙️ Coordinador</h3>
         <ul>
-          <li>Dashboard — métricas y gráficas</li>
-          <li>Empleados — alta unitaria, import Excel, edición</li>
-          <li>Documentos — subida individual (cuadrante reemplaza mes + import turnos)</li>
-          <li>Solicitudes y vacaciones — aprobar / rechazar</li>
-          <li>Turnos — creación, Excel, cuadrante visual</li>
-          <li>Más → Importar — altas masivas desde Excel + parser PDF cuadrantes</li>
+          <li>Dashboard — pendientes y métricas</li>
+          <li>Empleados — altas, import Excel, edición</li>
+          <li>Documentos — subida individual o ZIP masivo</li>
+          <li>Aprobaciones — solicitudes y vacaciones</li>
+          <li>Turnos — cuadrante visual, Excel e import PDF</li>
         </ul>
       </div>
     </div>
   </section>
 
-  <!-- 4 EMPLEADOS — qué podrán hacer -->
+  <!-- 4 EMPLEADO -->
   <section class="slide slide-dense" data-slide="4">
     <div class="eyebrow">Perfil · Empleado</div>
-    <h2>Lo que tendrás disponible</h2>
-    <p class="sub" style="margin-top:0;margin-bottom:0.75rem">Para cada vigilante y auxiliar de ENERPRO, accesible desde el móvil o el ordenador en cualquier momento.</p>
-    <div class="grid-2" style="margin-top:0.5rem">
-
-      <div class="card" style="display:flex;align-items:flex-start;gap:0.875rem;border-left:2px solid rgba(96,165,250,0.45)">
-        <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(96,165,250,0.1);display:flex;align-items:center;justify-content:center;color:#7bb3fc;margin-top:2px">
-          <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        </div>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Mis documentos</div>
-          <p>Nóminas, cuadrantes y contratos siempre a mano. Visualiza y descarga sin salir del portal.</p>
-        </div>
-      </div>
-
-      <div class="card" style="display:flex;align-items:flex-start;gap:0.875rem;border-left:2px solid rgba(96,165,250,0.45)">
-        <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(96,165,250,0.1);display:flex;align-items:center;justify-content:center;color:#7bb3fc;margin-top:2px">
-          <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-        </div>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Mis turnos</div>
-          <p>Lista de cuadrantes PDF: sube el tuyo y el portal <strong>reemplaza el del mismo mes</strong>, importa turnos al calendario al vuelo y deja «Ver turnos» para reimportar manualmente. Vista calendario + iCal en un clic.</p>
-        </div>
-      </div>
-
-      <div class="card" style="display:flex;align-items:flex-start;gap:0.875rem;border-left:2px solid rgba(96,165,250,0.45)">
-        <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(96,165,250,0.1);display:flex;align-items:center;justify-content:center;color:#7bb3fc;margin-top:2px">
-          <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        </div>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Mis vacaciones</div>
-          <p>Solicita días, consulta el balance anual y sigue el estado de cada petición en tiempo real.</p>
-        </div>
-      </div>
-
-      <div class="card" style="display:flex;align-items:flex-start;gap:0.875rem;border-left:2px solid rgba(96,165,250,0.45)">
-        <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(96,165,250,0.1);display:flex;align-items:center;justify-content:center;color:#7bb3fc;margin-top:2px">
-          <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-        </div>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Mis solicitudes</div>
-          <p>Envía peticiones de cambio de turno, permisos o consultas generales y recibe respuesta con aviso.</p>
-        </div>
-      </div>
-
-      <div class="card" style="display:flex;align-items:flex-start;gap:0.875rem;border-left:2px solid rgba(96,165,250,0.45)">
-        <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(96,165,250,0.1);display:flex;align-items:center;justify-content:center;color:#7bb3fc;margin-top:2px">
-          <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
-        </div>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Cuadrantes PDF</div>
-          <p>Sube tu cuadrante mensual: si ya había uno de ese mes, se sustituye. Parser Beta10 importa turnos al calendario automáticamente y puedes confirmar lectura con firma.</p>
-        </div>
-      </div>
-
-      <div class="card" style="display:flex;align-items:flex-start;gap:0.875rem;border-left:2px solid rgba(96,165,250,0.45)">
-        <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(96,165,250,0.1);display:flex;align-items:center;justify-content:center;color:#7bb3fc;margin-top:2px">
-          <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        </div>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Mi perfil</div>
-          <p>Consulta tus datos, actualiza tu contraseña y revisa el contador de días de vacaciones disponibles.</p>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- 5 COORDINADORES — qué podrán gestionar -->
-  <section class="slide slide-dense" data-slide="5">
-    <div class="eyebrow">Perfil · Coordinador</div>
-    <h2>Lo que podrás gestionar</h2>
-    <p class="sub" style="margin-top:0;margin-bottom:0.75rem">Visión y control total sobre la plantilla de ENERPRO: documentación, turnos, solicitudes y métricas, todo desde un panel central.</p>
-    <div class="grid-2" style="margin-top:0.5rem">
-
-      <div class="card card-accent" style="display:flex;align-items:flex-start;gap:0.875rem">
-        <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(245,184,0,0.12);display:flex;align-items:center;justify-content:center;color:var(--gold);margin-top:2px">
-          <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-        </div>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Plantilla</div>
-          <p>Da de alta empleados, edita datos, fija días de vacaciones y controla el estado activo o baja.</p>
-        </div>
-      </div>
-
-      <div class="card" style="display:flex;align-items:flex-start;gap:0.875rem">
-        <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(245,184,0,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);margin-top:2px">
-          <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        </div>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Documentos</div>
-          <p>Sube nóminas y cuadrantes uno a uno o en lote (ZIP con match automático por DNI). Un cuadrante PDF nuevo del mismo mes reemplaza al anterior e importa turnos.</p>
-        </div>
-      </div>
-
-      <div class="card" style="display:flex;align-items:flex-start;gap:0.875rem">
-        <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(245,184,0,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);margin-top:2px">
-          <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        </div>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Turnos y cuadrante</div>
-          <p>Crea y asigna turnos individualmente o por Excel. Cuadrante visual por empleado, exportable en CSV.</p>
-        </div>
-      </div>
-
-      <div class="card" style="display:flex;align-items:flex-start;gap:0.875rem">
-        <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(245,184,0,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);margin-top:2px">
-          <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-        </div>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Solicitudes y vacaciones</div>
-          <p>Revisa, aprueba o rechaza con comentario. El empleado recibe notificación instantánea.</p>
-        </div>
-      </div>
-
-      <div class="card card-accent" style="display:flex;align-items:flex-start;gap:0.875rem">
-        <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(245,184,0,0.12);display:flex;align-items:center;justify-content:center;color:var(--gold);margin-top:2px">
-          <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        </div>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Dashboard</div>
-          <p>KPIs animados, gráficas de solicitudes y vacaciones, cuadrantes sin firmar y badge de pendientes en tiempo real.</p>
-        </div>
-      </div>
-
-      <div class="card card-accent" style="display:flex;align-items:flex-start;gap:0.875rem">
-        <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(245,184,0,0.12);display:flex;align-items:center;justify-content:center;color:var(--gold);margin-top:2px">
-          <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-        </div>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Altas de empleados</div>
-          <p>Alta unitaria o importación masiva desde Excel. El portal crea la cuenta y envía un email automático para que el empleado establezca su contraseña.</p>
-        </div>
-      </div>
-
-      <div class="card" style="display:flex;align-items:flex-start;gap:0.875rem">
-        <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(245,184,0,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);margin-top:2px">
-          <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        </div>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Importar cuadrantes PDF</div>
-          <p>Parser automático de PDFs Beta10: extrae turnos por empleado y mes para el calendario del portal.</p>
-        </div>
-      </div>
-
-      <div class="card" style="display:flex;align-items:flex-start;gap:0.875rem">
-        <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(245,184,0,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);margin-top:2px">
-          <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        </div>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Exportar datos</div>
-          <p>Descarga en Excel la plantilla, solicitudes, vacaciones y balance anual por empleado con un clic.</p>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- 6 ALTAS -->
-  <section class="slide slide-dense" data-slide="6">
-    <div class="eyebrow">Novedad · Alta de empleados</div>
-    <h2>Alta gestionada por coordinación</h2>
-    <p class="sub" style="margin-top:0;margin-bottom:0.75rem">No hay autoregistro público. El coordinador da de alta desde el panel; el empleado recibe un email con enlace para crear su contraseña.</p>
-    <div class="grid-2" style="margin-top:0.5rem">
-      <div class="card card-accent" style="margin:0">
-        <div class="card-label">Flujo del coordinador</div>
-        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item"><strong>Alta unitaria</strong> — Admin → Empleados → + Añadir (nombre, email, DNI, cargo)</div>
-          <div class="feat-item"><strong>Alta masiva</strong> — Admin → Más → Importar Excel (plantilla descargable)</div>
-          <div class="feat-item"><strong>Email automático</strong> — Enlace para establecer contraseña (Supabase Auth)</div>
-          <div class="feat-item"><strong>Rol admin</strong> — Editar empleado → «Acceso administración» solo para coordinadores</div>
-        </div>
-      </div>
-      <div class="card" style="margin:0">
-        <div class="card-label">Flujo del empleado</div>
-        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item"><strong>Espera el email</strong> — Revisa bandeja y spam tras el alta</div>
-          <div class="feat-item"><strong>Establece contraseña</strong> — Pulsa el enlace del correo ENERPRO</div>
-          <div class="feat-item"><strong>Entra al portal</strong> — Email corporativo + contraseña en login</div>
-          <div class="feat-item"><strong>Sin acceso</strong> — Contacta con tu coordinador (no hay formulario público)</div>
-        </div>
-      </div>
-    </div>
-    <div class="callout-box" style="margin-top:1rem">
-      <strong style="color:var(--gold)">Guía operativa</strong> — <a href="guia-coordinacion.html" style="color:var(--gold)">guia-coordinacion.html</a> · Email de bienvenida automático en cada alta (ver guía)
-    </div>
-  </section>
-
-  <!-- 7 ACCESO -->
-  <section class="slide slide-dense" data-slide="7">
-    <div class="eyebrow">Módulo · Acceso</div>
-    <h2>Autenticación y cuenta</h2>
-    <div class="feat-grid">
-      <div class="feat-item"><strong>Login corporativo</strong> — Email + contraseña vía Supabase Auth</div>
-      <div class="feat-item"><strong>Sesión persistente</strong> — Al recargar o reabrir la PWA sigues dentro</div>
-      <div class="feat-item"><strong>Cierre por inactividad</strong> — Logout automático tras 10 min sin actividad</div>
-      <div class="feat-item"><strong>Recuperar contraseña</strong> — Enlace por email, flujo self-service</div>
-      <div class="feat-item"><strong>Cambio obligatorio</strong> — Primera entrada con contraseña temporal</div>
-      <div class="feat-item"><strong>Cambio desde perfil</strong> — El empleado actualiza su contraseña</div>
-      <div class="feat-item"><strong>Cuenta inactiva</strong> — Bloqueo automático si el empleado está de baja</div>
-      <div class="feat-item"><strong>Idioma ES / CA</strong> — Selector en login, sidebar y móvil</div>
-      <div class="feat-item"><strong>PWA instalable</strong> — Añadir a pantalla de inicio (Android / iOS)</div>
-    </div>
-  </section>
-
-  <!-- 8 INICIO -->
-  <section class="slide slide-dense" data-slide="8">
-    <div class="eyebrow">Módulo · Inicio</div>
-    <h2>Panel principal del empleado</h2>
-    <div class="feat-grid">
-      <div class="feat-item"><strong>Bienvenida personalizada</strong> — Nombre, cargo y mes actual</div>
-      <div class="feat-item"><strong>Stats documentos</strong> — Total disponibles y sin leer</div>
-      <div class="feat-item"><strong>Cuadrante destacado</strong> — Acceso directo al cuadrante del mes</div>
-      <div class="feat-item"><strong>Firma de cuadrante</strong> — Confirmación de lectura con fecha registrada</div>
-      <div class="feat-item"><strong>Últimos documentos</strong> — Vista rápida de lo más reciente</div>
-      <div class="feat-item"><strong>Notificación realtime</strong> — Aviso cuando suben un documento nuevo</div>
-    </div>
-  </section>
-
-  <!-- 9 DOCUMENTOS -->
-  <section class="slide slide-dense" data-slide="9">
-    <div class="eyebrow">Módulo · Documentos</div>
-    <h2>Mis documentos</h2>
-    <div class="feat-grid">
-      <div class="feat-item"><strong>Tipos</strong> — Nóminas, cuadrantes, contratos y otros</div>
-      <div class="feat-item"><strong>Filtros</strong> — Por tipo con un clic</div>
-      <div class="feat-item"><strong>Visor PDF integrado</strong> — Ver documento sin salir del portal</div>
-      <div class="feat-item"><strong>Descarga</strong> — Guardar copia local</div>
-      <div class="feat-item"><strong>Firma / confirmación</strong> — Cuadrantes con registro de fecha y hora</div>
-      <div class="feat-item"><strong>Estado leído</strong> — Control de documentos pendientes de revisar</div>
-      <div class="feat-item"><strong>Almacenamiento seguro</strong> — Supabase Storage por empleado</div>
-      <div class="feat-item"><strong>Badge contador</strong> — Indicador de documentos sin leer en navegación</div>
-    </div>
-  </section>
-
-  <!-- 10 VACACIONES + SOLICITUDES -->
-  <section class="slide slide-dense" data-slide="10">
-    <div class="eyebrow">Módulo · Vacaciones y solicitudes</div>
-    <h2>Gestión de permisos</h2>
-    <div class="grid-2" style="margin-top:0.5rem">
-      <div class="card card-accent" style="margin:0">
-        <div class="card-label">Vacaciones</div>
-        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item"><strong>Contador anual</strong> — Días totales, usados y restantes</div>
-          <div class="feat-item"><strong>Tipos</strong> — Vacaciones, permiso, asuntos propios, baja médica</div>
-          <div class="feat-item"><strong>Solicitud online</strong> — Fechas, notas y cálculo automático de días</div>
-          <div class="feat-item"><strong>Validación</strong> — Sin solapamientos ni exceder días disponibles</div>
-          <div class="feat-item"><strong>Historial</strong> — Todas las peticiones con estado y comentario admin</div>
-          <div class="feat-item"><strong>Cancelar pendiente</strong> — El empleado puede anular antes de aprobar</div>
-        </div>
-      </div>
-      <div class="card" style="margin:0">
-        <div class="card-label">Solicitudes generales</div>
-        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item"><strong>Formulario</strong> — Tipo, fechas y descripción del motivo</div>
-          <div class="feat-item"><strong>Tipos</strong> — Cambio turno, permiso, consulta general…</div>
-          <div class="feat-item"><strong>Estados</strong> — Pendiente → aprobada / rechazada</div>
-          <div class="feat-item"><strong>Notificación</strong> — Toast + push al cambiar el estado</div>
-          <div class="feat-item"><strong>Historial propio</strong> — Listado con badges de color</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 11 TURNOS + PERFIL -->
-  <section class="slide slide-dense" data-slide="11">
-    <div class="eyebrow">Módulo · Turnos y perfil</div>
-    <h2>Cuadrantes PDF y calendario</h2>
-    <div class="grid-2" style="margin-top:0.5rem">
-      <div class="card card-accent" style="margin:0">
-        <div class="card-label">Mis turnos (rediseñado)</div>
-        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item"><strong>Vista principal</strong> — Lista de cuadrantes PDF del mes</div>
-          <div class="feat-item"><strong>Subir cuadrante</strong> — El empleado sube su PDF mensual</div>
-          <div class="feat-item"><strong>Reemplazo por mes</strong> — Un cuadrante nuevo del mismo mes sustituye al anterior (sin duplicados)</div>
-          <div class="feat-item"><strong>Import automático</strong> — Al subir, parser Beta10 → calendario sin paso extra</div>
-          <div class="feat-item"><strong>Parser manual</strong> — «Ver turnos» para revisar preview e importar de nuevo si hace falta</div>
-          <div class="feat-item"><strong>Acciones</strong> — Ver, descargar, firmar y eliminar</div>
-          <div class="feat-item"><strong>Calendario secundario</strong> — Desplegable «Ver en calendario» + iCal</div>
-          <div class="feat-item"><strong>Pills por turno</strong> — Mañana, tarde, noche, guardia, libre</div>
-        </div>
-      </div>
-      <div class="card" style="margin:0">
-        <div class="card-label">Mi perfil</div>
-        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item"><strong>Hero card</strong> — Avatar, nombre, cargo, email, estado activo</div>
-          <div class="feat-item"><strong>Datos personales</strong> — Nombre, DNI, email, cargo</div>
-          <div class="feat-item"><strong>Resumen vacaciones</strong> — Contador integrado en perfil</div>
-          <div class="feat-item"><strong>Cambiar contraseña</strong> — Modal desde la propia cuenta</div>
-          <div class="feat-item"><strong>Copiar email</strong> — Un clic con toast de confirmación</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 12 ADMIN DASHBOARD + EMPLEADOS -->
-  <section class="slide slide-dense" data-slide="12">
-    <div class="eyebrow">Admin · Dashboard y plantilla</div>
-    <h2>Vista global y empleados</h2>
-    <div class="grid-2" style="margin-top:0.5rem">
-      <div class="card card-accent" style="margin:0">
-        <div class="card-label">Dashboard</div>
-        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item"><strong>KPIs animados</strong> — Empleados, solicitudes, vacaciones, firmas</div>
-          <div class="feat-item"><strong>Gráfica solicitudes</strong> — Últimos 6 meses (canvas nativo)</div>
-          <div class="feat-item"><strong>Gráfica vacaciones</strong> — Días por empleado, año actual</div>
-          <div class="feat-item"><strong>Cuadrantes sin firmar</strong> — Listado de pendientes con acceso directo</div>
-          <div class="feat-item"><strong>Badge admin</strong> — Contador realtime de pendientes totales</div>
-        </div>
-      </div>
-      <div class="card" style="margin:0">
-        <div class="card-label">Empleados</div>
-        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item"><strong>Alta completa</strong> — Auth + ficha en BD con contraseña inicial</div>
-          <div class="feat-item"><strong>Edición</strong> — Datos, cargo, días vacaciones, activo/inactivo</div>
-          <div class="feat-item"><strong>Filtros</strong> — Por cargo: vigilantes, auxiliares, coordinadores…</div>
-          <div class="feat-item"><strong>Buscador</strong> — Nombre, email o DNI en tiempo real</div>
-          <div class="feat-item"><strong>Import Excel</strong> — Carga masiva con plantilla descargable</div>
-          <div class="feat-item"><strong>Export Excel</strong> — Listado completo de plantilla</div>
-          <div class="feat-item"><strong>Forzar cambio pass</strong> — Obligar reset en próximo acceso</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 13 ADMIN DOCS + APROBACIONES -->
-  <section class="slide slide-dense" data-slide="13">
-    <div class="eyebrow">Admin · Documentos y aprobaciones</div>
-    <h2>Contenido y revisiones</h2>
+    <h2>Lo esencial para la plantilla</h2>
     <div class="grid-2" style="margin-top:0.5rem">
       <div class="card card-accent" style="margin:0">
         <div class="card-label">Documentos</div>
         <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item"><strong>Subida individual</strong> — PDF por empleado y tipo</div>
-          <div class="feat-item"><strong>Subida masiva ZIP</strong> — Match automático por DNI en nombre archivo</div>
-          <div class="feat-item"><strong>Gestión central</strong> — Tab docs-admin con filtros y visor</div>
-          <div class="feat-item"><strong>Barra de progreso</strong> — Feedback en subidas masivas</div>
-          <div class="feat-item"><strong>Enriquecimiento client-side</strong> — Datos empleado sin joins problemáticos</div>
+          <div class="feat-item">Nóminas, cuadrantes y contratos siempre disponibles</div>
+          <div class="feat-item">Visor PDF integrado, descarga y firma de cuadrantes</div>
+          <div class="feat-item">El empleado puede eliminar documentos propios</div>
         </div>
       </div>
       <div class="card" style="margin:0">
-        <div class="card-label">Solicitudes y vacaciones</div>
+        <div class="card-label">Turnos</div>
         <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item"><strong>Aprobar / rechazar</strong> — Con comentario opcional al empleado</div>
-          <div class="feat-item"><strong>Buscador realtime</strong> — Filtrar por nombre de empleado</div>
-          <div class="feat-item"><strong>Filtro por estado</strong> — Pendientes, aprobadas, rechazadas, todas</div>
-          <div class="feat-item"><strong>Export Excel</strong> — Solicitudes y vacaciones con todos los campos</div>
-          <div class="feat-item"><strong>Notificación empleado</strong> — Toast + push al resolver petición</div>
-          <div class="feat-item"><strong>Email acceso</strong> — Plantilla Supabase con marca ENERPRO (activo en demo)</div>
-          <div class="feat-item"><strong>Email automático</strong> — Avisos al aprobar/rechazar (Edge Function + Resend; pendiente dominio y aprobación proyecto)</div>
+          <div class="feat-item">Sube tu cuadrante PDF — reemplaza el del mismo mes</div>
+          <div class="feat-item">Import automático al calendario (parser Beta10)</div>
+          <div class="feat-item">Vista mensual + export iCal</div>
+        </div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-label">Vacaciones</div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item">Calendario desde / hasta con contador de días</div>
+          <div class="feat-item">Balance anual, validación de solapamientos</div>
+          <div class="feat-item">Justificante opcional solo en permiso, baja o visita médica — no en vacaciones</div>
+        </div>
+      </div>
+      <div class="card card-accent" style="margin:0">
+        <div class="card-label">Solicitudes</div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item">Buzón con calendario real (sin escribir fechas a mano)</div>
+          <div class="feat-item">Permisos, bajas, cambio de turno o consulta general</div>
+          <div class="feat-item">Estado en tiempo real con aviso al resolver</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 14 ADMIN TURNOS + IMPORTAR -->
-  <section class="slide slide-dense" data-slide="14">
-    <div class="eyebrow">Admin · Turnos, cuadrante e importación</div>
-    <h2>Planificación del servicio</h2>
-    <div class="feat-grid">
-      <div class="feat-item"><strong>Crear turno</strong> — Empleado, fecha, tipo, horas y lugar</div>
-      <div class="feat-item"><strong>Asignación masiva</strong> — Por rango de fechas o varios empleados</div>
-      <div class="feat-item"><strong>Import Excel</strong> — Carga de turnos desde hoja de cálculo</div>
-      <div class="feat-item"><strong>Subir cuadrante (admin)</strong> — PDF por empleado: reemplaza mes e importa turnos al calendario</div>
-      <div class="feat-item"><strong>Importar PDF Beta10</strong> — Parser de cuadrantes reales → turnos en BD (reemplaza mes)</div>
-      <div class="feat-item"><strong>Preview antes de importar</strong> — Modal con turnos detectados</div>
-      <div class="feat-item"><strong>Cuadrante visual</strong> — Tabla empleado × día del mes</div>
-      <div class="feat-item"><strong>Nav mes</strong> — Anterior / siguiente / hoy + filtro por cargo</div>
-      <div class="feat-item"><strong>Avatares</strong> — Iniciales con color por empleado, agrupados por cargo</div>
-      <div class="feat-item"><strong>Export CSV</strong> — Cuadrante del mes descargable</div>
-      <div class="feat-item"><strong>Resumen vacacional</strong> — Balance anual por empleado, filtro cargo, export</div>
+  <!-- 5 COORDINADOR -->
+  <section class="slide slide-dense" data-slide="5">
+    <div class="eyebrow">Perfil · Coordinador</div>
+    <h2>Control desde un panel</h2>
+    <div class="grid-2" style="margin-top:0.5rem">
+      <div class="card card-accent" style="margin:0">
+        <div class="card-label">Plantilla y accesos</div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item">Alta unitaria o import masivo desde Excel</div>
+          <div class="feat-item">Email automático para que el empleado cree su contraseña</div>
+          <div class="feat-item">Sin autoregistro público — todo pasa por coordinación</div>
+        </div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-label">Documentos</div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item">Subida individual o ZIP con match por DNI</div>
+          <div class="feat-item">Cuadrante PDF: reemplaza mes e importa turnos</div>
+          <div class="feat-item">Export Excel de plantilla, solicitudes y vacaciones</div>
+        </div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-label">Aprobaciones</div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item">Aprobar o rechazar con comentario en dos clics</div>
+          <div class="feat-item">Ver justificantes de bajas y permisos</div>
+          <div class="feat-item">Badge de pendientes en tiempo real</div>
+        </div>
+      </div>
+      <div class="card card-accent" style="margin:0">
+        <div class="card-label">Turnos y dashboard</div>
+        <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
+          <div class="feat-item">Cuadrante visual del mes, filtros por cargo</div>
+          <div class="feat-item">Asignación masiva por rango de fechas</div>
+          <div class="feat-item">KPIs, gráficas y resumen vacacional anual</div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- 15 UX TRANSVERSAL -->
-  <section class="slide slide-dense" data-slide="15">
-    <div class="eyebrow">Experiencia transversal</div>
-    <h2>UX, diseño y movilidad</h2>
+  <!-- 6 EXPERIENCIA -->
+  <section class="slide slide-dense" data-slide="6">
+    <div class="eyebrow">Experiencia</div>
+    <h2>Diseñado para el día a día</h2>
     <div class="grid-3" style="margin-top:0.5rem">
       <div class="card card-accent" style="margin:0">
-        <div class="card-label">Diseño</div>
+        <div class="card-label">Móvil primero</div>
         <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item">Tema claro en contenido + chrome oscuro (header, bottom nav)</div>
-          <div class="feat-item">Calendario light-mode, botones unificados, tipografía legible</div>
-          <div class="feat-item">Cards, badges, animaciones y skeleton loaders</div>
+          <div class="feat-item">Bottom nav, listas apiladas y modales táctiles</div>
+          <div class="feat-item">PWA instalable — Añadir a pantalla de inicio</div>
         </div>
       </div>
-      <div class="card card-accent" style="margin:0">
-        <div class="card-label">Móvil optimizado</div>
+      <div class="card" style="margin:0">
+        <div class="card-label">Idioma y seguridad</div>
         <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item">Bottom nav · safe areas · targets táctiles 44px+</div>
-          <div class="feat-item">Listas apiladas — cuadrantes, docs y admin sin overflow</div>
-          <div class="feat-item">Tablas → tarjetas · modales bottom sheet</div>
-          <div class="feat-item">Badge admin en header móvil para coordinadores</div>
+          <div class="feat-item">Castellano y catalán en todo el portal</div>
+          <div class="feat-item">Cierre de sesión tras 10 min de inactividad</div>
+          <div class="feat-item">Recuperación de contraseña por email</div>
         </div>
       </div>
       <div class="card" style="margin:0">
         <div class="card-label">Tiempo real</div>
         <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item">Toasts in-app con estilo premium</div>
-          <div class="feat-item">Notificaciones del navegador (permiso)</div>
-          <div class="feat-item">Supabase Realtime en docs, solicitudes y vacaciones</div>
+          <div class="feat-item">Avisos in-app al subir docs o resolver solicitudes</div>
+          <div class="feat-item">Datos sincronizados al instante (Supabase Realtime)</div>
         </div>
       </div>
     </div>
-  </section>
-
-  <!-- 16 STACK -->
-  <section class="slide slide-dense" data-slide="16">
-    <div class="eyebrow">Tecnología</div>
-    <h2>Stack técnico</h2>
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-label">Frontend</div>
-        <ul class="clean">
-          <li>HTML + JavaScript vanilla (sin frameworks)</li>
-          <li>i18n ES / CA — claves en app.js</li>
-          <li>PWA + service worker (cache shell)</li>
-          <li>Gráficas dashboard con canvas nativo</li>
-          <li>JSZip + SheetJS para import/export</li>
-        </ul>
-      </div>
-      <div class="card">
-        <div class="card-label">Backend e infra</div>
-        <ul class="clean">
-          <li>Supabase Auth, PostgreSQL, Storage, Realtime + RLS por empleado/coordinador</li>
-          <li>Edge Functions email (código listo; despliegue pendiente aprobación ENERPRO)</li>
-          <li>Deploy automático GitHub → Vercel</li>
-          <li>Tablas: empleados, documentos, solicitudes, vacaciones, turnos, solicitudes_registro</li>
-        </ul>
-      </div>
+    <div class="callout-box" style="margin-top:1rem">
+      <strong style="color:var(--gold)">Guía operativa</strong> — <a href="guia-coordinacion.html" style="color:var(--gold)">guia-coordinacion.html</a> · Manual paso a paso para coordinadores
     </div>
   </section>
 
-  <!-- 17 ESTADO -->
-  <section class="slide slide-dense" data-slide="17">
-    <div class="eyebrow">Estado del proyecto</div>
+  <!-- 7 PUESTA EN MARCHA -->
+  <section class="slide slide-dense" data-slide="7">
+    <div class="eyebrow">Puesta en marcha</div>
+    <h2>De la demo a producción</h2>
+    <p class="sub" style="margin-top:0;margin-bottom:0.75rem">El portal está desplegado. Con una plantilla de 20–30 personas, la activación lleva <strong style="color:var(--gold)">menos de una hora</strong>.</p>
+    <div class="grid-4" style="margin-top:0">
+      <div class="card" style="margin:0;border-top:2px solid rgba(245,184,0,0.5)">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:800;color:rgba(245,184,0,0.2);line-height:1;margin-bottom:0.4rem">01</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;font-weight:700;margin-bottom:0.35rem">Excel de plantilla</div>
+        <p style="font-size:0.82rem">Nombre, email corporativo, DNI y cargo de cada empleado.</p>
+      </div>
+      <div class="card card-accent" style="margin:0">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:800;color:rgba(245,184,0,0.25);line-height:1;margin-bottom:0.4rem">02</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;font-weight:700;margin-bottom:0.35rem">Importar</div>
+        <p style="font-size:0.82rem">Admin → Importar. Cuentas creadas y email de acceso enviado.</p>
+      </div>
+      <div class="card" style="margin:0;border-top:2px solid rgba(245,184,0,0.5)">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:800;color:rgba(245,184,0,0.2);line-height:1;margin-bottom:0.4rem">03</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;font-weight:700;margin-bottom:0.35rem">Documentos</div>
+        <p style="font-size:0.82rem">ZIP de PDFs nombrados con DNI — asignación automática.</p>
+      </div>
+      <div class="card" style="margin:0;border-top:2px solid rgba(245,184,0,0.5)">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:800;color:rgba(245,184,0,0.2);line-height:1;margin-bottom:0.4rem">04</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;font-weight:700;margin-bottom:0.35rem">Listo</div>
+        <p style="font-size:0.82rem">Empleados entran, ven docs y empiezan a usar vacaciones y turnos.</p>
+      </div>
+    </div>
+    <ul class="clean" style="margin-top:1rem;font-size:0.88rem">
+      <li><strong style="color:var(--text)">Necesitamos de ENERPRO:</strong> lista de empleados, días de vacaciones anuales, PDFs actuales, coordinador designado y dominio de email (<code>portal@enerpro.com</code>) para avisos automáticos</li>
+    </ul>
+  </section>
+
+  <!-- 8 ESTADO -->
+  <section class="slide slide-dense" data-slide="8">
+    <div class="eyebrow">Estado · Mayo 2026</div>
     <h2>¿Dónde está el portal?</h2>
-    <p class="sub">Avance del Portal del Empleado desarrollado para ENERPRO — mayo 2026.</p>
-    <div class="grid-3">
+    <div class="grid-3" style="margin-top:0.5rem">
       <div class="card card-light">
-        <div class="card-value">~90%</div>
-        <div class="card-label">Core funcional</div>
-        <p>Empleado + admin operativos. Móvil optimizado.</p>
+        <div class="card-value">Live</div>
+        <div class="card-label">Desplegado</div>
+        <p>enerpro.vercel.app · push a main → actualización automática</p>
       </div>
       <div class="card card-light">
-        <div class="card-value" style="color:var(--green)">Live</div>
-        <div class="card-label">Despliegue</div>
-        <p>Push a main → Vercel auto-deploy.</p>
+        <div class="card-value" style="color:var(--green)">~95%</div>
+        <div class="card-label">Funcional</div>
+        <p>Empleado y admin operativos en móvil y escritorio</p>
       </div>
       <div class="card card-light">
         <div class="card-value" style="font-size:1.8rem">ES · CA</div>
         <div class="card-label">Idiomas</div>
-        <p>Selector en login, sidebar y móvil.</p>
+        <p>Selector en login y navegación</p>
       </div>
     </div>
-    <ul class="clean" style="margin-top:1rem">
-      <li><span class="tag tag-ok">Hecho</span> Altas por coordinación · import Excel empleados · parser PDF Beta10 · cuadrante self-service · reemplazo cuadrante por mes · import auto al calendario · RLS Supabase · idle logout 10 min · móvil responsive · PWA · cuadrante visual · dashboard · plantillas email ENERPRO (Supabase Auth)</li>
-      <li><span class="tag tag-next">Próximo</span> Aprobación proyecto ENERPRO · datos reales · dominio email · desplegar Resend</li>
-      <li><span class="tag tag-fut">Futuro</span> Justificantes bajas · calendario equipo · auditoría firmas</li>
+    <ul class="clean" style="margin-top:1rem;font-size:0.88rem">
+      <li><span class="tag tag-ok">Hecho</span> Calendario en solicitudes · justificantes en permisos/bajas · parser PDF · cuadrante self-service · import Excel · dashboard · PWA</li>
+      <li><span class="tag tag-next">Pendiente</span> Aprobación formal ENERPRO · datos reales · dominio email propio (Resend)</li>
+      <li><span class="tag tag-fut">Futuro</span> Calendario de equipo · auditoría de firmas</li>
     </ul>
   </section>
 
-  <!-- 18 DE DEMO A PRODUCCIÓN — QUÉ SE NECESITA -->
-  <section class="slide slide-dense" data-slide="18">
-    <div class="eyebrow">Puesta en marcha</div>
-    <h2>De la demo a datos reales</h2>
-    <p class="sub" style="margin-top:0;margin-bottom:1rem">El portal está desplegado y funcional. Solo hace falta sustituir los datos de demo por los datos reales de ENERPRO.</p>
-    <div class="grid-2" style="margin-top:0">
-
-      <div class="card card-accent" style="margin:0">
-        <div class="card-label">Qué necesitamos de ENERPRO</div>
-        <ul class="clean" style="margin-top:0.5rem">
-          <li>Lista de empleados — nombre, email corporativo, DNI y cargo</li>
-          <li>Días de vacaciones anuales por empleado (suele ser 22–25)</li>
-          <li>PDFs de nóminas y cuadrantes actuales para subir</li>
-          <li>Decidir quién será el Coordinador (acceso admin)</li>
-          <li>Un email corporativo activo por empleado para el acceso</li>
-          <li>Dominio de correo verificado (<code>portal@enerpro.com</code>) — pendiente aprobación del proyecto</li>
-        </ul>
-      </div>
-
-      <div class="card" style="margin:0">
-        <div class="card-label">Qué ya está listo y no cambia</div>
-        <ul class="clean" style="margin-top:0.5rem">
-          <li>Infraestructura cloud — Supabase + Vercel operativos</li>
-          <li>Portal desplegado en producción con deploy automático</li>
-          <li>Importador Excel de empleados — una hoja, un clic</li>
-          <li>Subida masiva de PDFs — ZIP con match automático por DNI</li>
-          <li>Acceso móvil, bilingüe (ES/CA) y PWA instalable</li>
-          <li>Flujo de contraseñas — temporal en primer acceso, cambio self-service</li>
-          <li>Emails de acceso — plantilla ENERPRO en Supabase Auth (sin dominio propio en demo)</li>
-          <li>Altas centralizadas — coordinador crea cuentas; email automático al empleado</li>
-          <li>Parser PDF cuadrantes Beta10 — importación automática al subir o desde Importar (reemplaza turnos del mes)</li>
-        </ul>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- 19 PUESTA EN MARCHA — 4 PASOS -->
-  <section class="slide slide-dense" data-slide="19">
-    <div class="eyebrow">Puesta en marcha</div>
-    <h2>Activación en 4 pasos</h2>
-    <p class="sub" style="margin-top:0;margin-bottom:1rem">El coordinador lo gestiona todo desde el panel de administración. Tiempo estimado con una plantilla de 20–30 personas: <strong style="color:var(--gold)">menos de una hora</strong>.</p>
-
-    <div class="grid-4" style="margin-top:0">
-
-      <div class="card" style="margin:0;border-top:2px solid rgba(245,184,0,0.5);position:relative">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:800;color:rgba(245,184,0,0.18);line-height:1;margin-bottom:0.5rem">01</div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.04em;margin-bottom:0.4rem;color:var(--text)">Preparar Excel</div>
-        <p>Rellenar la plantilla descargable (Admin → Más → Importar) con <strong>nombre · email corporativo · DNI · cargo</strong> de cada empleado.</p>
-      </div>
-
-      <div class="card card-accent" style="margin:0">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:800;color:rgba(245,184,0,0.25);line-height:1;margin-bottom:0.5rem">02</div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.04em;margin-bottom:0.4rem;color:var(--text)">Importar plantilla</div>
-        <p>Admin → Más → Importar. El portal crea cuentas, fichas en BD y envía email de acceso a cada correo.</p>
-      </div>
-
-      <div class="card" style="margin:0;border-top:2px solid rgba(245,184,0,0.5)">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:800;color:rgba(245,184,0,0.18);line-height:1;margin-bottom:0.5rem">03</div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.04em;margin-bottom:0.4rem;color:var(--text)">Subir documentos</div>
-        <p>Agrupar PDFs en un ZIP nombrando cada archivo con el DNI del empleado. Un clic sube y asigna todos automáticamente.</p>
-      </div>
-
-      <div class="card" style="margin:0;border-top:2px solid rgba(245,184,0,0.5)">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:800;color:rgba(245,184,0,0.18);line-height:1;margin-bottom:0.5rem">04</div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.04em;margin-bottom:0.4rem;color:var(--text)">Comunicar acceso</div>
-        <p>El portal envía automáticamente el email de bienvenida + enlace de contraseña a cada empleado (también en import masivo).</p>
-      </div>
-
-    </div>
-
-    <div class="callout-box">
-      <strong style="color:var(--gold)">Tip cuadrantes</strong> — Al subir un PDF en Mis turnos (o Admin → Subir documento → Cuadrante), el portal sustituye el cuadrante del mismo mes e importa turnos al calendario. Si hay cambios, vuelve a subir el PDF revisado. Admin → Importar sigue disponible para preview manual. PDFs Beta10 (CTTI1/2, sindicales) soportados.
-    </div>
-  </section>
-
-  <!-- 20 DEMO -->
-  <section class="slide" data-slide="20">
+  <!-- 9 DEMO -->
+  <section class="slide" data-slide="9">
     <div class="eyebrow">Demo en vivo</div>
     <h2>Pruébalo ahora</h2>
-    <p class="sub">Escanea el QR o abre el portal. Altas: coordinador desde Admin → Empleados o Importar. Instálalo en el móvil: Compartir → Añadir a pantalla de inicio.</p>
+    <p class="sub">Escanea el QR o abre el portal. En móvil: Compartir → Añadir a pantalla de inicio.</p>
     <div class="qr-box">
-      <div class="qr-placeholder" id="qrCode">QR al portal<br><small>(sustituir URL Vercel)</small></div>
-      <div style="font-size:1.05rem;color:var(--text2)" id="portalUrl">https://tu-dominio.vercel.app</div>
+      <div class="qr-placeholder" id="qrCode">QR al portal</div>
+      <div style="font-size:1.05rem;color:var(--text2)" id="portalUrl">https://enerpro.vercel.app</div>
     </div>
-    <p class="hint" style="margin-top:1rem">Ruta demo: empleado → documentos → vacaciones · coordinador → import Excel → aprobar pendientes → cuadrante admin · Guía: <a href="guia-coordinacion.html" style="color:var(--gold)">guia-coordinacion.html</a></p>
+    <p class="hint" style="margin-top:1rem">Ruta rápida: documentos → vacaciones con calendario → solicitud con justificante · Admin: import Excel → aprobar pendientes</p>
   </section>
 
-  <!-- 21 CIERRE -->
-  <section class="slide" data-slide="21">
+  <!-- 10 CIERRE -->
+  <section class="slide" data-slide="10">
     <div class="eyebrow">Gracias</div>
     <h1>Portal del <span>Empleado</span></h1>
-    <p class="sub" style="font-size:1.2rem;margin-top:1.5rem">Proyecto web para <strong style="color:var(--text);font-weight:600">ENERPRO</strong> — empresa de seguridad privada y servicios auxiliares.</p>
-    <p class="sub" style="margin-top:1rem;font-size:0.95rem">Digitalizar la relación entre la empresa y su plantilla: documentos, turnos y vacaciones en un solo sitio.</p>
+    <p class="sub" style="font-size:1.15rem;margin-top:1.25rem">Documentos, turnos y vacaciones en un solo sitio para la plantilla de <strong style="color:var(--text);font-weight:600">ENERPRO</strong>.</p>
     <p class="sub" style="margin-top:2rem;color:var(--muted)">¿Preguntas?</p>
   </section>
 
@@ -1303,7 +930,7 @@
 
 <div class="controls">
   <div class="controls-left">
-    <span class="progress" id="slideNum">1 / 21</span>
+    <span class="progress" id="slideNum">1 / 10</span>
     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:5%"></div></div>
     <span class="hint">← → navegar · F pantalla completa</span>
   </div>
