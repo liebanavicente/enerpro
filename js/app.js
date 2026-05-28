@@ -54,7 +54,6 @@ var _vacAdminData = [];
 var _cuadAdminAnio  = new Date().getFullYear();
 var _cuadAdminMes   = new Date().getMonth();
 var _cuadAdminCargo = 'todos';
-var _justificanteVacId = null;
 var _cuadAdminRaw   = { empleados: [], turnos: [] };
 var _dashChartSolCtx = null;
 var _dashChartVacCtx = null;
@@ -198,7 +197,7 @@ function aplicarIdioma() {
   if (!ap) return;
   var pid = ap.id;
   if (pid === 'page-inicio' || pid === 'page-documentos' || pid === 'page-calendario') cargarDocumentos();
-  if (pid === 'page-solicitudes') cargarMisSolicitudes();
+  if (pid === 'page-solicitudes') { cargarMisSolicitudes(); toggleSolJustificanteField(); }
   if (pid === 'page-vacaciones') cargarVacaciones();
   if (pid === 'page-calendario') cargarCalendario();
   toggleVacJustificanteField();
@@ -1427,6 +1426,30 @@ document.addEventListener('click', function(e){
 });
 
 // SOLICITUDES - EMPLEADO
+function _textoAdmiteJustificante(texto) {
+  var s = String(texto || '').toLowerCase();
+  if (s.indexOf('consulta') >= 0 || s.indexOf('turno') >= 0) return false;
+  return s.indexOf('permiso') >= 0 || s.indexOf('baja') >= 0 || s.indexOf('vacacion') >= 0
+    || s.indexOf('visita') >= 0 || s.indexOf('asunto') >= 0;
+}
+
+function toggleSolJustificanteField() {
+  var sel = document.getElementById('solTipo') || document.querySelector('#solicitudForm [name="tipo"]');
+  var wrap = document.getElementById('solJustificanteWrap');
+  var hint = document.getElementById('solVacacionesHint');
+  if (!sel) return;
+  var admite = _textoAdmiteJustificante(sel.value);
+  if (wrap) wrap.style.display = admite ? 'block' : 'none';
+  if (hint) {
+    var s = sel.value.toLowerCase();
+    hint.style.display = (s.indexOf('permiso') >= 0 || s.indexOf('vacacion') >= 0) ? 'block' : 'none';
+  }
+  if (!admite) {
+    var inp = document.getElementById('solJustificante');
+    if (inp) inp.value = '';
+  }
+}
+
 var solicitudForm = document.getElementById('solicitudForm');
 if (solicitudForm) {
   solicitudForm.addEventListener('submit', async function(e) {
@@ -1442,15 +1465,35 @@ if (solicitudForm) {
     var tipo   = this.querySelector('[name="tipo"]').value;
     var fechas = this.querySelector('[name="fechas"]').value.trim();
     var motivo = this.querySelector('[name="motivo"]').value.trim();
-    var { error } = await sb.from('solicitudes').insert({
+    var payload = {
       empleado_id: currentEmpleado.id, tipo: tipo, fechas: fechas, motivo: motivo, estado: 'pendiente'
-    });
+    };
+    var justInp = document.getElementById('solJustificante');
+    var archivoJust = justInp && justInp.files && justInp.files[0] ? justInp.files[0] : null;
+    if (archivoJust && _textoAdmiteJustificante(tipo)) {
+      try {
+        payload.justificante_url = await _subirJustificanteArchivo(archivoJust);
+      } catch (ex) {
+        if (err) { err.style.display = 'block'; err.textContent = ex.message || t('vac.just_err_subir'); }
+        return;
+      }
+    }
+    var { error } = await sb.from('solicitudes').insert(payload);
     if (error) {
-      if (err) { err.style.display = 'block'; err.textContent = 'Error: ' + error.message; }
+      if (payload.justificante_url) {
+        try { await _eliminarJustificanteStorage(payload.justificante_url); } catch (ex) { /* noop */ }
+      }
+      if (err) {
+        err.style.display = 'block';
+        err.textContent = error.message.indexOf('justificante_url') >= 0
+          ? t('vac.just_err_db')
+          : ('Error: ' + error.message);
+      }
       return;
     }
     if (ok) { ok.style.display = 'block'; ok.textContent = '✓ Solicitud enviada. El coordinador la revisará en breve.'; }
     this.reset();
+    toggleSolJustificanteField();
     cargarMisSolicitudes();
   });
 }
@@ -1477,12 +1520,17 @@ async function cargarMisSolicitudes() {
         'style="margin-left:0.5rem;color:var(--muted);border-color:var(--border2);font-size:var(--text-xs)" ' +
         'title="Cancelar solicitud">' + t('sol.cancelar') + '</button>'
       : '';
+    var justBtns = _justificanteSolBtns(s);
+    var justRow = justBtns
+      ? '<div style="grid-column:1/-1;margin-top:0.35rem;display:flex;flex-wrap:wrap;gap:0.35rem">' + justBtns + '</div>'
+      : '';
     var d = delay; delay += 50;
     return '<div class="vac-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<span class="badge badge-blue vac-tipo" style="min-width:6rem;justify-content:center">' + tipoLbl + '</span>' +
       '<span class="vac-fechas">' + (s.fechas || '—') +
         (s.motivo    ? '<br><span style="font-size:0.72rem;color:var(--muted)">'  + s.motivo    + '</span>' : '') +
-        (s.comentario ? '<br><span style="font-size:0.72rem;color:var(--gold)">💬 ' + s.comentario + '</span>' : '') + '</span>' +
+        (s.comentario ? '<br><span style="font-size:0.72rem;color:var(--gold)">💬 ' + s.comentario + '</span>' : '') +
+        justRow + '</span>' +
       '<span class="vac-dias" style="min-width:5.5rem;font-size:0.75rem;color:var(--muted)">' + fecha + '</span>' +
       '<span class="badge ' + eb.cls + '">' + eb.lbl + '</span>' +
       btnCancelar +
@@ -1529,14 +1577,24 @@ function filtrarSolicitudesAdmin() {
     var cmt = s.comentario ? '<div class="doc-meta" style="color:var(--gold);margin-top:3px">💬 ' + s.comentario + '</div>' : '';
     var nombre = s.empleados ? s.empleados.nombre : 'Empleado';
     var d = delay; delay += 45;
+    var justAdminBtn = '';
+    if (_textoAdmiteJustificante(s.tipo)) {
+      if (s.justificante_url) {
+        var safeJ = s.justificante_url.replace(/'/g, "\\'");
+        justAdminBtn = '<button type="button" class="btn-sm" onclick="verJustificanteBaja(\'' + safeJ + '\')" style="font-size:0.72rem">' + t('va.just_ver') + '</button>';
+      } else if (s.estado === 'pendiente') {
+        justAdminBtn = '<span style="font-size:0.72rem;color:var(--muted)">' + t('va.just_sin') + '</span>';
+      }
+    }
     return '<div class="doc-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<div class="doc-info"><div class="doc-icon">📋</div>' +
       '<div><div class="doc-name">' + highlightMatch(nombre, q) + ' — ' + s.tipo + '</div>' +
       '<div class="doc-meta">' + (s.fechas||'') + (s.motivo ? ' · ' + s.motivo : '') + '</div>' +
       '<div class="doc-meta">' + new Date(s.created_at).toLocaleDateString('es-ES') + '</div>' +
       cmt + '</div></div>' +
-      '<div style="display:flex;gap:0.5rem;align-items:center" id="sol-act-' + s.id + '">' +
+      '<div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap" id="sol-act-' + s.id + '">' +
       '<span class="badge ' + eb.cls + '">' + eb.lbl + '</span>' +
+      justAdminBtn +
       (s.estado === 'pendiente' ?
         '<button class="btn-sm primary" onclick="mostrarAccionSolicitud(\'' + s.id + '\',\'aprobada\')">' + t('sa.aprobar') + '</button>' +
         '<button class="btn-sm" style="border-color:#dc2626;color:#dc2626" onclick="mostrarAccionSolicitud(\'' + s.id + '\',\'rechazada\')">' + t('sa.rechazar') + '</button>'
@@ -1840,6 +1898,11 @@ async function _purgeEmpleadoDatos(empId) {
     if (jPaths.length) await sb.storage.from('documentos').remove(jPaths);
   }
   await sb.from('vacaciones').delete().eq('empleado_id', empId);
+  var { data: solsJust } = await sb.from('solicitudes').select('justificante_url').eq('empleado_id', empId);
+  if (solsJust && solsJust.length) {
+    var sPaths = solsJust.map(function(s) { return _docStoragePath(s.justificante_url); }).filter(Boolean);
+    if (sPaths.length) await sb.storage.from('documentos').remove(sPaths);
+  }
   await sb.from('solicitudes').delete().eq('empleado_id', empId);
   try {
     var listed = await sb.storage.from('documentos').list(String(empId), { limit: 1000 });
@@ -2239,7 +2302,6 @@ function calcVacacionesAnuales(emp, data, ano) {
   document.addEventListener('change', function(e) {
     if (e.target.id === 'vacDesde' || e.target.id === 'vacHasta') actualizarDias();
     if (e.target.id === 'vacTipo') toggleVacJustificanteField();
-    if (e.target.id === 'vacJustificanteLate') subirJustificanteBajaTardio(e.target);
   });
 })();
 
@@ -2260,7 +2322,7 @@ function _justificanteExtValida(name) {
   return ['pdf', 'jpg', 'jpeg', 'png', 'webp'].indexOf(ext) !== -1;
 }
 
-async function _subirJustificanteBaja(archivo) {
+async function _subirJustificanteArchivo(archivo) {
   if (!archivo || !currentEmpleado) throw new Error(t('vac.just_err_subir'));
   if (!_justificanteExtValida(archivo.name)) throw new Error(t('vac.just_err_tipo'));
   var safeName = archivo.name.replace(/[^a-zA-Z0-9._-]/g, '_');
@@ -2269,6 +2331,8 @@ async function _subirJustificanteBaja(archivo) {
   if (error) throw new Error(error.message);
   return path;
 }
+
+var _subirJustificanteBaja = _subirJustificanteArchivo;
 
 async function _eliminarJustificanteStorage(url) {
   var path = _docStoragePath(url);
@@ -2293,6 +2357,21 @@ async function _actualizarJustificanteVac(vacacionId, url, oldUrl) {
   }
 }
 
+async function _actualizarJustificanteSol(solicitudId, url, oldUrl) {
+  var { error } = await sb.rpc('actualizar_justificante_solicitud', {
+    p_solicitud_id: solicitudId,
+    p_url: url
+  });
+  if (error) throw new Error(error.message);
+  if (oldUrl && oldUrl !== url) {
+    try { await _eliminarJustificanteStorage(oldUrl); } catch (e) { /* noop */ }
+  }
+}
+
+function _justificanteFileInputHtml(recordId, handlerName) {
+  return '<input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,image/*,application/pdf" style="display:none" onchange="' + handlerName + '(\'' + recordId + '\', this)">';
+}
+
 function _justificanteVacBtns(v, opts) {
   opts = opts || {};
   if (!_tipoAdmiteJustificante(v.tipo)) return '';
@@ -2302,47 +2381,67 @@ function _justificanteVacBtns(v, opts) {
     var safeUrl = v.justificante_url.replace(/'/g, "\\'");
     html += '<button type="button" class="btn-sm" onclick="verJustificanteBaja(\'' + safeUrl + '\')" style="font-size:0.72rem">' + t('vac.just_ver') + '</button>';
     if (puedeSubir) {
-      html += '<button type="button" class="btn-sm" onclick="elegirJustificanteBaja(\'' + v.id + '\')" style="font-size:0.72rem">' + t('vac.just_cambiar') + '</button>';
+      html += '<label class="btn-sm" style="font-size:0.72rem;cursor:pointer;margin:0">' + _justificanteFileInputHtml(v.id, 'subirJustificanteVacInline') + t('vac.just_cambiar') + '</label>';
     }
   } else if (puedeSubir) {
-    html += '<button type="button" class="btn-sm gold" onclick="elegirJustificanteBaja(\'' + v.id + '\')" style="font-size:0.72rem">' + t('vac.just_subir') + '</button>';
+    html += '<label class="btn-sm gold" style="font-size:0.72rem;cursor:pointer;margin:0">' + _justificanteFileInputHtml(v.id, 'subirJustificanteVacInline') + t('vac.just_subir') + '</label>';
   } else if (opts.admin && v.estado === 'pendiente') {
     html += '<span style="font-size:0.72rem;color:var(--muted)">' + t('vac.just_pendiente') + '</span>';
   }
   return html;
 }
 
-function elegirJustificanteBaja(vacId) {
-  _justificanteVacId = vacId;
-  var inp = document.getElementById('vacJustificanteLate');
-  if (inp) { inp.value = ''; inp.click(); }
+function _justificanteSolBtns(s) {
+  if (!_textoAdmiteJustificante(s.tipo)) return '';
+  if (s.estado !== 'pendiente' && s.estado !== 'aprobada') return '';
+  var html = '';
+  if (s.justificante_url) {
+    var safeUrl = s.justificante_url.replace(/'/g, "\\'");
+    html += '<button type="button" class="btn-sm" onclick="verJustificanteBaja(\'' + safeUrl + '\')" style="font-size:0.72rem">' + t('vac.just_ver') + '</button>';
+    html += '<label class="btn-sm" style="font-size:0.72rem;cursor:pointer;margin:0">' + _justificanteFileInputHtml(s.id, 'subirJustificanteSolInline') + t('vac.just_cambiar') + '</label>';
+  } else {
+    html += '<label class="btn-sm gold" style="font-size:0.72rem;cursor:pointer;margin:0">' + _justificanteFileInputHtml(s.id, 'subirJustificanteSolInline') + t('vac.just_subir') + '</label>';
+  }
+  return html;
 }
 
-async function subirJustificanteBajaTardio(input) {
+async function subirJustificanteVacInline(vacId, input) {
   var file = input && input.files ? input.files[0] : null;
-  var vacId = _justificanteVacId;
-  _justificanteVacId = null;
   if (input) input.value = '';
   if (!file || !vacId || !currentEmpleado) return;
-
-  var vac = null;
   var { data: vacRow, error: vacErr } = await sb.from('vacaciones').select('id, tipo, estado, justificante_url')
     .eq('id', vacId).eq('empleado_id', currentEmpleado.id).maybeSingle();
-  if (vacErr) {
-    mostrarToast('❌ Error', vacErr.message);
-    return;
-  }
-  vac = vacRow;
-  if (!vac || !_tipoAdmiteJustificante(vac.tipo) || (vac.estado !== 'pendiente' && vac.estado !== 'aprobada')) {
+  if (vacErr) { mostrarToast('❌ Error', vacErr.message); return; }
+  if (!vacRow || !_tipoAdmiteJustificante(vacRow.tipo) || (vacRow.estado !== 'pendiente' && vacRow.estado !== 'aprobada')) {
     mostrarToast('❌ Error', t('vac.just_err_subir'));
     return;
   }
-
   try {
-    var url = await _subirJustificanteBaja(file);
-    await _actualizarJustificanteVac(vacId, url, vac.justificante_url);
+    var url = await _subirJustificanteArchivo(file);
+    await _actualizarJustificanteVac(vacId, url, vacRow.justificante_url);
     mostrarToast('✓ ' + t('vac.just_ok'), '');
     cargarVacaciones();
+  } catch (e) {
+    mostrarToast('❌ Error', e.message || t('vac.just_err_subir'));
+  }
+}
+
+async function subirJustificanteSolInline(solId, input) {
+  var file = input && input.files ? input.files[0] : null;
+  if (input) input.value = '';
+  if (!file || !solId || !currentEmpleado) return;
+  var { data: solRow, error: solErr } = await sb.from('solicitudes').select('id, tipo, estado, justificante_url')
+    .eq('id', solId).eq('empleado_id', currentEmpleado.id).maybeSingle();
+  if (solErr) { mostrarToast('❌ Error', solErr.message); return; }
+  if (!solRow || !_textoAdmiteJustificante(solRow.tipo) || (solRow.estado !== 'pendiente' && solRow.estado !== 'aprobada')) {
+    mostrarToast('❌ Error', t('vac.just_err_subir'));
+    return;
+  }
+  try {
+    var url = await _subirJustificanteArchivo(file);
+    await _actualizarJustificanteSol(solId, url, solRow.justificante_url);
+    mostrarToast('✓ ' + t('vac.just_ok'), '');
+    cargarMisSolicitudes();
   } catch (e) {
     mostrarToast('❌ Error', e.message || t('vac.just_err_subir'));
   }
@@ -2408,7 +2507,7 @@ async function solicitarVacaciones() {
     archivoJust = justInp && justInp.files && justInp.files[0] ? justInp.files[0] : null;
     if (archivoJust) {
       try {
-        payload.justificante_url = await _subirJustificanteBaja(archivoJust);
+        payload.justificante_url = await _subirJustificanteArchivo(archivoJust);
       } catch (e) {
         err.style.display = 'block';
         err.textContent = e.message || t('vac.just_err_subir');
@@ -2422,7 +2521,11 @@ async function solicitarVacaciones() {
     if (payload.justificante_url) {
       try { await _eliminarJustificanteStorage(payload.justificante_url); } catch (e) { /* noop */ }
     }
-    err.style.display='block'; err.textContent='Error: '+error.message; return;
+    err.style.display='block';
+    err.textContent = error.message.indexOf('justificante_url') >= 0
+      ? t('vac.just_err_db')
+      : ('Error: ' + error.message);
+    return;
   }
   ok.style.display='block'; ok.textContent='✓ Solicitud enviada. El coordinador la revisará en breve.';
   document.getElementById('vacDesde').value = '';
@@ -2639,6 +2742,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (inputExcel) inputExcel.addEventListener('change', previsualizarExcel);
   generarPlantilla();
   toggleVacJustificanteField();
+  toggleSolJustificanteField();
 });
 
 function generarPlantilla() {

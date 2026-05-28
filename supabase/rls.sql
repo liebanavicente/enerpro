@@ -311,6 +311,7 @@ CREATE POLICY vacaciones_delete_coord ON public.vacaciones
   USING (public.is_coordinador());
 
 -- Justificante baja médica (columna + RPC): ver supabase/migrations/20260523_justificante_baja.sql
+-- Justificante solicitudes (buzón): ver supabase/migrations/20260524_justificante_solicitudes.sql
 
 -- ─── TURNOS ────────────────────────────────────────────────
 

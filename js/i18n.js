@@ -159,6 +159,7 @@ var I18N = {
     'sol.desc':          'Descripción',
     'sol.desc_ph':       'Describe tu solicitud...',
     'sol.btn':           'Enviar solicitud',
+    'sol.hint_vac':      'Para vacaciones o permisos por días concretos (con calendario), usa también la sección Vacaciones del menú.',
     'sol.ok':            '✓ Solicitud enviada. El coordinador la revisará en breve.',
     'sol.mis':           'Mis solicitudes',
     'sol.empty':         'Aún no has enviado solicitudes',
@@ -215,6 +216,7 @@ var I18N = {
     'vac.just_ok':       'Justificante guardado',
     'vac.just_err_tipo': 'Formato no válido. Usa PDF o imagen (JPG, PNG).',
     'vac.just_err_subir':'No se pudo subir el justificante',
+    'vac.just_err_db':   'Falta configurar adjuntos en Supabase. Ejecuta las migraciones SQL de justificantes.',
     // Calendario
     'cal.eyebrow':       'Mi área',
     'cal.titulo':        'Mis turnos',
@@ -714,6 +716,7 @@ var I18N = {
     'sol.desc':          'Descripció',
     'sol.desc_ph':       'Descriu la teva sol·licitud...',
     'sol.btn':           'Enviar sol·licitud',
+    'sol.hint_vac':      'Per vacances o permisos per dies concrets (amb calendari), fes servir també la secció Vacances del menú.',
     'sol.ok':            '✓ Sol·licitud enviada. El coordinador la revisarà en breu.',
     'sol.mis':           'Les meves sol·licituds',
     'sol.empty':         'Encara no has enviat sol·licituds',
@@ -770,6 +773,7 @@ var I18N = {
     'vac.just_ok':       'Justificant desat',
     'vac.just_err_tipo': 'Format no vàlid. Fes servir PDF o imatge (JPG, PNG).',
     'vac.just_err_subir':'No s\'ha pogut pujar el justificant',
+    'vac.just_err_db':   'Falta configurar adjunts a Supabase. Executa les migracions SQL de justificants.',
     // Calendario
     'cal.eyebrow':       'La meva àrea',
     'cal.titulo':        'Els meus torns',

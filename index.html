@@ -1875,7 +1875,7 @@
         <form id="solicitudForm">
           <div class="form-group">
             <label data-i18n="sol.tipo">Tipo de solicitud</label>
-            <select name="tipo">
+            <select name="tipo" id="solTipo" onchange="toggleSolJustificanteField()">
               <option data-i18n="sol.t_vac">Solicitud de vacaciones</option>
               <option data-i18n="sol.t_perm">Solicitud de permiso</option>
               <option data-i18n="sol.t_turno">Cambio de turno</option>
@@ -1891,6 +1891,12 @@
             <label data-i18n="sol.desc">Descripción</label>
             <textarea name="motivo" rows="4" placeholder="Describe tu solicitud..." data-i18n-ph="sol.desc_ph"></textarea>
           </div>
+          <div id="solJustificanteWrap" class="form-group" style="display:none">
+            <label data-i18n="vac.just_label">Documento acreditativo (opcional)</label>
+            <input type="file" id="solJustificante" name="justificante" accept=".pdf,.jpg,.jpeg,.png,.webp,image/*,application/pdf">
+            <p style="font-size:0.72rem;color:var(--muted);margin:0.4rem 0 0;line-height:1.45" data-i18n="vac.just_hint">Justificante médico, permiso u otro documento. Puedes adjuntarlo ahora o más tarde.</p>
+          </div>
+          <p id="solVacacionesHint" style="display:none;font-size:0.75rem;color:var(--text2);margin:0 0 1rem;line-height:1.45;padding:0.65rem 0.85rem;background:var(--surface2);border-radius:var(--r-sm);border:1px solid var(--border)" data-i18n="sol.hint_vac">Para vacaciones o permisos por días concretos (con calendario), usa también la sección Vacaciones del menú.</p>
           <button type="submit" class="btn-primary" data-i18n="sol.btn">Enviar solicitud</button>
         </form>
       </div>
@@ -2402,7 +2408,7 @@
           <div class="error-box"   id="vacError"></div>
           <div class="form-group">
             <label data-i18n="vac.tipo">Tipo</label>
-            <select id="vacTipo">
+            <select id="vacTipo" onchange="toggleVacJustificanteField()">
               <option value="vacaciones" data-i18n="vac.t_vac">Vacaciones</option>
               <option value="permiso" data-i18n="vac.t_perm">Permiso personal</option>
               <option value="visita_medica" data-i18n="vac.t_visita">Visita médica</option>
@@ -2428,7 +2434,6 @@
             <strong id="vacDias" style="color:var(--gold)">—</strong>
           </div>
           <button class="btn-primary" onclick="solicitarVacaciones()" data-i18n="vac.btn">Enviar solicitud</button>
-          <input type="file" id="vacJustificanteLate" accept=".pdf,.jpg,.jpeg,.png,.webp,image/*,application/pdf" style="display:none" aria-hidden="true">
         </div>
 
         <!-- Historial de solicitudes -->
