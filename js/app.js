@@ -5,7 +5,6 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 var currentUser = null;
-var _regCache = {};
 var currentEmpleado = null;
 var currentIsAdmin = false;
 
@@ -45,8 +44,7 @@ var IDLE_TIMEOUT_MS = 5 * 60 * 1000; // 5 min sin actividad → cerrar sesión
 var _docBadgeCount = 0;
 var _solBadgeCount = 0;
 var _vacBadgeCount = 0;
-var _regBadgeCount = 0;
-var _ADMIN_MORE_TABS = ['subir', 'masivo', 'importar', 'vacaciones-admin', 'resumen-vac', 'registro-admin'];
+var _ADMIN_MORE_TABS = ['subir', 'masivo', 'importar', 'vacaciones-admin', 'resumen-vac'];
 var _adminMoreSuppressClose = false;
 var currentAdminTab = 'dashboard';
 var _solAdminData = [];
@@ -213,7 +211,7 @@ function aplicarIdioma() {
   if (wmEl && currentEmpleado) {
     wmEl.textContent = t('ini.bienvenido') + ', ' + currentEmpleado.nombre.split(' ')[0];
   }
-  _actualizarBadgesAdminTabs(_solBadgeCount, _vacBadgeCount, _regBadgeCount);
+  _actualizarBadgesAdminTabs(_solBadgeCount, _vacBadgeCount);
 }
 
 // ─── UI HELPERS ──────────────────────────────────────────
@@ -316,13 +314,12 @@ function actualizarBadgeAdmin(count) {
 
 async function cargarBadgeAdmin() {
   if (!currentIsAdmin) return;
-  var [solRes, vacRes, regRes] = await Promise.all([
+  var [solRes, vacRes] = await Promise.all([
     sb.from('solicitudes').select('*', { count:'exact', head:true }).eq('estado', 'pendiente'),
-    sb.from('vacaciones').select('*',  { count:'exact', head:true }).eq('estado', 'pendiente'),
-    sb.from('solicitudes_registro').select('*', { count:'exact', head:true }).eq('estado', 'pendiente')
+    sb.from('vacaciones').select('*',  { count:'exact', head:true }).eq('estado', 'pendiente')
   ]);
-  actualizarBadgeAdmin((solRes.count || 0) + (vacRes.count || 0) + (regRes.count || 0));
-  _actualizarBadgesAdminTabs(solRes.count || 0, vacRes.count || 0, regRes.count || 0);
+  actualizarBadgeAdmin((solRes.count || 0) + (vacRes.count || 0));
+  _actualizarBadgesAdminTabs(solRes.count || 0, vacRes.count || 0);
 }
 
 function actualizarBadgeDocumentos(count) {
@@ -484,12 +481,28 @@ async function aplicarSesionDesdeUser(user) {
   currentEmpleado = emp;
   currentIsAdmin = empleadoEsCoordinador(emp);
 
-  if (emp && emp.activo === false) {
+  if (!emp) {
+    await sb.auth.signOut();
+    currentUser = null;
+    currentEmpleado = null;
+    currentIsAdmin = false;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('loginWrap').style.display = 'flex';
+    var errNoEmp = document.getElementById('loginError');
+    if (errNoEmp) {
+      errNoEmp.style.display = 'block';
+      errNoEmp.textContent = t('login.sin_ficha');
+    }
+    volverAlLogin();
+    return;
+  }
+
+  if (emp.activo === false) {
     await rechazarEmpleadoInactivo();
     return;
   }
 
-  if (emp && emp.debe_cambiar_password) {
+  if (emp.debe_cambiar_password) {
     document.getElementById('loginWrap').style.display = 'none';
     document.getElementById('app').style.display = 'none';
     document.getElementById('resetPassRecuperacionModal').style.display = 'none';
@@ -1568,7 +1581,6 @@ function switchTab(tab, el) {
     var buscador = document.getElementById('empBuscador');
     if (buscador) buscador.value = '';
   }
-  if (tab === 'registro-admin')     cargarSolicitudesRegistro();
   if (tab === 'solicitudes-admin')  cargarSolicitudesAdmin();
   if (tab === 'vacaciones-admin')   cargarVacacionesAdmin();
   if (tab === 'turnos-admin') { cargarTurnosAdmin(); poblarMasivaEmpleados(); cargarCuadranteAdmin(); }
@@ -1681,6 +1693,8 @@ function abrirEditEmp(id) {
   }
   document.getElementById('editEmpOk').style.display    = 'none';
   document.getElementById('editEmpError').style.display = 'none';
+  var delBtn = document.getElementById('editEmpDeleteBtn');
+  if (delBtn) { delBtn.disabled = false; delBtn.textContent = t('edit.eliminar_btn'); }
   var modal = document.getElementById('editEmpModal');
   modal.style.display = 'flex';
   setTimeout(function(){ document.getElementById('editEmpNombre').focus(); }, 80);
@@ -1716,6 +1730,79 @@ async function guardarEmpleado() {
   ok.style.display = 'block'; ok.textContent = t('edit.ok');
   cargarEmpleados();
   setTimeout(cerrarEditEmp, 1200);
+}
+
+async function _purgeEmpleadoDatos(empId) {
+  var { data: docs } = await sb.from('documentos').select('id, url').eq('empleado_id', empId);
+  if (docs && docs.length) {
+    var paths = docs.map(function(d) { return _docStoragePath(d.url); }).filter(Boolean);
+    if (paths.length) await sb.storage.from('documentos').remove(paths);
+    await sb.from('documentos').delete().eq('empleado_id', empId);
+  }
+  await sb.from('turnos').delete().eq('empleado_id', empId);
+  await sb.from('vacaciones').delete().eq('empleado_id', empId);
+  await sb.from('solicitudes').delete().eq('empleado_id', empId);
+  try {
+    var listed = await sb.storage.from('documentos').list(String(empId), { limit: 1000 });
+    if (listed.data && listed.data.length) {
+      await sb.storage.from('documentos').remove(
+        listed.data.map(function(f) { return empId + '/' + f.name; })
+      );
+    }
+  } catch (e) { /* carpeta vacía o sin permiso list */ }
+}
+
+async function _eliminarAuthEmpleado(email) {
+  try {
+    var res = await sb.functions.invoke('eliminar-empleado-auth', { body: { email: email } });
+    if (!res.error && res.data && res.data.ok) return !!res.data.auth_deleted;
+  } catch (e) { /* función no desplegada */ }
+  return null;
+}
+
+async function eliminarEmpleado() {
+  var id     = document.getElementById('editEmpId').value;
+  var nombre = document.getElementById('editEmpNombre').value.trim();
+  var email  = document.getElementById('editEmpEmail').value.trim().toLowerCase();
+  var err    = document.getElementById('editEmpError');
+  var ok     = document.getElementById('editEmpOk');
+  var btn    = document.getElementById('editEmpDeleteBtn');
+  if (!id || !nombre) return;
+
+  if (currentEmpleado && currentEmpleado.id === id) {
+    err.style.display = 'block'; err.textContent = t('edit.eliminar_self'); return;
+  }
+  var empTarget = allEmpleados.find(function(e) { return e.id === id; });
+  if (empTarget && empleadoEsCoordinador(empTarget)) {
+    var coords = allEmpleados.filter(function(e) { return empleadoEsCoordinador(e); });
+    if (coords.length <= 1) {
+      err.style.display = 'block'; err.textContent = t('edit.eliminar_ultimo_coord'); return;
+    }
+  }
+
+  var msg = t('edit.eliminar_confirm').replace('{nombre}', nombre);
+  if (!confirm(msg)) return;
+
+  ok.style.display = 'none'; err.style.display = 'none';
+  if (btn) { btn.disabled = true; btn.textContent = t('edit.eliminar_progreso'); }
+
+  try {
+    await _purgeEmpleadoDatos(id);
+    var { error: delErr } = await sb.from('empleados').delete().eq('id', id);
+    if (delErr) throw new Error(delErr.message);
+
+    var authRes = await _eliminarAuthEmpleado(email);
+    cerrarEditEmp();
+    cargarEmpleados();
+    cargarBadgeAdmin();
+    var toastMsg = t('edit.eliminar_ok');
+    if (authRes === null) toastMsg += ' ' + t('edit.eliminar_auth_pendiente');
+    mostrarToast('🗑 ' + t('edit.eliminar_titulo'), toastMsg);
+  } catch (e) {
+    err.style.display = 'block';
+    err.textContent = t('edit.eliminar_err') + (e.message || e);
+    if (btn) { btn.disabled = false; btn.textContent = t('edit.eliminar_btn'); }
+  }
 }
 
 document.addEventListener('keydown', function(e) {
@@ -1858,70 +1945,6 @@ async function crearEmpleado() {
   setTimeout(hideAddEmpleado, 1800);
 }
 
-// ─── REGISTRO DE EMPLEADOS ────────────────────────────────
-
-async function cargarSolicitudesRegistro() {
-  var listEl = document.getElementById('registroAdminList');
-  if (!listEl) return;
-  listEl.innerHTML = '<div class="loading">Cargando...</div>';
-
-  var filtro = (document.getElementById('regAdminFiltro') || {}).value || 'pendiente';
-  var query = sb.from('solicitudes_registro').select('*').order('created_at', { ascending: false });
-  if (filtro !== 'todas') query = query.eq('estado', filtro);
-
-  var { data, error } = await query;
-  if (error) {
-    listEl.innerHTML = '<div class="empty-state" style="padding:2rem">Error al cargar solicitudes: ' + error.message + '</div>';
-    // Table may not exist yet — show SQL hint
-    if (error.message.includes('does not exist') || error.code === '42P01') {
-      listEl.innerHTML = '<div class="empty-state" style="padding:2rem;text-align:left"><p style="color:var(--muted);font-size:0.82rem;margin-bottom:0.5rem">La tabla <code>solicitudes_registro</code> no existe todavía.</p><p style="font-size:0.78rem;color:var(--muted)">Créala en el panel SQL de Supabase (ver instrucciones).</p></div>';
-    }
-    return;
-  }
-
-  _actualizarBadgeRegistro(data ? data.filter(function(r){ return r.estado === 'pendiente'; }).length : 0);
-
-  if (!data || !data.length) {
-    listEl.innerHTML = '<div class="empty-state" style="padding:2rem">' + t('reg.empty') + '</div>';
-    return;
-  }
-
-  var estadoColor = { pendiente: 'var(--yellow)', aprobada: 'var(--green)', rechazada: 'var(--red)' };
-  var estadoLabel = { pendiente: t('reg.estado_pend'), aprobada: t('reg.estado_apr'), rechazada: t('reg.estado_rech') };
-
-  var html = '<table class="dt-table"><thead><tr>' +
-    '<th>Nombre</th><th>Email</th><th>DNI</th><th>Cargo</th><th>Fecha</th><th>Estado</th><th>Acción</th>' +
-    '</tr></thead><tbody>';
-
-  data.forEach(function(r) {
-    var fecha = new Date(r.created_at).toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
-    var color = estadoColor[r.estado] || 'var(--muted)';
-    var label = estadoLabel[r.estado] || r.estado;
-    var acciones = '';
-    if (r.estado === 'pendiente') {
-      _regCache[r.id] = r;
-      acciones = '<button class="btn-sm primary" onclick="abrirAprobarRegistro(\'' + r.id + '\')" style="margin-right:0.4rem">' + t('reg.aprobar') + '</button>' +
-        '<button class="btn-sm btn-danger" onclick="rechazarRegistro(\'' + r.id + '\')">' + t('reg.rechazar') + '</button>';
-    }
-    html += '<tr>' +
-      '<td style="color:var(--text);font-weight:500">' + _esc(r.nombre) + '</td>' +
-      '<td style="color:var(--text2)">' + _esc(r.email) + '</td>' +
-      '<td>' + _esc(r.dni) + '</td>' +
-      '<td>' + _esc(r.cargo) + '</td>' +
-      '<td style="color:var(--muted)">' + fecha + '</td>' +
-      '<td><span style="font-size:0.72rem;font-weight:600;color:' + color + '">' + label + '</span>' + (r.nota ? ' <span style="font-size:0.7rem;color:var(--muted)" title="' + _esc(r.nota) + '">✱</span>' : '') + '</td>' +
-      '<td>' + acciones + '</td>' +
-      '</tr>';
-  });
-
-  html += '</tbody></table>';
-  listEl.innerHTML = html;
-}
-
-function _esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-
 function _setAdminTabBadge(id, count) {
   var badge = document.getElementById(id);
   if (!badge) return;
@@ -1934,95 +1957,12 @@ function _setAdminTabBadge(id, count) {
   }
 }
 
-function _actualizarBadgesAdminTabs(sol, vac, reg) {
+function _actualizarBadgesAdminTabs(sol, vac) {
   _solBadgeCount = sol;
   _vacBadgeCount = vac;
-  _regBadgeCount = reg;
-  _setAdminTabBadge('regPendBadge', reg);
   _setAdminTabBadge('solPendBadge', sol);
   _setAdminTabBadge('vacPendBadge', vac);
-  _setAdminTabBadge('morePendBadge', vac + reg);
-}
-
-function _actualizarBadgeRegistro(count) {
-  _actualizarBadgesAdminTabs(_solBadgeCount, _vacBadgeCount, count);
-}
-
-function abrirAprobarRegistro(id) {
-  var r = _regCache[id];
-  if (!r) { mostrarToast('Error', 'Recarga la página e inténtalo de nuevo.'); return; }
-  document.getElementById('aprobarRegId').value     = r.id;
-  document.getElementById('aprobarRegEmail').value  = r.email;
-  document.getElementById('aprobarRegNombre').value = r.nombre;
-  document.getElementById('aprobarRegDni').value    = r.dni;
-  document.getElementById('aprobarRegCargo').value  = r.cargo;
-  document.getElementById('aprobarRegOk').style.display    = 'none';
-  document.getElementById('aprobarRegError').style.display = 'none';
-  document.getElementById('aprobarRegBtn').disabled = false;
-  document.getElementById('aprobarRegBtn').textContent = 'Aprobar y enviar acceso';
-  document.getElementById('aprobarRegInfo').innerHTML =
-    '<strong>' + _esc(r.nombre) + '</strong> · ' + _esc(r.email) + '<br>' +
-    _esc(r.cargo) + ' · DNI: ' + _esc(r.dni);
-  document.getElementById('aprobarRegModal').style.display = 'flex';
-}
-
-function cerrarAprobarRegModal() {
-  document.getElementById('aprobarRegModal').style.display = 'none';
-}
-
-async function confirmarAprobarRegistro() {
-  var btn   = document.getElementById('aprobarRegBtn');
-  var errEl = document.getElementById('aprobarRegError');
-  var okEl  = document.getElementById('aprobarRegOk');
-  if (!btn || !errEl || !okEl) { alert('Error: modal no encontrado. Recarga la página.'); return; }
-
-  try {
-    errEl.style.display = 'none';
-    okEl.style.display  = 'none';
-    btn.disabled = true;
-    btn.textContent = 'Creando cuenta…';
-
-    var id     = document.getElementById('aprobarRegId').value;
-    var email  = document.getElementById('aprobarRegEmail').value;
-    var nombre = document.getElementById('aprobarRegNombre').value;
-    var dni    = document.getElementById('aprobarRegDni').value;
-    var cargo  = document.getElementById('aprobarRegCargo').value;
-
-    var res = await _provisionarAccesoEmpleado({ nombre: nombre, email: email, dni: dni, cargo: cargo });
-    if (!res.ok) throw new Error(res.error || 'No se pudo crear el empleado');
-
-    await sb.from('solicitudes_registro').update({ estado: 'aprobada' }).eq('id', id);
-
-    var okMsg = '✓ Cuenta creada.';
-    if (res.emailSent) okMsg += ' Email de acceso enviado a ' + email;
-    else if (res.emailError) okMsg += ' No se pudo enviar el email: ' + res.emailError;
-    okEl.textContent = okMsg;
-    okEl.style.display = 'block';
-    mostrarToast('✓ Registro aprobado', nombre + ' — cuenta creada y email enviado');
-    setTimeout(function() {
-      cerrarAprobarRegModal();
-      cargarSolicitudesRegistro();
-      cargarEmpleados();
-      cargarBadgeAdmin();
-    }, 1800);
-
-  } catch(e) {
-    errEl.textContent = e.message || 'Error inesperado.';
-    errEl.style.display = 'block';
-    btn.disabled = false;
-    btn.textContent = 'Aprobar y enviar acceso';
-  }
-}
-
-async function rechazarRegistro(id) {
-  var r = _regCache[id] || {};
-  var nota = window.prompt('Motivo del rechazo (opcional):');
-  if (nota === null) return;
-  var { error } = await sb.from('solicitudes_registro').update({ estado: 'rechazada', nota: nota || null }).eq('id', id);
-  if (error) { mostrarToast('Error', error.message); return; }
-  mostrarToast('Solicitud rechazada', (r.nombre || id));
-  cargarSolicitudesRegistro();
-  cargarBadgeAdmin();
+  _setAdminTabBadge('morePendBadge', vac);
 }
 
 // ADMIN - SUBIR DOCUMENTO

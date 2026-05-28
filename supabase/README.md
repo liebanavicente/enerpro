@@ -15,18 +15,18 @@
 | `solicitudes` | Crear, ver, cancelar propias | Ver y gestionar todas |
 | `vacaciones` | Crear, ver, cancelar propias | Ver y gestionar todas |
 | `turnos` | Ver, importar/borrar los suyos (cuadrante) | CRUD completo |
-| `solicitudes_registro` | — (usa RPC anon) | Ver, aprobar, rechazar |
+| `solicitudes_registro` | — (legacy, autoregistro desactivado) | — |
 | Storage `documentos/` | Carpeta `{su_uuid}/` | Todas las carpetas |
 
-## Autoregistro (`registro.html`)
+## Autoregistro (desactivado)
 
-Tras aplicar RLS, el alta pública usa la función `crear_solicitud_registro` (expuesta a `anon`), no insert directo en la tabla.
+El formulario público en `/registro.html` ya no acepta solicitudes. El alta la gestiona coordinación desde el panel admin. La tabla `solicitudes_registro` y la RPC `crear_solicitud_registro` pueden quedar en BD por historial; no hay UI en el portal.
 
 ## Verificación rápida
 
 - **Carlos** (empleado): ve solo sus docs, turnos, solicitudes y vacaciones.
 - **Coordinador**: ve dashboard, todos los empleados y documentos admin.
-- **Autoregistro**: enviar solicitud en `/registro.html` sin login.
+- **Alta empleados**: coordinador desde Empleados o Importar Excel.
 - **Firma cuadrante**: empleado puede marcar `firmado` en su documento.
 
 Si algo falla con «permission denied», revisa que el usuario exista en `empleados` con el mismo email que Auth, `activo = true` y el rol correcto.

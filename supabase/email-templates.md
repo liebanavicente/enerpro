@@ -113,5 +113,4 @@ Para avisos al **aprobar/rechazar solicitudes y vacaciones**, despliega también
 | Acción | Email que se envía |
 |--------|---------------------|
 | Admin añade empleado o import Excel | **Automático** — bienvenida + enlace contraseña (Reset password / Resend) |
-| «Olvidé mi contraseña» | Reset password (misma plantilla, sin bloque de bienvenida extendido) |
-| Admin aprueba registro legacy | Igual que alta normal |
+| «Olvidé mi contraseña» | Reset password (misma plantilla) |

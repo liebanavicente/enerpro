@@ -6,8 +6,9 @@ Correos transaccionales con marca ENERPRO vía [Resend](https://resend.com).
 
 | Función | Uso |
 |---------|-----|
-| [`enviar-acceso-empleado`](./enviar-acceso-empleado/) | Bienvenida al aprobar registro (enlace para establecer contraseña) |
+| [`enviar-acceso-empleado`](./enviar-acceso-empleado/) | Bienvenida al dar de alta (enlace para establecer contraseña) |
 | [`notificar-email`](./notificar-email/) | Aviso al empleado al aprobar/rechazar solicitud o vacación |
+| [`eliminar-empleado-auth`](./eliminar-empleado-auth/) | Borra cuenta Auth al eliminar empleado desde el panel |
 
 ## Fase demo (ahora)
 
@@ -34,6 +35,7 @@ supabase secrets set \
 ```bash
 supabase functions deploy enviar-acceso-empleado
 supabase functions deploy notificar-email
+supabase functions deploy eliminar-empleado-auth
 ```
 
 ## Fallback

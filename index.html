@@ -1896,7 +1896,6 @@
             <button class="admin-tab admin-tab-dropdown-item" data-tab="subir" role="menuitem" onclick="switchTab('subir', this); cerrarAdminMoreMenu()"><span data-i18n="tab.subir">Subir documento</span></button>
             <button class="admin-tab admin-tab-dropdown-item" data-tab="masivo" role="menuitem" onclick="switchTab('masivo', this); cerrarAdminMoreMenu()"><span data-i18n="tab.masivo">Subida masiva ZIP</span></button>
             <button class="admin-tab admin-tab-dropdown-item" data-tab="importar" role="menuitem" onclick="switchTab('importar', this); cerrarAdminMoreMenu()"><span data-i18n="tab.importar">Importar</span></button>
-            <button class="admin-tab admin-tab-dropdown-item" data-tab="registro-admin" role="menuitem" onclick="switchTab('registro-admin', this); cerrarAdminMoreMenu()" id="tabBtnRegistro"><span data-i18n="tab.registro">Registro</span><span id="regPendBadge" class="admin-tab-badge" style="display:none"></span></button>
             <button class="admin-tab admin-tab-dropdown-item" data-tab="vacaciones-admin" role="menuitem" onclick="switchTab('vacaciones-admin', this); cerrarAdminMoreMenu()"><span data-i18n="tab.vacaciones">Vacaciones</span><span id="vacPendBadge" class="admin-tab-badge" style="display:none"></span></button>
             <button class="admin-tab admin-tab-dropdown-item" data-tab="resumen-vac" role="menuitem" onclick="switchTab('resumen-vac', this); cerrarAdminMoreMenu()"><span data-i18n="tab.resumen">Resumen vacacional</span></button>
           </div>
@@ -2030,28 +2029,6 @@
           <div style="height:4px;background:var(--bg3)"><div id="masivoProgressBar" style="height:100%;background:var(--red);width:0%;transition:width 0.3s"></div></div>
         </div>
         <button class="btn-sm primary" onclick="subirMasivo()" style="width:100%;padding:0.75rem" data-i18n="masi.btn">Procesar y subir ZIP</button>
-      </div>
-    </div>
-
-    <!-- TAB REGISTRO -->
-    <div class="admin-tab-content" id="tab-registro-admin" style="display:none">
-      <div class="card" style="padding:0">
-        <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem">
-          <div>
-            <span class="section-label" data-i18n="reg.titulo">Solicitudes de registro</span>
-            <p style="font-size:0.75rem;color:var(--text2);margin-top:0.35rem;line-height:1.45" data-i18n="reg.legacy_note">Autoregistro desactivado. Solo solicitudes anteriores pendientes de revisión.</p>
-          </div>
-          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-            <select id="regAdminFiltro" class="btn-sm" style="padding:0 0.75rem;height:34px;border-radius:var(--r-xs);background:var(--surface2);color:var(--text2)" onchange="cargarSolicitudesRegistro()">
-              <option value="pendiente" data-i18n="reg.f_pend">Pendientes</option>
-              <option value="todas" data-i18n="reg.f_todas">Todas</option>
-              <option value="aprobada" data-i18n="reg.f_apr">Aprobadas</option>
-              <option value="rechazada" data-i18n="reg.f_rech">Rechazadas</option>
-            </select>
-            <button class="btn-sm primary" onclick="cargarSolicitudesRegistro()" data-i18n="reg.actualizar">Actualizar</button>
-          </div>
-        </div>
-        <div id="registroAdminList"><div class="loading">Cargando...</div></div>
       </div>
     </div>
 
@@ -2751,6 +2728,11 @@
         <button class="btn-sm primary" id="editEmpBtn" onclick="guardarEmpleado()" style="flex:1;padding:0.7rem;font-size:0.85rem" data-i18n="edit.guardar">Guardar cambios</button>
         <button class="btn-sm" onclick="cerrarEditEmp()" style="padding:0.7rem 1.25rem" data-i18n="edit.cancelar">Cancelar</button>
       </div>
+      <div style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border)">
+        <div class="section-label" style="margin-bottom:0.35rem;color:var(--red)" data-i18n="edit.zona_peligro">Zona de riesgo</div>
+        <p style="font-size:0.75rem;color:var(--text2);line-height:1.5;margin-bottom:0.75rem" data-i18n="edit.eliminar_nota">Elimina la ficha, documentos, turnos, solicitudes y vacaciones. Acción irreversible. Para bajas habituales usa «Inactivo / Baja».</p>
+        <button type="button" class="btn-sm btn-danger" id="editEmpDeleteBtn" onclick="eliminarEmpleado()" style="width:100%;padding:0.65rem;font-size:0.8rem" data-i18n="edit.eliminar_btn">Eliminar empleado permanentemente</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2772,34 +2754,6 @@
       <div id="cqParseActions" style="display:none;display:flex;gap:0.75rem;margin-top:1.25rem">
         <button class="btn-sm primary" id="cqParseConfirmBtn" onclick="confirmarParseCuadrante()" style="flex:1;padding:0.7rem;font-size:0.85rem" data-i18n="cq.importar">Importar al calendario</button>
         <button class="btn-sm" onclick="cerrarCqParseModal()" style="padding:0.7rem 1.25rem" data-i18n="cq.cancelar">Cancelar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL APROBAR REGISTRO -->
-<div id="aprobarRegModal" class="modal-overlay" style="display:none;z-index:9000">
-  <div class="modal-box" style="max-width:420px">
-    <div class="modal-box-header">
-      <div>
-        <div class="modal-eyebrow" data-i18n="reg.modal_eyebrow">Registro de empleado</div>
-        <div class="modal-title" data-i18n="reg.modal_titulo">Aprobar solicitud</div>
-      </div>
-      <button class="modal-close" onclick="cerrarAprobarRegModal()" aria-label="Cerrar">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="success-box" id="aprobarRegOk" style="display:none"></div>
-      <div class="error-box"   id="aprobarRegError" style="display:none"></div>
-      <input type="hidden" id="aprobarRegId">
-      <input type="hidden" id="aprobarRegEmail">
-      <input type="hidden" id="aprobarRegNombre">
-      <input type="hidden" id="aprobarRegDni">
-      <input type="hidden" id="aprobarRegCargo">
-      <div id="aprobarRegInfo" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.75rem 1rem;margin-bottom:1.25rem;font-size:0.82rem;color:var(--text2);line-height:1.6"></div>
-      <p style="font-size:0.75rem;color:var(--muted);margin-bottom:1.25rem" data-i18n="reg.email_nota">Se creará la cuenta y se enviará un email de acceso al empleado.</p>
-      <div style="display:flex;gap:0.75rem">
-        <button class="btn-sm primary" id="aprobarRegBtn" onclick="confirmarAprobarRegistro()" style="flex:1;padding:0.7rem;font-size:0.85rem" data-i18n="reg.confirmar">Aprobar y enviar acceso</button>
-        <button class="btn-sm" onclick="cerrarAprobarRegModal()" style="padding:0.7rem 1.25rem" data-i18n="reg.cancelar">Cancelar</button>
       </div>
     </div>
   </div>

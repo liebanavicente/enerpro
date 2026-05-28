@@ -16,7 +16,6 @@ Un solo correo incluye:
 |------------------------|-------------------|
 | Empleados → + Añadir | Sí, 1 email por empleado |
 | Más → Importar Excel | Sí, 1 email por fila importada |
-| Aprobar solicitud legacy (Más → Registro) | Sí |
 
 El import masivo puede ser decenas o cientos de filas: el portal los envía uno a uno en segundo plano durante la importación.
 
