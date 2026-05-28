@@ -26,6 +26,7 @@ var _solBadgeCount = 0;
 var _vacBadgeCount = 0;
 var _regBadgeCount = 0;
 var _ADMIN_MORE_TABS = ['subir', 'masivo', 'importar', 'vacaciones-admin', 'resumen-vac'];
+var _adminMoreSuppressClose = false;
 var currentAdminTab = 'dashboard';
 var _solAdminData = [];
 var _vacAdminData = [];
@@ -1451,23 +1452,29 @@ function adminTabBtn(tab) {
 }
 
 function toggleAdminMoreMenu(ev) {
-  if (ev) ev.stopPropagation();
+  if (ev) { ev.preventDefault(); ev.stopPropagation(); }
   var btn = document.getElementById('adminMoreBtn');
   var menu = document.getElementById('adminTabsDropdown');
   if (!btn || !menu) return;
-  var open = btn.getAttribute('aria-expanded') === 'true';
-  if (open) cerrarAdminMoreMenu();
-  else {
-    btn.setAttribute('aria-expanded', 'true');
-    menu.hidden = false;
+  if (menu.classList.contains('is-open')) {
+    cerrarAdminMoreMenu();
+    return;
   }
+  _adminMoreSuppressClose = true;
+  btn.setAttribute('aria-expanded', 'true');
+  menu.classList.add('is-open');
+  menu.removeAttribute('hidden');
+  setTimeout(function() { _adminMoreSuppressClose = false; }, 0);
 }
 
 function cerrarAdminMoreMenu() {
   var btn = document.getElementById('adminMoreBtn');
   var menu = document.getElementById('adminTabsDropdown');
   if (btn) btn.setAttribute('aria-expanded', 'false');
-  if (menu) menu.hidden = true;
+  if (menu) {
+    menu.classList.remove('is-open');
+    menu.setAttribute('hidden', '');
+  }
 }
 
 function _syncAdminMoreTabState(tab) {
@@ -1478,12 +1485,23 @@ function _syncAdminMoreTabState(tab) {
 }
 
 document.addEventListener('click', function(e) {
+  if (_adminMoreSuppressClose) return;
   var wrap = document.getElementById('adminTabsMore');
   if (wrap && !wrap.contains(e.target)) cerrarAdminMoreMenu();
 });
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') cerrarAdminMoreMenu();
 });
+
+(function initAdminMoreMenu() {
+  var btn = document.getElementById('adminMoreBtn');
+  if (!btn) return;
+  btn.addEventListener('click', function(ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    toggleAdminMoreMenu(ev);
+  });
+})();
 
 function irAdminTab(tab, opts) {
   opts = opts || {};

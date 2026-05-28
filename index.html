@@ -540,20 +540,23 @@
   .admin-tabs-more {
     position: relative; flex-shrink: 0; margin-left: auto;
     border-left: 1px solid var(--border);
+    z-index: 30;
   }
   .admin-tab-more-btn {
     display: inline-flex; align-items: center; gap: 0.35rem; height: 100%;
   }
-  .admin-tab-more-btn svg { transition: transform 0.15s; opacity: 0.7; }
+  .admin-tab-more-btn svg { transition: transform 0.15s; opacity: 0.7; flex-shrink: 0; }
   .admin-tab-more-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
   .admin-tabs-dropdown {
-    position: absolute; top: calc(100% + 1px); right: 0; z-index: 60;
+    display: none;
+    position: absolute; top: calc(100% + 1px); right: 0; z-index: 100;
     min-width: 13.5rem; padding: 0.35rem 0;
     background: var(--surface-s, var(--surface));
     border: 1px solid var(--border);
     border-radius: var(--r);
     box-shadow: 0 12px 32px rgba(0,0,0,0.18);
   }
+  .admin-tabs-dropdown.is-open { display: block; }
   .admin-tab-dropdown-item {
     display: block; width: 100%; text-align: left;
     padding: 0.65rem 1rem !important; margin: 0 !important;
@@ -898,8 +901,9 @@
     .admin-tabs-main { flex-direction: column; overflow: visible; }
     .admin-tabs-more { display: contents; margin-left: 0; border-left: none; }
     .admin-tab-more-btn { display: none !important; }
-    .admin-tabs-dropdown {
-      display: contents; position: static; min-width: 0; padding: 0;
+    .admin-tabs-dropdown,
+    .admin-tabs-dropdown.is-open {
+      display: contents !important; position: static; min-width: 0; padding: 0;
       background: none; border: none; border-radius: 0; box-shadow: none;
     }
     .admin-tabs-dropdown[hidden] { display: contents !important; }
@@ -1072,7 +1076,51 @@
 
   /* ─── ADMIN TABLE DESKTOP ────────────────────────────── */
   @media (min-width: 768px) {
-    #page-admin .admin-tabs { display: flex !important; }
+    #page-admin .admin-tabs {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: stretch !important;
+      overflow: visible !important;
+    }
+    #page-admin .admin-tabs-main {
+      display: flex !important;
+      flex-direction: row !important;
+      flex: 1 !important;
+      min-width: 0 !important;
+    }
+    #page-admin .admin-tabs-more {
+      display: block !important;
+      position: relative !important;
+      flex-shrink: 0 !important;
+      margin-left: auto !important;
+      border-left: 1px solid var(--border) !important;
+      z-index: 30 !important;
+    }
+    #page-admin .admin-tab-more-btn { display: inline-flex !important; }
+    #page-admin .admin-tabs-dropdown {
+      display: none !important;
+      position: absolute !important;
+      top: calc(100% + 1px) !important;
+      right: 0 !important;
+      z-index: 100 !important;
+      min-width: 13.5rem !important;
+      background: var(--surface-s, var(--surface)) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: var(--r) !important;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.18) !important;
+    }
+    #page-admin .admin-tabs-dropdown.is-open { display: block !important; }
+    #page-admin .admin-tab-dropdown-item {
+      display: block !important;
+      width: 100% !important;
+      text-align: left !important;
+      border-bottom: none !important;
+    }
+    #page-admin .admin-tab-dropdown-item.active {
+      background: var(--surface2) !important;
+      box-shadow: inset 3px 0 0 var(--gold) !important;
+      border-bottom-color: transparent !important;
+    }
     #empleadosList table  { display: table !important; width: 100% !important; }
     #empleadosList thead  { display: table-header-group !important; }
     #empleadosList tbody  { display: table-row-group !important; }
@@ -1836,7 +1884,7 @@
           <button class="admin-tab" data-tab="docs-admin" onclick="switchTab('docs-admin', this)"><span data-i18n="tab.docs">Documentos</span></button>
         </div>
         <div class="admin-tabs-more" id="adminTabsMore">
-          <button type="button" class="admin-tab admin-tab-more-btn" id="adminMoreBtn" aria-expanded="false" aria-haspopup="true" onclick="toggleAdminMoreMenu(event)">
+          <button type="button" class="admin-tab admin-tab-more-btn" id="adminMoreBtn" aria-expanded="false" aria-haspopup="true">
             <span data-i18n="tab.mas">Más</span>
             <span id="morePendBadge" class="admin-tab-badge" style="display:none"></span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
