@@ -72,13 +72,15 @@ export async function esCoordinador(
   supabaseUser: SupabaseClient,
   email: string,
 ) {
-  if (email.toLowerCase().includes("admin")) return true;
   const { data } = await supabaseUser
     .from("empleados")
-    .select("cargo")
+    .select("rol, cargo, activo")
     .eq("email", email)
     .maybeSingle();
-  return data?.cargo === "Coordinador";
+  if (!data || !data.activo) return false;
+  if (data.rol === "coordinador") return true;
+  if (!data.rol && data.cargo === "Coordinador") return true;
+  return false;
 }
 
 export async function sendResendEmail(to: string, subject: string, html: string) {

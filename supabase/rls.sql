@@ -1,6 +1,29 @@
 -- ENERPRO — Row Level Security (RLS) completo
 -- Ejecutar en Supabase → SQL Editor (una sola vez, como postgres/service role).
--- Replica la lógica del portal: empleado ve/edita lo suyo; Coordinador (y email *admin*) gestiona todo.
+-- Replica la lógica del portal: empleado ve/edita lo suyo; rol `coordinador` gestiona todo.
+
+-- ─── Columna rol (migración re-ejecutable) ─────────────────
+
+ALTER TABLE public.empleados
+  ADD COLUMN IF NOT EXISTS rol text NOT NULL DEFAULT 'empleado';
+
+UPDATE public.empleados
+SET rol = 'coordinador'
+WHERE rol = 'empleado'
+  AND (
+    cargo = 'Coordinador'
+    OR lower(email) LIKE '%admin%'
+  );
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'empleados_rol_check'
+  ) THEN
+    ALTER TABLE public.empleados
+      ADD CONSTRAINT empleados_rol_check CHECK (rol IN ('empleado', 'coordinador'));
+  END IF;
+END $$;
 
 -- ─── Helpers ───────────────────────────────────────────────
 
@@ -29,10 +52,7 @@ AS $$
     FROM empleados e
     WHERE lower(e.email) = lower(auth.jwt() ->> 'email')
       AND e.activo = true
-      AND (
-        e.cargo = 'Coordinador'
-        OR lower(coalesce(auth.jwt() ->> 'email', '')) LIKE '%admin%'
-      )
+      AND e.rol = 'coordinador'
   );
 $$;
 
@@ -382,3 +402,25 @@ CREATE POLICY enerpro_doc_storage_delete ON storage.objects
       OR (storage.foldername(name))[1] = public.current_empleado_id()::text
     )
   );
+
+-- ─── Trigger: solo coordinadores pueden cambiar rol ─────────
+
+CREATE OR REPLACE FUNCTION public.empleados_protect_rol()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF NEW.rol IS DISTINCT FROM OLD.rol AND NOT public.is_coordinador() THEN
+    RAISE EXCEPTION 'solo_coordinador_puede_cambiar_rol' USING ERRCODE = '42501';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS empleados_protect_rol_trg ON public.empleados;
+CREATE TRIGGER empleados_protect_rol_trg
+  BEFORE UPDATE ON public.empleados
+  FOR EACH ROW
+  EXECUTE FUNCTION public.empleados_protect_rol();

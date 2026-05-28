@@ -8,6 +8,27 @@ var currentUser = null;
 var _regCache = {};
 var currentEmpleado = null;
 var currentIsAdmin = false;
+
+function _rolDesdeCargo(cargo) {
+  return cargo === 'Coordinador' ? 'coordinador' : 'empleado';
+}
+
+function empleadoEsCoordinador(emp) {
+  if (!emp || emp.activo === false) return false;
+  if (emp.rol === 'coordinador') return true;
+  if (!emp.rol && emp.cargo === 'Coordinador') return true;
+  return false;
+}
+
+function esEntornoDemo() {
+  var h = location.hostname;
+  return h === 'localhost' || h === '127.0.0.1';
+}
+
+function initDemoSection() {
+  var el = document.getElementById('demoSection');
+  if (el && !esEntornoDemo()) el.style.display = 'none';
+}
 var allDocs = [];
 var allEmpleados = [];
 var filtroCargoActivo = 'todos';
@@ -461,7 +482,7 @@ async function aplicarSesionDesdeUser(user) {
   var email = user.email;
   var { data: emp } = await sb.from('empleados').select('*').eq('email', email).single();
   currentEmpleado = emp;
-  currentIsAdmin = email.includes('admin') || (emp && emp.cargo === 'Coordinador');
+  currentIsAdmin = empleadoEsCoordinador(emp);
 
   if (emp && emp.activo === false) {
     await rechazarEmpleadoInactivo();
@@ -1652,6 +1673,8 @@ function abrirEditEmp(id) {
   document.getElementById('editEmpDni').value     = emp.dni     || '';
   document.getElementById('editEmpDias').value    = emp.dias_vacaciones_anuales || 22;
   document.getElementById('editEmpActivo').value  = emp.activo ? 'true' : 'false';
+  var rolSel = document.getElementById('editEmpRol');
+  if (rolSel) rolSel.value = emp.rol === 'coordinador' ? 'coordinador' : 'empleado';
   var cargoSel = document.getElementById('editEmpCargo');
   for (var i = 0; i < cargoSel.options.length; i++) {
     cargoSel.options[i].selected = cargoSel.options[i].value === emp.cargo;
@@ -1673,6 +1696,7 @@ async function guardarEmpleado() {
   var email   = document.getElementById('editEmpEmail').value.trim();
   var dni     = document.getElementById('editEmpDni').value.trim();
   var cargo   = document.getElementById('editEmpCargo').value;
+  var rol     = document.getElementById('editEmpRol') ? document.getElementById('editEmpRol').value : _rolDesdeCargo(cargo);
   var dias    = parseInt(document.getElementById('editEmpDias').value) || 22;
   var activo  = document.getElementById('editEmpActivo').value === 'true';
   var ok      = document.getElementById('editEmpOk');
@@ -1684,7 +1708,7 @@ async function guardarEmpleado() {
   }
   btn.disabled = true; btn.textContent = t('edit.guardando');
   var { error } = await sb.from('empleados').update({
-    nombre: nombre, email: email, dni: dni, cargo: cargo,
+    nombre: nombre, email: email, dni: dni, cargo: cargo, rol: rol,
     dias_vacaciones_anuales: dias, activo: activo
   }).eq('id', id);
   btn.disabled = false; btn.textContent = t('edit.guardar');
@@ -1780,7 +1804,10 @@ async function crearEmpleado() {
   }
 
   // Insertar en tabla empleados
-  var { error: dbError } = await sb.from('empleados').insert({ nombre:nombre, email:email, dni:dni, cargo:cargo, activo:true, debe_cambiar_password:true });
+  var { error: dbError } = await sb.from('empleados').insert({
+    nombre:nombre, email:email, dni:dni, cargo:cargo,
+    rol: _rolDesdeCargo(cargo), activo:true, debe_cambiar_password:true
+  });
   if (dbError) { err.style.display='block'; err.textContent='Error al guardar: '+dbError.message; return; }
 
   ok.style.display='block'; ok.textContent=t('emp.ok') + authMsg;
@@ -1937,7 +1964,7 @@ async function confirmarAprobarRegistro() {
     // Crear registro en tabla empleados
     var { error: dbError } = await sb.from('empleados').insert({
       nombre: nombre, email: email, dni: dni, cargo: cargo,
-      activo: true, debe_cambiar_password: true
+      rol: _rolDesdeCargo(cargo), activo: true, debe_cambiar_password: true
     });
     if (dbError) throw new Error('Error al crear empleado: ' + dbError.message);
 
@@ -2363,6 +2390,7 @@ var DEMO_EMPLEADOS = [
 
 document.addEventListener('DOMContentLoaded', function() {
   aplicarIdioma();
+  initDemoSection();
   registrarServiceWorker();
   var hash = window.location.hash || '';
   if (hash.indexOf('error=') !== -1) {
@@ -2460,7 +2488,12 @@ async function confirmarImportacion() {
       if (!m.includes('already registered') && !m.includes('already been registered')) { failCount++; continue; }
     }
 
-    var { error } = await sb.from('empleados').insert({ ...importarData[i], activo: true, debe_cambiar_password: true });
+    var row = Object.assign({}, importarData[i], {
+      activo: true,
+      debe_cambiar_password: true,
+      rol: _rolDesdeCargo(importarData[i].cargo)
+    });
+    var { error } = await sb.from('empleados').insert(row);
     if (error) { failCount++; } else { okCount++; }
   }
   prog.style.display = 'none';
@@ -2473,11 +2506,14 @@ async function confirmarImportacion() {
 }
 
 async function cargarDemoEmpleados() {
+  if (!esEntornoDemo()) return;
   var ok  = document.getElementById('demoOk');
   var err = document.getElementById('demoError');
   ok.style.display = 'none'; err.style.display = 'none';
   var { error } = await sb.from('empleados').insert(
-    DEMO_EMPLEADOS.map(function(e) { return { ...e, activo: true }; })
+    DEMO_EMPLEADOS.map(function(e) {
+      return { ...e, activo: true, rol: e.cargo === 'Coordinador' ? 'coordinador' : 'empleado' };
+    })
   );
   if (error) {
     err.style.display = 'block'; err.textContent = 'Error: ' + error.message; return;
@@ -2487,6 +2523,7 @@ async function cargarDemoEmpleados() {
 }
 
 async function borrarDemoEmpleados() {
+  if (!esEntornoDemo()) return;
   if (!confirm('¿Eliminar todos los empleados demo?')) return;
   var emails = DEMO_EMPLEADOS.map(function(e) { return e.email; });
   var ok  = document.getElementById('demoOk');

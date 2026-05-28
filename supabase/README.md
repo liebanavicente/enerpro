@@ -8,7 +8,7 @@
 
 ## Qué cubre
 
-| Recurso | Empleado activo | Coordinador / email `*admin*` |
+| Recurso | Empleado activo | Coordinador (`rol = coordinador`) |
 |--------|------------------|----------------------------------|
 | `empleados` | Lee y actualiza su fila | CRUD completo |
 | `documentos` | Sus documentos (subir cuadrante, firmar, borrar propio) | Todos |
@@ -29,7 +29,14 @@ Tras aplicar RLS, el alta pública usa la función `crear_solicitud_registro` (e
 - **Autoregistro**: enviar solicitud en `/registro.html` sin login.
 - **Firma cuadrante**: empleado puede marcar `firmado` en su documento.
 
-Si algo falla con «permission denied», revisa que el usuario exista en `empleados` con el mismo email que Auth y `activo = true`.
+Si algo falla con «permission denied», revisa que el usuario exista en `empleados` con el mismo email que Auth, `activo = true` y el rol correcto.
+
+### Rol de administración
+
+- Columna `empleados.rol`: `empleado` (defecto) o `coordinador` (acceso al panel admin).
+- Tras actualizar `rls.sql`, los coordinadores actuales se migran automáticamente (`cargo = Coordinador` o email con `admin`).
+- Editar rol: Admin → Empleados → editar → **Acceso administración**.
+- La sección **Datos demo** solo aparece en `localhost` (oculta en producción).
 
 ## Correos de acceso (marca ENERPRO)
 
