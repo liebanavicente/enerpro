@@ -183,29 +183,23 @@
 
     btn.disabled = true; btn.textContent = 'Enviando…';
 
-    // Comprobar si ya existe una solicitud pendiente con ese email
-    var { data: existing } = await sb
-      .from('solicitudes_registro')
-      .select('id, estado')
-      .eq('email', email)
-      .in('estado', ['pendiente', 'aprobada'])
-      .maybeSingle();
-
-    if (existing) {
-      var msg = existing.estado === 'aprobada'
-        ? 'Este email ya tiene una cuenta activa. Accede desde el portal.'
-        : 'Ya existe una solicitud pendiente con este email.';
-      errEl.textContent = msg;
-      errEl.style.display = 'block';
-      btn.disabled = false; btn.textContent = 'Enviar solicitud'; return;
-    }
-
-    var { error } = await sb.from('solicitudes_registro').insert({
-      nombre: nombre, email: email, dni: dni, cargo: cargo
+    // Enviar vía RPC (compatible con RLS: anon no lee la tabla directamente)
+    var { error } = await sb.rpc('crear_solicitud_registro', {
+      p_nombre: nombre,
+      p_email: email,
+      p_dni: dni,
+      p_cargo: cargo
     });
 
     if (error) {
-      errEl.textContent = 'Error al enviar la solicitud. Inténtalo de nuevo.';
+      var msg = error.message || '';
+      if (msg.indexOf('duplicate_approved') >= 0) {
+        errEl.textContent = 'Este email ya tiene una cuenta activa. Accede desde el portal.';
+      } else if (msg.indexOf('duplicate_pending') >= 0 || msg.indexOf('duplicate') >= 0 || error.code === '23505') {
+        errEl.textContent = 'Ya existe una solicitud pendiente con este email.';
+      } else {
+        errEl.textContent = 'Error al enviar la solicitud. Inténtalo de nuevo.';
+      }
       errEl.style.display = 'block';
       btn.disabled = false; btn.textContent = 'Enviar solicitud'; return;
     }
