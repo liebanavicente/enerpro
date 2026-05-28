@@ -156,13 +156,19 @@
 
     /* ADMIN */
     .admin-tabs {
-  display:grid !important;
-  grid-template-columns:1fr;
+  display:flex !important;
+  flex-direction:column;
   gap:.5rem;
   overflow:visible;
   margin:0 0 1rem 0;
   padding:0;
 }
+    .admin-tabs-main { display:flex; flex-direction:column; width:100%; }
+    .admin-tabs-more { display:contents; }
+    .admin-tab-more-btn { display:none !important; }
+    .admin-tabs-dropdown { display:contents; position:static; border:none; box-shadow:none; padding:0; }
+    .admin-tabs-dropdown[hidden] { display:contents !important; }
+    .admin-tab-dropdown-item { width:100%; text-align:left; box-shadow:none !important; }
 
     /* Mobile shell */
     .mobile-header { display:none; align-items:center; justify-content:space-between; gap:1rem; padding:0.875rem 1.25rem; background:var(--bg2); border-bottom:1px solid rgba(245,184,0,0.1); position:sticky; top:0; z-index:40; }
@@ -476,12 +482,47 @@
 @media (min-width:768px) {
   #page-admin .admin-tabs {
     display:flex !important;
+    flex-direction:row !important;
+    align-items:stretch !important;
     gap:0 !important;
     border-bottom:1px solid var(--border) !important;
     margin-bottom:1.5rem !important;
     padding:0 !important;
     overflow:visible !important;
   }
+
+  #page-admin .admin-tabs-main {
+    display:flex !important;
+    flex-direction:row !important;
+    flex:1 !important;
+    min-width:0 !important;
+    overflow-x:auto !important;
+  }
+
+  #page-admin .admin-tabs-more {
+    display:block !important;
+    position:relative !important;
+    flex-shrink:0 !important;
+    margin-left:auto !important;
+    border-left:1px solid var(--border) !important;
+  }
+
+  #page-admin .admin-tab-more-btn { display:inline-flex !important; }
+
+  #page-admin .admin-tabs-dropdown {
+    display:block !important;
+    position:absolute !important;
+    top:calc(100% + 1px) !important;
+    right:0 !important;
+    min-width:13.5rem !important;
+    padding:0.35rem 0 !important;
+    background:var(--surface-s, var(--surface)) !important;
+    border:1px solid var(--border) !important;
+    border-radius:var(--r) !important;
+    box-shadow:0 12px 32px rgba(0,0,0,0.18) !important;
+  }
+
+  #page-admin .admin-tabs-dropdown[hidden] { display:none !important; }
 
   #page-admin .admin-tab {
     width:auto !important;
@@ -494,10 +535,29 @@
     border-bottom:2px solid transparent !important;
   }
 
+  #page-admin .admin-tab-dropdown-item {
+    display:block !important;
+    width:100% !important;
+    text-align:left !important;
+    border-bottom:none !important;
+  }
+
   #page-admin .admin-tab.active {
     color:var(--red) !important;
     background:none !important;
     border-bottom-color:var(--red) !important;
+  }
+
+  #page-admin .admin-tab-more-btn.active {
+    color:var(--red) !important;
+    border-bottom-color:var(--red) !important;
+  }
+
+  #page-admin .admin-tab-dropdown-item.active {
+    color:var(--text) !important;
+    background:var(--surface2) !important;
+    border-bottom-color:transparent !important;
+    box-shadow:inset 3px 0 0 var(--gold) !important;
   }
 
   #empleadosList table {

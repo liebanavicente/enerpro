@@ -22,6 +22,10 @@ var _idleLastActivity = 0;
 var _idleCheckInterval = null;
 var IDLE_TIMEOUT_MS = 5 * 60 * 1000; // 5 min sin actividad → cerrar sesión
 var _docBadgeCount = 0;
+var _solBadgeCount = 0;
+var _vacBadgeCount = 0;
+var _regBadgeCount = 0;
+var _ADMIN_MORE_TABS = ['subir', 'masivo', 'importar', 'vacaciones-admin', 'resumen-vac'];
 var currentAdminTab = 'dashboard';
 var _solAdminData = [];
 var _vacAdminData = [];
@@ -187,6 +191,7 @@ function aplicarIdioma() {
   if (wmEl && currentEmpleado) {
     wmEl.textContent = t('ini.bienvenido') + ', ' + currentEmpleado.nombre.split(' ')[0];
   }
+  _actualizarBadgesAdminTabs(_solBadgeCount, _vacBadgeCount, _regBadgeCount);
 }
 
 // ─── UI HELPERS ──────────────────────────────────────────
@@ -295,7 +300,7 @@ async function cargarBadgeAdmin() {
     sb.from('solicitudes_registro').select('*', { count:'exact', head:true }).eq('estado', 'pendiente')
   ]);
   actualizarBadgeAdmin((solRes.count || 0) + (vacRes.count || 0) + (regRes.count || 0));
-  _actualizarBadgeRegistro(regRes.count || 0);
+  _actualizarBadgesAdminTabs(solRes.count || 0, vacRes.count || 0, regRes.count || 0);
 }
 
 function actualizarBadgeDocumentos(count) {
@@ -1442,10 +1447,43 @@ async function confirmarSolicitud(id, estado) {
 
 // TABS ADMIN
 function adminTabBtn(tab) {
-  var tabs = document.querySelector('#page-admin .admin-tabs');
-  if (!tabs) return null;
-  return tabs.querySelector('.admin-tab[data-tab="' + tab + '"]');
+  return document.querySelector('#page-admin .admin-tab[data-tab="' + tab + '"]');
 }
+
+function toggleAdminMoreMenu(ev) {
+  if (ev) ev.stopPropagation();
+  var btn = document.getElementById('adminMoreBtn');
+  var menu = document.getElementById('adminTabsDropdown');
+  if (!btn || !menu) return;
+  var open = btn.getAttribute('aria-expanded') === 'true';
+  if (open) cerrarAdminMoreMenu();
+  else {
+    btn.setAttribute('aria-expanded', 'true');
+    menu.hidden = false;
+  }
+}
+
+function cerrarAdminMoreMenu() {
+  var btn = document.getElementById('adminMoreBtn');
+  var menu = document.getElementById('adminTabsDropdown');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+  if (menu) menu.hidden = true;
+}
+
+function _syncAdminMoreTabState(tab) {
+  var moreBtn = document.getElementById('adminMoreBtn');
+  var inMore = _ADMIN_MORE_TABS.indexOf(tab) >= 0;
+  if (moreBtn) moreBtn.classList.toggle('active', inMore);
+  if (inMore) cerrarAdminMoreMenu();
+}
+
+document.addEventListener('click', function(e) {
+  var wrap = document.getElementById('adminTabsMore');
+  if (wrap && !wrap.contains(e.target)) cerrarAdminMoreMenu();
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') cerrarAdminMoreMenu();
+});
 
 function irAdminTab(tab, opts) {
   opts = opts || {};
@@ -1477,10 +1515,11 @@ function irAdminTab(tab, opts) {
 
 function switchTab(tab, el) {
   currentAdminTab = tab;
-  document.querySelectorAll('.admin-tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('#page-admin .admin-tab[data-tab]').forEach(function(t){ t.classList.remove('active'); });
   document.querySelectorAll('.admin-tab-content').forEach(function(t){ t.style.display='none'; });
   var btn = el || adminTabBtn(tab);
   if (btn) btn.classList.add('active');
+  _syncAdminMoreTabState(tab);
   var tabEl = document.getElementById('tab-' + tab);
   if (tabEl) tabEl.style.display = 'block';
   if (tab === 'dashboard') cargarDashboard();
@@ -1799,15 +1838,30 @@ function _esc(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-function _actualizarBadgeRegistro(count) {
-  var badge = document.getElementById('regPendBadge');
+function _setAdminTabBadge(id, count) {
+  var badge = document.getElementById(id);
   if (!badge) return;
   if (count > 0) {
     badge.textContent = count > 99 ? '99+' : String(count);
     badge.style.display = 'inline-block';
   } else {
+    badge.textContent = '';
     badge.style.display = 'none';
   }
+}
+
+function _actualizarBadgesAdminTabs(sol, vac, reg) {
+  _solBadgeCount = sol;
+  _vacBadgeCount = vac;
+  _regBadgeCount = reg;
+  _setAdminTabBadge('regPendBadge', reg);
+  _setAdminTabBadge('solPendBadge', sol);
+  _setAdminTabBadge('vacPendBadge', vac);
+  _setAdminTabBadge('morePendBadge', vac);
+}
+
+function _actualizarBadgeRegistro(count) {
+  _actualizarBadgesAdminTabs(_solBadgeCount, _vacBadgeCount, count);
 }
 
 function abrirAprobarRegistro(id) {

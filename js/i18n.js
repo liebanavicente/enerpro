@@ -232,8 +232,9 @@ var I18N = {
     'tab.turnos':        'Turnos',
     'tab.importar':      'Importar',
     'tab.vacaciones':    'Vacaciones',
-    'tab.resumen':       '📋 Resumen vacacional',
-    'tab.docs':          '📂 Documentos',
+    'tab.resumen':       'Resumen vacacional',
+    'tab.docs':          'Documentos',
+    'tab.mas':           'Más',
     // Registro de empleados
     'reg.titulo':         'Solicitudes de registro',
     'reg.f_pend':         'Pendientes',
@@ -740,8 +741,9 @@ var I18N = {
     'tab.turnos':        'Torns',
     'tab.importar':      'Importar',
     'tab.vacaciones':    'Vacances',
-    'tab.resumen':       '📋 Resum vacacional',
-    'tab.docs':          '📂 Documents',
+    'tab.resumen':       'Resum vacacional',
+    'tab.docs':          'Documents',
+    'tab.mas':           'Més',
     // Registro de empleados
     'reg.titulo':         'Sol·licituds de registre',
     'reg.f_pend':         'Pendents',
