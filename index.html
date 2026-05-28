@@ -1875,7 +1875,7 @@
         <form id="solicitudForm">
           <div class="form-group">
             <label data-i18n="sol.tipo">Tipo de solicitud</label>
-            <select name="tipo" id="solTipo" onchange="toggleSolJustificanteField()">
+            <select name="tipo" id="solTipo" onchange="toggleSolFormFields()">
               <option data-i18n="sol.t_vac">Solicitud de vacaciones</option>
               <option data-i18n="sol.t_perm">Solicitud de permiso</option>
               <option data-i18n="sol.t_turno">Cambio de turno</option>
@@ -1883,9 +1883,19 @@
               <option data-i18n="sol.t_consulta">Consulta general</option>
             </select>
           </div>
-          <div class="form-group">
-            <label data-i18n="sol.fechas">Fechas (si aplica)</label>
-            <input type="text" name="fechas" placeholder="Ej: 15 al 20 de junio" data-i18n-ph="sol.fechas_ph">
+          <div id="solRangoWrap" style="display:none;margin-bottom:1.25rem">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+              <div class="form-group" style="margin-bottom:0"><label data-i18n="vac.desde">Desde</label><input type="date" id="solDesde" name="solDesde"></div>
+              <div class="form-group" style="margin-bottom:0"><label data-i18n="vac.hasta">Hasta</label><input type="date" id="solHasta" name="solHasta"></div>
+            </div>
+            <div id="solDiasCont" style="display:none;margin-top:0.75rem;padding:0.65rem 0.85rem;background:var(--surface2);border-radius:var(--r-sm)">
+              <span style="font-size:0.8rem;color:var(--text2)" data-i18n="vac.dias_sol">Días solicitados: </span>
+              <strong id="solDias" style="color:var(--gold)">—</strong>
+            </div>
+          </div>
+          <div id="solFechaUnicaWrap" class="form-group" style="display:none;margin-bottom:0">
+            <label data-i18n="sol.fecha_turno">Fecha del turno</label>
+            <input type="date" id="solFechaUnica" name="solFechaUnica">
           </div>
           <div class="form-group">
             <label data-i18n="sol.desc">Descripción</label>

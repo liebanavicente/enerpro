@@ -197,7 +197,7 @@ function aplicarIdioma() {
   if (!ap) return;
   var pid = ap.id;
   if (pid === 'page-inicio' || pid === 'page-documentos' || pid === 'page-calendario') cargarDocumentos();
-  if (pid === 'page-solicitudes') { cargarMisSolicitudes(); toggleSolJustificanteField(); }
+  if (pid === 'page-solicitudes') { cargarMisSolicitudes(); toggleSolFormFields(); }
   if (pid === 'page-vacaciones') cargarVacaciones();
   if (pid === 'page-calendario') cargarCalendario();
   toggleVacJustificanteField();
@@ -1426,11 +1426,76 @@ document.addEventListener('click', function(e){
 });
 
 // SOLICITUDES - EMPLEADO
-function _textoAdmiteJustificante(texto) {
-  var s = String(texto || '').toLowerCase();
-  if (s.indexOf('consulta') >= 0 || s.indexOf('turno') >= 0) return false;
-  return s.indexOf('permiso') >= 0 || s.indexOf('baja') >= 0 || s.indexOf('vacacion') >= 0
-    || s.indexOf('visita') >= 0 || s.indexOf('asunto') >= 0;
+function _solTipoTexto(tipo) {
+  return String(tipo || '').toLowerCase();
+}
+
+function _solTipoUsaRango(tipo) {
+  var s = _solTipoTexto(tipo);
+  return s.indexOf('vacacion') >= 0 || s.indexOf('permiso') >= 0 || s.indexOf('baja') >= 0
+    || s.indexOf('asunto') >= 0 || s.indexOf('visita') >= 0;
+}
+
+function _solTipoUsaFechaUnica(tipo) {
+  return _solTipoTexto(tipo).indexOf('turno') >= 0;
+}
+
+function _formatearFechaSol(iso) {
+  return new Date(iso + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function _formatearRangoFechasSol(desde, hasta) {
+  var d1 = _formatearFechaSol(desde);
+  if (!hasta || hasta === desde) return d1;
+  return d1 + ' → ' + _formatearFechaSol(hasta);
+}
+
+function _construirFechasSolicitud(tipo) {
+  if (_solTipoUsaRango(tipo)) {
+    var desde = (document.getElementById('solDesde') || {}).value || '';
+    var hasta = (document.getElementById('solHasta') || {}).value || '';
+    if (!desde || !hasta) return { error: t('sol.err_fechas') };
+    if (hasta < desde) return { error: t('sol.err_fecha_fin') };
+    return { value: _formatearRangoFechasSol(desde, hasta) };
+  }
+  if (_solTipoUsaFechaUnica(tipo)) {
+    var f = (document.getElementById('solFechaUnica') || {}).value || '';
+    if (!f) return { error: t('sol.err_fecha_turno') };
+    return { value: _formatearFechaSol(f) };
+  }
+  return { value: '' };
+}
+
+function _limpiarFechasSolicitudForm() {
+  ['solDesde', 'solHasta', 'solFechaUnica'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  var diasCont = document.getElementById('solDiasCont');
+  if (diasCont) diasCont.style.display = 'none';
+}
+
+function toggleSolFormFields() {
+  toggleSolJustificanteField();
+  var sel = document.getElementById('solTipo') || document.querySelector('#solicitudForm [name="tipo"]');
+  var rango = document.getElementById('solRangoWrap');
+  var unica = document.getElementById('solFechaUnicaWrap');
+  if (!sel) return;
+  var tipo = sel.value;
+  if (rango) rango.style.display = _solTipoUsaRango(tipo) ? 'block' : 'none';
+  if (unica) unica.style.display = _solTipoUsaFechaUnica(tipo) ? 'block' : 'none';
+  if (!_solTipoUsaRango(tipo)) {
+    var d1 = document.getElementById('solDesde');
+    var d2 = document.getElementById('solHasta');
+    if (d1) d1.value = '';
+    if (d2) d2.value = '';
+    var diasCont = document.getElementById('solDiasCont');
+    if (diasCont) diasCont.style.display = 'none';
+  }
+  if (!_solTipoUsaFechaUnica(tipo)) {
+    var fu = document.getElementById('solFechaUnica');
+    if (fu) fu.value = '';
+  }
 }
 
 function toggleSolJustificanteField() {
@@ -1441,13 +1506,20 @@ function toggleSolJustificanteField() {
   var admite = _textoAdmiteJustificante(sel.value);
   if (wrap) wrap.style.display = admite ? 'block' : 'none';
   if (hint) {
-    var s = sel.value.toLowerCase();
-    hint.style.display = (s.indexOf('permiso') >= 0 || s.indexOf('vacacion') >= 0) ? 'block' : 'none';
+    var s = _solTipoTexto(sel.value);
+    hint.style.display = s.indexOf('vacacion') >= 0 ? 'block' : 'none';
   }
   if (!admite) {
     var inp = document.getElementById('solJustificante');
     if (inp) inp.value = '';
   }
+}
+
+function _textoAdmiteJustificante(texto) {
+  var s = String(texto || '').toLowerCase();
+  if (s.indexOf('consulta') >= 0 || s.indexOf('turno') >= 0) return false;
+  return s.indexOf('permiso') >= 0 || s.indexOf('baja') >= 0 || s.indexOf('vacacion') >= 0
+    || s.indexOf('visita') >= 0 || s.indexOf('asunto') >= 0;
 }
 
 var solicitudForm = document.getElementById('solicitudForm');
@@ -1463,10 +1535,14 @@ if (solicitudForm) {
       return;
     }
     var tipo   = this.querySelector('[name="tipo"]').value;
-    var fechas = this.querySelector('[name="fechas"]').value.trim();
     var motivo = this.querySelector('[name="motivo"]').value.trim();
+    var fechasRes = _construirFechasSolicitud(tipo);
+    if (fechasRes.error) {
+      if (err) { err.style.display = 'block'; err.textContent = fechasRes.error; }
+      return;
+    }
     var payload = {
-      empleado_id: currentEmpleado.id, tipo: tipo, fechas: fechas, motivo: motivo, estado: 'pendiente'
+      empleado_id: currentEmpleado.id, tipo: tipo, fechas: fechasRes.value, motivo: motivo, estado: 'pendiente'
     };
     var justInp = document.getElementById('solJustificante');
     var archivoJust = justInp && justInp.files && justInp.files[0] ? justInp.files[0] : null;
@@ -1493,7 +1569,8 @@ if (solicitudForm) {
     }
     if (ok) { ok.style.display = 'block'; ok.textContent = '✓ Solicitud enviada. El coordinador la revisará en breve.'; }
     this.reset();
-    toggleSolJustificanteField();
+    _limpiarFechasSolicitudForm();
+    toggleSolFormFields();
     cargarMisSolicitudes();
   });
 }
@@ -2302,8 +2379,23 @@ function calcVacacionesAnuales(emp, data, ano) {
   document.addEventListener('change', function(e) {
     if (e.target.id === 'vacDesde' || e.target.id === 'vacHasta') actualizarDias();
     if (e.target.id === 'vacTipo') toggleVacJustificanteField();
+    if (e.target.id === 'solDesde' || e.target.id === 'solHasta') actualizarDiasSolicitud();
   });
 })();
+
+function actualizarDiasSolicitud() {
+  var d = document.getElementById('solDesde');
+  var h = document.getElementById('solHasta');
+  var cont = document.getElementById('solDiasCont');
+  var out = document.getElementById('solDias');
+  if (!d || !h || !cont || !out) return;
+  if (d.value && h.value && h.value >= d.value) {
+    out.textContent = diasEntre(d.value, h.value) + ' días';
+    cont.style.display = 'block';
+  } else {
+    cont.style.display = 'none';
+  }
+}
 
 function toggleVacJustificanteField() {
   var wrap = document.getElementById('vacJustificanteWrap');
@@ -2742,7 +2834,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (inputExcel) inputExcel.addEventListener('change', previsualizarExcel);
   generarPlantilla();
   toggleVacJustificanteField();
-  toggleSolJustificanteField();
+  toggleSolFormFields();
 });
 
 function generarPlantilla() {
