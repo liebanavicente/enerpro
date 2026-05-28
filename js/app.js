@@ -54,6 +54,7 @@ var _vacAdminData = [];
 var _cuadAdminAnio  = new Date().getFullYear();
 var _cuadAdminMes   = new Date().getMonth();
 var _cuadAdminCargo = 'todos';
+var _justificanteVacId = null;
 var _cuadAdminRaw   = { empleados: [], turnos: [] };
 var _dashChartSolCtx = null;
 var _dashChartVacCtx = null;
@@ -98,7 +99,7 @@ function getTipoTurno(tipo) {
   return m[tipo] || tipo;
 }
 function getTipoVac(tipo) {
-  var m = { vacaciones:t('vac.l_vac'), permiso:t('vac.l_perm'),
+  var m = { vacaciones:t('vac.l_vac'), permiso:t('vac.l_perm'), visita_medica:t('vac.l_visita'),
             asuntos_propios:t('vac.l_asuntos'), baja_medica:t('vac.l_baja') };
   return m[tipo] || tipo;
 }
@@ -200,6 +201,7 @@ function aplicarIdioma() {
   if (pid === 'page-solicitudes') cargarMisSolicitudes();
   if (pid === 'page-vacaciones') cargarVacaciones();
   if (pid === 'page-calendario') cargarCalendario();
+  toggleVacJustificanteField();
   if (pid === 'page-admin') {
     if (currentAdminTab === 'dashboard')         cargarDashboard();
     else if (currentAdminTab === 'empleados')    aplicarFiltrosEmpleados();
@@ -1821,6 +1823,11 @@ async function _purgeEmpleadoDatos(empId) {
     await sb.from('documentos').delete().eq('empleado_id', empId);
   }
   await sb.from('turnos').delete().eq('empleado_id', empId);
+  var { data: vacsJust } = await sb.from('vacaciones').select('justificante_url').eq('empleado_id', empId);
+  if (vacsJust && vacsJust.length) {
+    var jPaths = vacsJust.map(function(v) { return _docStoragePath(v.justificante_url); }).filter(Boolean);
+    if (jPaths.length) await sb.storage.from('documentos').remove(jPaths);
+  }
   await sb.from('vacaciones').delete().eq('empleado_id', empId);
   await sb.from('solicitudes').delete().eq('empleado_id', empId);
   try {
@@ -2162,8 +2169,19 @@ sb.auth.onAuthStateChange(function(event, session) {
 
 // ─── VACACIONES ──────────────────────────────────────────
 
-var VAC_TIPO_LABEL = { vacaciones:'Vacaciones', permiso:'Permiso', asuntos_propios:'Asuntos propios', baja_medica:'Baja médica' };
-var VAC_TIPO_CLASS = { vacaciones:'badge-blue', permiso:'badge-yellow', asuntos_propios:'badge-yellow', baja_medica:'badge-red' };
+var VAC_TIPO_LABEL = {
+  vacaciones:'Vacaciones', permiso:'Permiso', visita_medica:'Visita médica',
+  asuntos_propios:'Asuntos propios', baja_medica:'Baja médica'
+};
+var VAC_TIPO_CLASS = {
+  vacaciones:'badge-blue', permiso:'badge-yellow', visita_medica:'badge-yellow',
+  asuntos_propios:'badge-yellow', baja_medica:'badge-red'
+};
+var VAC_TIPOS_JUSTIFICANTE = ['baja_medica', 'visita_medica', 'permiso', 'asuntos_propios'];
+
+function _tipoAdmiteJustificante(tipo) {
+  return VAC_TIPOS_JUSTIFICANTE.indexOf(tipo) !== -1;
+}
 
 function diasEntre(desde, hasta) {
   var d1 = new Date(desde + 'T12:00:00'), d2 = new Date(hasta + 'T12:00:00');
@@ -2209,8 +2227,130 @@ function calcVacacionesAnuales(emp, data, ano) {
   }
   document.addEventListener('change', function(e) {
     if (e.target.id === 'vacDesde' || e.target.id === 'vacHasta') actualizarDias();
+    if (e.target.id === 'vacTipo') toggleVacJustificanteField();
+    if (e.target.id === 'vacJustificanteLate') subirJustificanteBajaTardio(e.target);
   });
 })();
+
+function toggleVacJustificanteField() {
+  var wrap = document.getElementById('vacJustificanteWrap');
+  var tipo = document.getElementById('vacTipo');
+  if (!wrap || !tipo) return;
+  var show = _tipoAdmiteJustificante(tipo.value);
+  wrap.style.display = show ? 'block' : 'none';
+  if (!show) {
+    var inp = document.getElementById('vacJustificante');
+    if (inp) inp.value = '';
+  }
+}
+
+function _justificanteExtValida(name) {
+  var ext = String(name || '').split('.').pop().toLowerCase();
+  return ['pdf', 'jpg', 'jpeg', 'png', 'webp'].indexOf(ext) !== -1;
+}
+
+async function _subirJustificanteBaja(archivo) {
+  if (!archivo || !currentEmpleado) throw new Error(t('vac.just_err_subir'));
+  if (!_justificanteExtValida(archivo.name)) throw new Error(t('vac.just_err_tipo'));
+  var safeName = archivo.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  var path = currentEmpleado.id + '/justificantes/' + Date.now() + '_' + safeName;
+  var { error } = await sb.storage.from('documentos').upload(path, archivo);
+  if (error) throw new Error(error.message);
+  return path;
+}
+
+async function _eliminarJustificanteStorage(url) {
+  var path = _docStoragePath(url);
+  if (!path) return;
+  await sb.storage.from('documentos').remove([path]);
+}
+
+async function _actualizarJustificanteVac(vacacionId, url, oldUrl) {
+  var { error } = await sb.rpc('actualizar_justificante_vacacion', {
+    p_vacacion_id: vacacionId,
+    p_url: url
+  });
+  if (error) {
+    var fallback = await sb.rpc('actualizar_justificante_baja', {
+      p_vacacion_id: vacacionId,
+      p_url: url
+    });
+    if (fallback.error) throw new Error(fallback.error.message);
+  }
+  if (oldUrl && oldUrl !== url) {
+    try { await _eliminarJustificanteStorage(oldUrl); } catch (e) { /* noop */ }
+  }
+}
+
+function _justificanteVacBtns(v, opts) {
+  opts = opts || {};
+  if (!_tipoAdmiteJustificante(v.tipo)) return '';
+  var puedeSubir = !opts.admin && (v.estado === 'pendiente' || v.estado === 'aprobada');
+  var html = '';
+  if (v.justificante_url) {
+    var safeUrl = v.justificante_url.replace(/'/g, "\\'");
+    html += '<button type="button" class="btn-sm" onclick="verJustificanteBaja(\'' + safeUrl + '\')" style="font-size:0.72rem">' + t('vac.just_ver') + '</button>';
+    if (puedeSubir) {
+      html += '<button type="button" class="btn-sm" onclick="elegirJustificanteBaja(\'' + v.id + '\')" style="font-size:0.72rem">' + t('vac.just_cambiar') + '</button>';
+    }
+  } else if (puedeSubir) {
+    html += '<button type="button" class="btn-sm gold" onclick="elegirJustificanteBaja(\'' + v.id + '\')" style="font-size:0.72rem">' + t('vac.just_subir') + '</button>';
+  } else if (opts.admin && v.estado === 'pendiente') {
+    html += '<span style="font-size:0.72rem;color:var(--muted)">' + t('vac.just_pendiente') + '</span>';
+  }
+  return html;
+}
+
+function elegirJustificanteBaja(vacId) {
+  _justificanteVacId = vacId;
+  var inp = document.getElementById('vacJustificanteLate');
+  if (inp) { inp.value = ''; inp.click(); }
+}
+
+async function subirJustificanteBajaTardio(input) {
+  var file = input && input.files ? input.files[0] : null;
+  var vacId = _justificanteVacId;
+  _justificanteVacId = null;
+  if (input) input.value = '';
+  if (!file || !vacId || !currentEmpleado) return;
+
+  var vac = null;
+  var { data: vacRow, error: vacErr } = await sb.from('vacaciones').select('id, tipo, estado, justificante_url')
+    .eq('id', vacId).eq('empleado_id', currentEmpleado.id).maybeSingle();
+  if (vacErr) {
+    mostrarToast('❌ Error', vacErr.message);
+    return;
+  }
+  vac = vacRow;
+  if (!vac || !_tipoAdmiteJustificante(vac.tipo) || (vac.estado !== 'pendiente' && vac.estado !== 'aprobada')) {
+    mostrarToast('❌ Error', t('vac.just_err_subir'));
+    return;
+  }
+
+  try {
+    var url = await _subirJustificanteBaja(file);
+    await _actualizarJustificanteVac(vacId, url, vac.justificante_url);
+    mostrarToast('✓ ' + t('vac.just_ok'), '');
+    cargarVacaciones();
+  } catch (e) {
+    mostrarToast('❌ Error', e.message || t('vac.just_err_subir'));
+  }
+}
+
+async function verJustificanteBaja(url) {
+  if (!url) return;
+  var path = _docStoragePath(url);
+  var { data, error } = await sb.storage.from('documentos').createSignedUrl(path, 3600);
+  if (error || !data || !data.signedUrl) {
+    mostrarToast('❌ Error', 'No se pudo abrir el justificante.');
+    return;
+  }
+  if (/\.pdf$/i.test(path)) {
+    verDoc(url, t('vac.just_ver'));
+    return;
+  }
+  window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+}
 
 async function solicitarVacaciones() {
   var tipo   = document.getElementById('vacTipo').value;
@@ -2250,12 +2390,35 @@ async function solicitarVacaciones() {
 
   var payload = { empleado_id: currentEmpleado.id, tipo, fecha_inicio: desde, fecha_fin: hasta, estado: 'pendiente' };
   if (notas) payload.notas = notas;
+
+  var archivoJust = null;
+  if (_tipoAdmiteJustificante(tipo)) {
+    var justInp = document.getElementById('vacJustificante');
+    archivoJust = justInp && justInp.files && justInp.files[0] ? justInp.files[0] : null;
+    if (archivoJust) {
+      try {
+        payload.justificante_url = await _subirJustificanteBaja(archivoJust);
+      } catch (e) {
+        err.style.display = 'block';
+        err.textContent = e.message || t('vac.just_err_subir');
+        return;
+      }
+    }
+  }
+
   var { error } = await sb.from('vacaciones').insert(payload);
-  if (error) { err.style.display='block'; err.textContent='Error: '+error.message; return; }
+  if (error) {
+    if (payload.justificante_url) {
+      try { await _eliminarJustificanteStorage(payload.justificante_url); } catch (e) { /* noop */ }
+    }
+    err.style.display='block'; err.textContent='Error: '+error.message; return;
+  }
   ok.style.display='block'; ok.textContent='✓ Solicitud enviada. El coordinador la revisará en breve.';
   document.getElementById('vacDesde').value = '';
   document.getElementById('vacHasta').value = '';
   document.getElementById('vacNotas').value = '';
+  var justReset = document.getElementById('vacJustificante');
+  if (justReset) justReset.value = '';
   document.getElementById('vacDiasCont').style.display = 'none';
   cargarVacaciones();
 }
@@ -2297,13 +2460,18 @@ async function cargarVacaciones() {
         'style="margin-left:0.25rem;color:var(--muted);border-color:var(--border2);font-size:var(--text-xs)" ' +
         'title="Cancelar solicitud">' + t('sol.cancelar') + '</button>'
       : '';
+    var justBtns = _justificanteVacBtns(v);
+    var justRow = justBtns
+      ? '<div style="margin-top:0.4rem;display:flex;flex-wrap:wrap;gap:0.35rem;width:100%">' + justBtns + '</div>'
+      : '';
     var d = delay; delay += 50;
     return '<div class="vac-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<div class="vac-main">' +
         '<span class="badge ' + (VAC_TIPO_CLASS[v.tipo]||'badge-blue') + ' vac-tipo">' + getTipoVac(v.tipo) + '</span>' +
         '<span class="vac-fechas">' + desde + ' → ' + hasta +
           (v.notas     ? '<br><span style="font-size:0.72rem;color:var(--muted)">' + v.notas      + '</span>' : '') +
-          (v.comentario ? '<br><span style="font-size:0.72rem;color:var(--gold)">💬 ' + v.comentario + '</span>' : '') + '</span>' +
+          (v.comentario ? '<br><span style="font-size:0.72rem;color:var(--gold)">💬 ' + v.comentario + '</span>' : '') +
+          justRow + '</span>' +
       '</div>' +
       '<div class="vac-side">' +
         '<span class="vac-dias">' + dias + ' d.</span>' +
@@ -2354,12 +2522,22 @@ function filtrarVacacionesAdmin() {
     var dias   = diasEntre(v.fecha_inicio, v.fecha_fin);
     var eb = getEstadoBadge(v.estado);
     var d = delay; delay += 45;
+    var justAdminBtn = '';
+    if (_tipoAdmiteJustificante(v.tipo)) {
+      if (v.justificante_url) {
+        var safeJ = v.justificante_url.replace(/'/g, "\\'");
+        justAdminBtn = '<button type="button" class="btn-sm" onclick="verJustificanteBaja(\'' + safeJ + '\')" style="font-size:0.72rem">' + t('va.just_ver') + '</button>';
+      } else if (v.estado === 'pendiente') {
+        justAdminBtn = '<span style="font-size:0.72rem;color:var(--muted)">' + t('va.just_sin') + '</span>';
+      }
+    }
     return '<div class="doc-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<div class="doc-info"><div class="doc-icon">🏖️</div>' +
       '<div><div class="doc-name">' + highlightMatch(nombre, q) + ' · <span style="color:var(--text2);font-weight:400">' + getTipoVac(v.tipo) + '</span></div>' +
       '<div class="doc-meta">' + desde + ' → ' + hasta + ' (' + dias + ' ' + t('g.dias') + ')' + (v.notas ? ' · ' + v.notas : '') + '</div></div></div>' +
-      '<div style="display:flex;align-items:center;gap:0.5rem" id="vac-act-' + v.id + '">' +
+      '<div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap" id="vac-act-' + v.id + '">' +
       '<span class="badge ' + eb.cls + '">' + eb.lbl + '</span>' +
+      justAdminBtn +
       (v.estado === 'pendiente' ?
         '<button class="btn-sm primary" onclick="mostrarAccionVacacion(\'' + v.id + '\',\'aprobada\')">' + t('va.aprobar') + '</button>' +
         '<button class="btn-sm" style="color:var(--red);border-color:rgba(220,38,38,0.3)" onclick="mostrarAccionVacacion(\'' + v.id + '\',\'rechazada\')">' + t('va.rechazar') + '</button>'
@@ -2449,6 +2627,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var inputExcel = document.getElementById('importarArchivo');
   if (inputExcel) inputExcel.addEventListener('change', previsualizarExcel);
   generarPlantilla();
+  toggleVacJustificanteField();
 });
 
 function generarPlantilla() {

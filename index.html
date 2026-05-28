@@ -2405,6 +2405,7 @@
             <select id="vacTipo">
               <option value="vacaciones" data-i18n="vac.t_vac">Vacaciones</option>
               <option value="permiso" data-i18n="vac.t_perm">Permiso personal</option>
+              <option value="visita_medica" data-i18n="vac.t_visita">Visita médica</option>
               <option value="asuntos_propios" data-i18n="vac.t_asuntos">Asuntos propios</option>
               <option value="baja_medica" data-i18n="vac.t_baja">Baja médica</option>
             </select>
@@ -2417,11 +2418,17 @@
             <label data-i18n="vac.notas">Notas (opcional)</label>
             <textarea id="vacNotas" rows="3" placeholder="Motivo o indicaciones..." data-i18n-ph="vac.notas_ph"></textarea>
           </div>
+          <div id="vacJustificanteWrap" class="form-group" style="display:none;margin-top:0">
+            <label data-i18n="vac.just_label">Documento acreditativo (opcional)</label>
+            <input type="file" id="vacJustificante" accept=".pdf,.jpg,.jpeg,.png,.webp,image/*,application/pdf">
+            <p style="font-size:0.72rem;color:var(--muted);margin:0.4rem 0 0;line-height:1.45" data-i18n="vac.just_hint">Justificante médico, permiso u otro documento. Puedes adjuntarlo ahora o más tarde.</p>
+          </div>
           <div id="vacDiasCont" style="display:none;margin-bottom:1rem;padding:0.75rem 1rem;background:var(--surface2);border-radius:var(--r-sm)">
             <span style="font-size:0.8rem;color:var(--text2)" data-i18n="vac.dias_sol">Días solicitados: </span>
             <strong id="vacDias" style="color:var(--gold)">—</strong>
           </div>
           <button class="btn-primary" onclick="solicitarVacaciones()" data-i18n="vac.btn">Enviar solicitud</button>
+          <input type="file" id="vacJustificanteLate" accept=".pdf,.jpg,.jpeg,.png,.webp,image/*,application/pdf" style="display:none" aria-hidden="true">
         </div>
 
         <!-- Historial de solicitudes -->
