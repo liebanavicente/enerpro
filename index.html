@@ -1622,7 +1622,7 @@
       </div>
       <button class="btn-primary" id="btnLogin" data-i18n="login.btn">Acceder al portal</button>
       <div style="text-align:center;margin-top:1rem">
-        <a href="/registro.html" style="font-size:0.78rem;color:var(--text2);text-decoration:none;border-bottom:1px solid var(--border2);padding-bottom:1px;transition:color 0.15s">Solicitar acceso al portal</a>
+        <p style="font-size:0.78rem;color:var(--text2);line-height:1.55;margin:0" data-i18n="login.alta_info">El alta la gestiona tu coordinador. Si aún no tienes acceso, contacta con él.</p>
       </div>
     </div>
     <div id="recuperarPassView" style="display:none">
@@ -1882,7 +1882,6 @@
         <div class="admin-tabs-main">
           <button class="admin-tab active" data-tab="dashboard" onclick="switchTab('dashboard', this)"><span data-i18n="tab.dashboard">📊 Dashboard</span></button>
           <button class="admin-tab" data-tab="empleados" onclick="switchTab('empleados', this)"><span data-i18n="tab.empleados">Empleados</span></button>
-          <button class="admin-tab" data-tab="registro-admin" onclick="switchTab('registro-admin', this)" id="tabBtnRegistro"><span data-i18n="tab.registro">Registro</span><span id="regPendBadge" class="admin-tab-badge" style="display:none"></span></button>
           <button class="admin-tab" data-tab="solicitudes-admin" onclick="switchTab('solicitudes-admin', this)"><span data-i18n="tab.solicitudes">Solicitudes</span><span id="solPendBadge" class="admin-tab-badge" style="display:none"></span></button>
           <button class="admin-tab" data-tab="turnos-admin" onclick="switchTab('turnos-admin', this)"><span data-i18n="tab.turnos">Turnos</span></button>
           <button class="admin-tab" data-tab="docs-admin" onclick="switchTab('docs-admin', this)"><span data-i18n="tab.docs">Documentos</span></button>
@@ -1897,6 +1896,7 @@
             <button class="admin-tab admin-tab-dropdown-item" data-tab="subir" role="menuitem" onclick="switchTab('subir', this); cerrarAdminMoreMenu()"><span data-i18n="tab.subir">Subir documento</span></button>
             <button class="admin-tab admin-tab-dropdown-item" data-tab="masivo" role="menuitem" onclick="switchTab('masivo', this); cerrarAdminMoreMenu()"><span data-i18n="tab.masivo">Subida masiva ZIP</span></button>
             <button class="admin-tab admin-tab-dropdown-item" data-tab="importar" role="menuitem" onclick="switchTab('importar', this); cerrarAdminMoreMenu()"><span data-i18n="tab.importar">Importar</span></button>
+            <button class="admin-tab admin-tab-dropdown-item" data-tab="registro-admin" role="menuitem" onclick="switchTab('registro-admin', this); cerrarAdminMoreMenu()" id="tabBtnRegistro"><span data-i18n="tab.registro">Registro</span><span id="regPendBadge" class="admin-tab-badge" style="display:none"></span></button>
             <button class="admin-tab admin-tab-dropdown-item" data-tab="vacaciones-admin" role="menuitem" onclick="switchTab('vacaciones-admin', this); cerrarAdminMoreMenu()"><span data-i18n="tab.vacaciones">Vacaciones</span><span id="vacPendBadge" class="admin-tab-badge" style="display:none"></span></button>
             <button class="admin-tab admin-tab-dropdown-item" data-tab="resumen-vac" role="menuitem" onclick="switchTab('resumen-vac', this); cerrarAdminMoreMenu()"><span data-i18n="tab.resumen">Resumen vacacional</span></button>
           </div>
@@ -2037,7 +2037,10 @@
     <div class="admin-tab-content" id="tab-registro-admin" style="display:none">
       <div class="card" style="padding:0">
         <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem">
-          <span class="section-label" data-i18n="reg.titulo">Solicitudes de registro</span>
+          <div>
+            <span class="section-label" data-i18n="reg.titulo">Solicitudes de registro</span>
+            <p style="font-size:0.75rem;color:var(--text2);margin-top:0.35rem;line-height:1.45" data-i18n="reg.legacy_note">Autoregistro desactivado. Solo solicitudes anteriores pendientes de revisión.</p>
+          </div>
           <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
             <select id="regAdminFiltro" class="btn-sm" style="padding:0 0.75rem;height:34px;border-radius:var(--r-xs);background:var(--surface2);color:var(--text2)" onchange="cargarSolicitudesRegistro()">
               <option value="pendiente" data-i18n="reg.f_pend">Pendientes</option>
@@ -2284,7 +2287,7 @@
         <!-- Importar Excel -->
         <div class="card">
           <div class="section-label" style="margin-bottom:0.375rem" data-i18n="imp.titulo">Importar empleados desde Excel</div>
-          <p style="font-size:0.8rem;color:var(--text2);line-height:1.6;margin-bottom:1.25rem">Sube un <strong style="color:var(--text)">.xlsx</strong> con columnas: <code style="color:var(--gold)">nombre · email · dni · cargo</code>. La primera fila debe ser la cabecera.</p>
+          <p style="font-size:0.8rem;color:var(--text2);line-height:1.6;margin-bottom:1.25rem" data-i18n="imp.sub">Sube un .xlsx con columnas: nombre · email · dni · cargo. En email pon el correo corporativo de cada empleado (será su usuario de acceso y donde recibirá el enlace para crear la contraseña).</p>
           <div class="success-box" id="importarOk"></div>
           <div class="error-box"   id="importarError"></div>
           <div class="form-group">
@@ -2687,8 +2690,8 @@
           <option value="Administrativo" data-i18n="emp.c_adm">Administrativo</option>
         </select>
       </div>
-      <div class="form-group"><label data-i18n="emp.pass_ini">Contraseña inicial</label><input type="password" id="empPassword" placeholder="Mínimo 6 caracteres" data-i18n-ph="emp.pass_ph"></div>
-      <div style="display:flex;gap:0.75rem;margin-top:1.5rem">
+      <p style="font-size:0.78rem;color:var(--text2);line-height:1.5;margin-bottom:1rem" data-i18n="emp.nota_email">Se enviará un email al empleado para establecer su contraseña.</p>
+      <div style="display:flex;gap:0.75rem;margin-top:0.5rem">
         <button class="btn-sm primary" onclick="crearEmpleado()" style="flex:1;padding:0.7rem;font-size:0.85rem" data-i18n="emp.btn_crear">Crear empleado</button>
         <button class="btn-sm" onclick="hideAddEmpleado()" style="padding:0.7rem 1.25rem" data-i18n="emp.btn_cancel">Cancelar</button>
       </div>

@@ -22,8 +22,9 @@ La aplicacion esta publicada como sitio estatico y utiliza Supabase para autenti
 ```text
 .
 ├── index.html          # Aplicacion principal y estructura de vistas
-├── registro.html       # Formulario publico de solicitud de acceso
-├── presentacion.html   # Pagina de presentacion del proyecto
+├── registro.html       # Aviso publico (autoregistro desactivado)
+├── presentacion.html   # Presentacion del proyecto (slides)
+├── guia-coordinacion.html  # Guia operativa para coordinacion (imprimible)
 ├── css/styles.css      # Estilos complementarios
 ├── js/app.js           # Logica principal de la aplicacion
 ├── js/i18n.js          # Textos de interfaz en castellano y catalan
@@ -65,7 +66,7 @@ El frontend contiene la URL publica del proyecto y la anon key de Supabase. Esto
 - Storage protegido por politicas equivalentes a las de base de datos.
 - Acciones sensibles delegadas a Edge Functions cuando requieran privilegios elevados.
 
-Ver tambien [`docs/supabase-checklist.md`](docs/supabase-checklist.md) y [`supabase/email-templates.md`](supabase/email-templates.md).
+Ver tambien [`docs/supabase-checklist.md`](docs/supabase-checklist.md), [`docs/email-bienvenida-empleado.md`](docs/email-bienvenida-empleado.md) y [`supabase/email-templates.md`](supabase/email-templates.md).
 
 **Email:** en fase demo basta con plantillas Supabase Auth. Correo transaccional con dominio propio (Resend + Edge Functions) queda pendiente de la aprobacion del proyecto por ENERPRO.
 

@@ -675,7 +675,7 @@
     </div>
     <div class="eyebrow">Proyecto web</div>
     <h1>Portal del <span>Empleado</span></h1>
-    <p class="sub">Aplicación desarrollada para la plantilla de ENERPRO. Nóminas, cuadrantes PDF con reemplazo mensual e import al calendario, vacaciones y solicitudes — optimizada para móvil, bilingüe ES/CA, con autoregistro y parser Beta10.</p>
+    <p class="sub">Aplicación desarrollada para la plantilla de ENERPRO. Nóminas, cuadrantes PDF con reemplazo mensual e import al calendario, vacaciones y solicitudes — optimizada para móvil, bilingüe ES/CA, altas centralizadas por coordinación y parser Beta10.</p>
   </section>
 
   <!-- 2 PROBLEMA -->
@@ -720,19 +720,18 @@
           <li>Vacaciones — días, peticiones y estados</li>
           <li>Turnos — subir cuadrante, reemplazo automático del mes e import al calendario</li>
           <li>Mi perfil — datos personales y contraseña</li>
-          <li>Autoregistro — solicitar acceso desde registro.html</li>
+          <li>Acceso — email corporativo; el alta la gestiona coordinación</li>
         </ul>
       </div>
       <div class="toc-block">
         <h3>⚙️ Coordinador</h3>
         <ul>
           <li>Dashboard — métricas y gráficas</li>
-          <li>Empleados — alta, edición, import/export</li>
+          <li>Empleados — alta unitaria, import Excel, edición</li>
           <li>Documentos — subida individual (cuadrante reemplaza mes + import turnos)</li>
           <li>Solicitudes y vacaciones — aprobar / rechazar</li>
           <li>Turnos — creación, Excel, cuadrante visual</li>
-          <li>Registro — aprobar altas solicitadas por empleados</li>
-          <li>Importar — parser PDF cuadrantes Beta10 → turnos</li>
+          <li>Más → Importar — altas masivas desde Excel + parser PDF cuadrantes</li>
         </ul>
       </div>
     </div>
@@ -870,8 +869,8 @@
           <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" width="18" height="18"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
         </div>
         <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Altas y registro</div>
-          <p>Revisa solicitudes de acceso enviadas por empleados, aprueba con un clic y envía contraseña de activación.</p>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem">Altas de empleados</div>
+          <p>Alta unitaria o importación masiva desde Excel. El portal crea la cuenta y envía un email automático para que el empleado establezca su contraseña.</p>
         </div>
       </div>
 
@@ -898,30 +897,33 @@
     </div>
   </section>
 
-  <!-- 6 AUTOREGISTRO -->
+  <!-- 6 ALTAS -->
   <section class="slide slide-dense" data-slide="6">
     <div class="eyebrow">Novedad · Alta de empleados</div>
-    <h2>Autoregistro con aprobación</h2>
-    <p class="sub" style="margin-top:0;margin-bottom:0.75rem">Formulario público en <strong style="color:var(--gold)">registro.html</strong> — el empleado solicita acceso; el coordinador aprueba desde Admin → Registro.</p>
+    <h2>Alta gestionada por coordinación</h2>
+    <p class="sub" style="margin-top:0;margin-bottom:0.75rem">No hay autoregistro público. El coordinador da de alta desde el panel; el empleado recibe un email con enlace para crear su contraseña.</p>
     <div class="grid-2" style="margin-top:0.5rem">
       <div class="card card-accent" style="margin:0">
-        <div class="card-label">Flujo del empleado</div>
+        <div class="card-label">Flujo del coordinador</div>
         <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item"><strong>Enlace desde login</strong> — «Solicitar acceso al portal»</div>
-          <div class="feat-item"><strong>Formulario</strong> — Nombre, email, DNI y cargo</div>
-          <div class="feat-item"><strong>Notificación</strong> — Email al coordinador vía Formsubmit</div>
-          <div class="feat-item"><strong>Espera</strong> — Solicitud en estado pendiente hasta aprobación</div>
+          <div class="feat-item"><strong>Alta unitaria</strong> — Admin → Empleados → + Añadir (nombre, email, DNI, cargo)</div>
+          <div class="feat-item"><strong>Alta masiva</strong> — Admin → Más → Importar Excel (plantilla descargable)</div>
+          <div class="feat-item"><strong>Email automático</strong> — Enlace para establecer contraseña (Supabase Auth)</div>
+          <div class="feat-item"><strong>Rol admin</strong> — Editar empleado → «Acceso administración» solo para coordinadores</div>
         </div>
       </div>
       <div class="card" style="margin:0">
-        <div class="card-label">Flujo del coordinador</div>
+        <div class="card-label">Flujo del empleado</div>
         <div class="feat-grid" style="grid-template-columns:1fr;margin-top:0.35rem">
-          <div class="feat-item"><strong>Tab Registro</strong> — Badge con solicitudes pendientes</div>
-          <div class="feat-item"><strong>Modal de aprobación</strong> — Revisar datos antes de confirmar</div>
-          <div class="feat-item"><strong>Creación automática</strong> — Auth + ficha empleado + email reset pass</div>
-          <div class="feat-item"><strong>22 días vacaciones</strong> — Valor por defecto al aprobar</div>
+          <div class="feat-item"><strong>Espera el email</strong> — Revisa bandeja y spam tras el alta</div>
+          <div class="feat-item"><strong>Establece contraseña</strong> — Pulsa el enlace del correo ENERPRO</div>
+          <div class="feat-item"><strong>Entra al portal</strong> — Email corporativo + contraseña en login</div>
+          <div class="feat-item"><strong>Sin acceso</strong> — Contacta con tu coordinador (no hay formulario público)</div>
         </div>
       </div>
+    </div>
+    <div class="callout-box" style="margin-top:1rem">
+      <strong style="color:var(--gold)">Guía operativa</strong> — <a href="guia-coordinacion.html" style="color:var(--gold)">guia-coordinacion.html</a> · Plantilla email bienvenida en <code style="color:var(--gold)">docs/email-bienvenida-empleado.md</code>
     </div>
   </section>
 
@@ -1194,7 +1196,7 @@
       </div>
     </div>
     <ul class="clean" style="margin-top:1rem">
-      <li><span class="tag tag-ok">Hecho</span> Autoregistro · parser PDF Beta10 · cuadrante self-service · reemplazo cuadrante por mes · import auto al calendario · RLS Supabase · idle logout 5 min · móvil responsive · PWA · cuadrante visual · dashboard · plantillas email ENERPRO (Supabase Auth)</li>
+      <li><span class="tag tag-ok">Hecho</span> Altas por coordinación · import Excel empleados · parser PDF Beta10 · cuadrante self-service · reemplazo cuadrante por mes · import auto al calendario · RLS Supabase · idle logout 5 min · móvil responsive · PWA · cuadrante visual · dashboard · plantillas email ENERPRO (Supabase Auth)</li>
       <li><span class="tag tag-next">Próximo</span> Aprobación proyecto ENERPRO · datos reales · dominio email · desplegar Resend</li>
       <li><span class="tag tag-fut">Futuro</span> Justificantes bajas · calendario equipo · auditoría firmas</li>
     </ul>
@@ -1229,7 +1231,7 @@
           <li>Acceso móvil, bilingüe (ES/CA) y PWA instalable</li>
           <li>Flujo de contraseñas — temporal en primer acceso, cambio self-service</li>
           <li>Emails de acceso — plantilla ENERPRO en Supabase Auth (sin dominio propio en demo)</li>
-          <li>Autoregistro — registro.html + aprobación coordinador</li>
+          <li>Altas centralizadas — coordinador crea cuentas; email automático al empleado</li>
           <li>Parser PDF cuadrantes Beta10 — importación automática al subir o desde Importar (reemplaza turnos del mes)</li>
         </ul>
       </div>
@@ -1248,13 +1250,13 @@
       <div class="card" style="margin:0;border-top:2px solid rgba(245,184,0,0.5);position:relative">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:800;color:rgba(245,184,0,0.18);line-height:1;margin-bottom:0.5rem">01</div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.04em;margin-bottom:0.4rem;color:var(--text)">Preparar Excel</div>
-        <p>Rellenar la plantilla descargable del portal con nombre, email, DNI, cargo y días de vacaciones de cada empleado.</p>
+        <p>Rellenar la plantilla descargable (Admin → Más → Importar) con <strong>nombre · email corporativo · DNI · cargo</strong> de cada empleado.</p>
       </div>
 
       <div class="card card-accent" style="margin:0">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:800;color:rgba(245,184,0,0.25);line-height:1;margin-bottom:0.5rem">02</div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.04em;margin-bottom:0.4rem;color:var(--text)">Importar plantilla</div>
-        <p>Admin → Empleados → Importar Excel. El portal crea las cuentas con contraseña temporal y las fichas completas en BD.</p>
+        <p>Admin → Más → Importar. El portal crea cuentas, fichas en BD y envía email de acceso a cada correo.</p>
       </div>
 
       <div class="card" style="margin:0;border-top:2px solid rgba(245,184,0,0.5)">
@@ -1266,7 +1268,7 @@
       <div class="card" style="margin:0;border-top:2px solid rgba(245,184,0,0.5)">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:800;color:rgba(245,184,0,0.18);line-height:1;margin-bottom:0.5rem">04</div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.04em;margin-bottom:0.4rem;color:var(--text)">Comunicar acceso</div>
-        <p>Enviar email y contraseña temporal — o dejar que el empleado solicite acceso vía registro.html y aprobar desde Admin → Registro.</p>
+        <p>El portal envía el email de acceso automáticamente. Opcional: reenviar la plantilla de bienvenida de coordinación (ver guía).</p>
       </div>
 
     </div>
@@ -1280,12 +1282,12 @@
   <section class="slide" data-slide="20">
     <div class="eyebrow">Demo en vivo</div>
     <h2>Pruébalo ahora</h2>
-    <p class="sub">Escanea el QR o abre el portal. Registro de nuevos empleados: <strong style="color:var(--gold)">/registro.html</strong>. Instálalo en el móvil: Compartir → Añadir a pantalla de inicio.</p>
+    <p class="sub">Escanea el QR o abre el portal. Altas: coordinador desde Admin → Empleados o Importar. Instálalo en el móvil: Compartir → Añadir a pantalla de inicio.</p>
     <div class="qr-box">
       <div class="qr-placeholder" id="qrCode">QR al portal<br><small>(sustituir URL Vercel)</small></div>
       <div style="font-size:1.05rem;color:var(--text2)" id="portalUrl">https://tu-dominio.vercel.app</div>
     </div>
-    <p class="hint" style="margin-top:1rem">Ruta demo: Carlos → documentos → vacaciones · Coordinador → badge pendientes → aprobar → cuadrante admin</p>
+    <p class="hint" style="margin-top:1rem">Ruta demo: empleado → documentos → vacaciones · coordinador → import Excel → aprobar pendientes → cuadrante admin · Guía: <a href="guia-coordinacion.html" style="color:var(--gold)">guia-coordinacion.html</a></p>
   </section>
 
   <!-- 21 CIERRE -->

@@ -46,7 +46,7 @@ var _docBadgeCount = 0;
 var _solBadgeCount = 0;
 var _vacBadgeCount = 0;
 var _regBadgeCount = 0;
-var _ADMIN_MORE_TABS = ['subir', 'masivo', 'importar', 'vacaciones-admin', 'resumen-vac'];
+var _ADMIN_MORE_TABS = ['subir', 'masivo', 'importar', 'vacaciones-admin', 'resumen-vac', 'registro-admin'];
 var _adminMoreSuppressClose = false;
 var currentAdminTab = 'dashboard';
 var _solAdminData = [];
@@ -1757,7 +1757,6 @@ function showAddEmpleado() {
   document.getElementById('empNombre').value = '';
   document.getElementById('empEmail').value = '';
   document.getElementById('empDni').value = '';
-  document.getElementById('empPassword').value = '';
   modal.style.display = 'flex';
   setTimeout(function(){ document.getElementById('empNombre').focus(); }, 80);
 }
@@ -1767,56 +1766,96 @@ function hideAddEmpleado() {
   if (modal) modal.style.display = 'none';
 }
 
+function _generarPasswordTemporal() {
+  return Math.random().toString(36).slice(2, 12) + Math.random().toString(36).slice(2, 6).toUpperCase() + '!1';
+}
+
+async function _restaurarSesionAdmin(adminSession) {
+  if (!adminSession) return;
+  var cur = await sb.auth.getSession();
+  if (!cur.data.session || cur.data.session.access_token !== adminSession.access_token) {
+    await sb.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token });
+  }
+}
+
+async function _crearCuentaAuth(email, adminSession) {
+  var tempPass = _generarPasswordTemporal();
+  var { data: authData, error: authError } = await sb.auth.signUp({ email: email, password: tempPass });
+  await _restaurarSesionAdmin(adminSession);
+  if (authError) {
+    var m = authError.message.toLowerCase();
+    if (m.includes('already registered') || m.includes('already been registered')) {
+      return { ok: true, alreadyExists: true };
+    }
+    return { ok: false, error: authError.message };
+  }
+  return { ok: true, alreadyExists: false };
+}
+
+async function _provisionarAccesoEmpleado(data) {
+  var email = String(data.email || '').trim().toLowerCase();
+  var nombre = String(data.nombre || '').trim();
+  var dni = String(data.dni || '').trim();
+  var cargo = data.cargo || 'Vigilante de seguridad';
+  var rol = data.rol || _rolDesdeCargo(cargo);
+  if (!nombre || !email || !dni) {
+    return { ok: false, error: 'Nombre, email y DNI son obligatorios.' };
+  }
+
+  var sess = await sb.auth.getSession();
+  var adminSession = sess.data && sess.data.session;
+  var authRes = await _crearCuentaAuth(email, adminSession);
+  if (!authRes.ok) return { ok: false, error: 'Error al crear acceso: ' + authRes.error };
+
+  var payload = {
+    nombre: nombre, email: email, dni: dni, cargo: cargo, rol: rol,
+    activo: true, debe_cambiar_password: true
+  };
+  if (data.dias_vacaciones_anuales) payload.dias_vacaciones_anuales = data.dias_vacaciones_anuales;
+
+  var { error: dbError } = await sb.from('empleados').insert(payload);
+  if (dbError) {
+    return { ok: false, error: dbError.message, duplicate: dbError.code === '23505' };
+  }
+
+  try {
+    await enviarEmailAccesoEmpleado(email, nombre);
+    return { ok: true, emailSent: true, alreadyHadAuth: authRes.alreadyExists };
+  } catch (e) {
+    return { ok: true, emailSent: false, emailError: e.message, alreadyHadAuth: authRes.alreadyExists };
+  }
+}
+
 async function crearEmpleado() {
   var nombre = document.getElementById('empNombre').value.trim();
   var email  = document.getElementById('empEmail').value.trim();
   var dni    = document.getElementById('empDni').value.trim();
   var cargo  = document.getElementById('empCargo').value;
-  var pass   = document.getElementById('empPassword').value;
   var ok  = document.getElementById('empleadoOk');
   var err = document.getElementById('empleadoError');
+  var btn = document.querySelector('#addEmpModal .btn-sm.primary');
   ok.style.display = 'none'; err.style.display = 'none';
-  if (!nombre || !email || !dni || !pass) { err.style.display='block'; err.textContent='Rellena todos los campos.'; return; }
-  if (pass.length < 6) { err.style.display='block'; err.textContent='La contraseña debe tener mínimo 6 caracteres.'; return; }
+  if (!nombre || !email || !dni) { err.style.display='block'; err.textContent=t('emp.err_campos'); return; }
 
-  // Guardar sesión del admin antes de signUp (signUp puede crear nueva sesión si el proyecto tiene email confirm desactivado)
-  var { data: sessionData } = await sb.auth.getSession();
-  var adminSession = sessionData && sessionData.session;
+  if (btn) { btn.disabled = true; btn.textContent = t('emp.creando'); }
+  var res = await _provisionarAccesoEmpleado({ nombre: nombre, email: email, dni: dni, cargo: cargo });
+  if (btn) { btn.disabled = false; btn.textContent = t('emp.btn_crear'); }
 
-  // Crear usuario en Supabase Auth
-  var { data: authData, error: authError } = await sb.auth.signUp({ email: email, password: pass });
-
-  // Restaurar sesión del admin si signUp la reemplazó
-  if (adminSession && authData && authData.session) {
-    await sb.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token });
+  if (!res.ok) {
+    err.style.display = 'block';
+    err.textContent = res.duplicate ? t('emp.err_dup') : ('Error: ' + res.error);
+    return;
   }
 
-  var authMsg = '';
-  if (authError) {
-    var msg = authError.message.toLowerCase();
-    if (msg.includes('already registered') || msg.includes('already been registered')) {
-      authMsg = ' (el email ya tenía cuenta de acceso)';
-    } else {
-      err.style.display='block'; err.textContent='Error al crear acceso: '+authError.message; return;
-    }
-  } else if (authData && !authData.session) {
-    authMsg = ' · Se envió email de confirmación al empleado.';
-  }
-
-  // Insertar en tabla empleados
-  var { error: dbError } = await sb.from('empleados').insert({
-    nombre:nombre, email:email, dni:dni, cargo:cargo,
-    rol: _rolDesdeCargo(cargo), activo:true, debe_cambiar_password:true
-  });
-  if (dbError) { err.style.display='block'; err.textContent='Error al guardar: '+dbError.message; return; }
-
-  ok.style.display='block'; ok.textContent=t('emp.ok') + authMsg;
-  document.getElementById('empNombre').value='';
-  document.getElementById('empEmail').value='';
-  document.getElementById('empDni').value='';
-  document.getElementById('empPassword').value='';
+  var msg = t('emp.ok');
+  if (res.emailSent) msg += ' ' + t('emp.ok_email');
+  else if (res.emailError) msg += ' ' + t('emp.ok_no_email') + res.emailError;
+  ok.style.display = 'block'; ok.textContent = msg;
+  document.getElementById('empNombre').value = '';
+  document.getElementById('empEmail').value = '';
+  document.getElementById('empDni').value = '';
   cargarEmpleados();
-  setTimeout(hideAddEmpleado, 1400);
+  setTimeout(hideAddEmpleado, 1800);
 }
 
 // ─── REGISTRO DE EMPLEADOS ────────────────────────────────
@@ -1902,7 +1941,7 @@ function _actualizarBadgesAdminTabs(sol, vac, reg) {
   _setAdminTabBadge('regPendBadge', reg);
   _setAdminTabBadge('solPendBadge', sol);
   _setAdminTabBadge('vacPendBadge', vac);
-  _setAdminTabBadge('morePendBadge', vac);
+  _setAdminTabBadge('morePendBadge', vac + reg);
 }
 
 function _actualizarBadgeRegistro(count) {
@@ -1949,30 +1988,15 @@ async function confirmarAprobarRegistro() {
     var dni    = document.getElementById('aprobarRegDni').value;
     var cargo  = document.getElementById('aprobarRegCargo').value;
 
-    // Crear usuario Auth — guardar sesión admin primero
-    var { data: sessionData } = await sb.auth.getSession();
-    var adminSession = sessionData && sessionData.session;
-    var tempPass = Math.random().toString(36).slice(-10) + 'Aa1!';
-    var { data: authData, error: authError } = await sb.auth.signUp({ email: email, password: tempPass });
-    if (adminSession && authData && authData.session) {
-      await sb.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token });
-    }
-    if (authError && !authError.message.toLowerCase().includes('already registered')) {
-      throw new Error('Error al crear acceso: ' + authError.message);
-    }
+    var res = await _provisionarAccesoEmpleado({ nombre: nombre, email: email, dni: dni, cargo: cargo });
+    if (!res.ok) throw new Error(res.error || 'No se pudo crear el empleado');
 
-    // Crear registro en tabla empleados
-    var { error: dbError } = await sb.from('empleados').insert({
-      nombre: nombre, email: email, dni: dni, cargo: cargo,
-      rol: _rolDesdeCargo(cargo), activo: true, debe_cambiar_password: true
-    });
-    if (dbError) throw new Error('Error al crear empleado: ' + dbError.message);
-
-    // Marcar solicitud como aprobada y enviar email de acceso
     await sb.from('solicitudes_registro').update({ estado: 'aprobada' }).eq('id', id);
-    await enviarEmailAccesoEmpleado(email, nombre);
 
-    okEl.textContent = '✓ Cuenta creada. Email de acceso enviado a ' + email;
+    var okMsg = '✓ Cuenta creada.';
+    if (res.emailSent) okMsg += ' Email de acceso enviado a ' + email;
+    else if (res.emailError) okMsg += ' No se pudo enviar el email: ' + res.emailError;
+    okEl.textContent = okMsg;
     okEl.style.display = 'block';
     mostrarToast('✓ Registro aprobado', nombre + ' — cuenta creada y email enviado');
     setTimeout(function() {
@@ -2375,6 +2399,10 @@ async function cancelarVacacion(id) {
 
 var importarData = [];
 
+function _emailValido(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
+}
+
 var DEMO_EMPLEADOS = [
   { nombre:'Ana García Pérez',       email:'ana.garcia@enerpro.com',      dni:'11111111A', cargo:'Vigilante de seguridad' },
   { nombre:'Carlos Martínez López',  email:'carlos.martinez@enerpro.com', dni:'22222222B', cargo:'Vigilante de seguridad' },
@@ -2409,8 +2437,8 @@ function generarPlantilla() {
   var wb = XLSX.utils.book_new();
   var ws = XLSX.utils.aoa_to_sheet([
     ['nombre', 'email', 'dni', 'cargo'],
-    ['Ana García', 'ana@empresa.com', '12345678A', 'Vigilante de seguridad'],
-    ['Carlos López', 'carlos@empresa.com', '87654321B', 'Auxiliar de servicio']
+    ['Ana García', 'ana.garcia@enerpro.com', '12345678A', 'Vigilante de seguridad'],
+    ['Carlos López', 'carlos.lopez@enerpro.com', '87654321B', 'Auxiliar de servicio']
   ]);
   XLSX.utils.book_append_sheet(wb, ws, 'Empleados');
   var blob = new Blob([XLSX.write(wb, { bookType:'xlsx', type:'array' })], { type:'application/octet-stream' });
@@ -2431,11 +2459,11 @@ function previsualizarExcel() {
         var k = Object.keys(r).reduce(function(acc, key) { acc[key.toLowerCase().trim()] = r[key]; return acc; }, {});
         return {
           nombre: String(k['nombre'] || k['name'] || '').trim(),
-          email:  String(k['email']  || k['correo'] || '').trim().toLowerCase(),
+          email:  String(k['email'] || k['correo'] || k['mail'] || k['e-mail'] || '').trim().toLowerCase(),
           dni:    String(k['dni']    || k['nif'] || '').trim().toUpperCase(),
           cargo:  String(k['cargo']  || k['puesto'] || 'Vigilante de seguridad').trim()
         };
-      }).filter(function(r) { return r.nombre && r.email; });
+      }).filter(function(r) { return r.nombre && r.email && _emailValido(r.email); });
 
       document.getElementById('importarCount').textContent = importarData.length;
       document.getElementById('importarTabla').innerHTML = importarData.slice(0,10).map(function(r) {
@@ -2443,9 +2471,16 @@ function previsualizarExcel() {
                '</td><td>' + r.dni + '</td><td>' + r.cargo + '</td></tr>';
       }).join('') + (importarData.length > 10 ? '<tr><td colspan="4" style="color:var(--muted);text-align:center">... y ' + (importarData.length - 10) + ' más</td></tr>' : '');
       document.getElementById('importarPreview').style.display = 'block';
-    } catch(err) {
       var errEl = document.getElementById('importarError');
-      errEl.style.display = 'block'; errEl.textContent = 'Error al leer el archivo: ' + err.message;
+      if (!importarData.length) {
+        errEl.style.display = 'block';
+        errEl.textContent = t('imp.err_filas');
+      } else {
+        errEl.style.display = 'none';
+      }
+    } catch(err) {
+      var errEl2 = document.getElementById('importarError');
+      errEl2.style.display = 'block'; errEl2.textContent = 'Error al leer el archivo: ' + err.message;
     }
   };
   reader.readAsArrayBuffer(file);
@@ -2461,44 +2496,24 @@ async function confirmarImportacion() {
   ok.style.display = 'none'; err.style.display = 'none';
   prog.style.display = 'block';
 
-  // Preserve admin session before bulk signUp calls
-  var { data: sessionData } = await sb.auth.getSession();
-  var adminSession = sessionData && sessionData.session;
-
-  var okCount = 0, failCount = 0;
+  var okCount = 0, failCount = 0, emailOk = 0, emailFail = 0;
   for (var i = 0; i < importarData.length; i++) {
-    progText.textContent = 'Importando ' + (i+1) + ' de ' + importarData.length + '…';
+    progText.textContent = t('imp.importando') + ' ' + (i+1) + ' / ' + importarData.length + '…';
     progBar.style.width = Math.round(((i+1) / importarData.length) * 100) + '%';
 
-    // Generate a random temporary password; employee must change it on first login
-    var tempPass = Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 6).toUpperCase() + '!1';
-    var { error: authErr } = await sb.auth.signUp({ email: importarData[i].email, password: tempPass });
-
-    // Restore admin session if signUp replaced it
-    if (adminSession) {
-      var { data: cur } = await sb.auth.getSession();
-      if (!cur.session || cur.session.access_token !== adminSession.access_token) {
-        await sb.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token });
-      }
-    }
-
-    // Proceed with DB insert even if Auth account already existed
-    if (authErr) {
-      var m = authErr.message.toLowerCase();
-      if (!m.includes('already registered') && !m.includes('already been registered')) { failCount++; continue; }
-    }
-
-    var row = Object.assign({}, importarData[i], {
-      activo: true,
-      debe_cambiar_password: true,
-      rol: _rolDesdeCargo(importarData[i].cargo)
-    });
-    var { error } = await sb.from('empleados').insert(row);
-    if (error) { failCount++; } else { okCount++; }
+    var res = await _provisionarAccesoEmpleado(importarData[i]);
+    if (!res.ok) { failCount++; continue; }
+    okCount++;
+    if (res.emailSent) emailOk++;
+    else emailFail++;
   }
   prog.style.display = 'none';
   ok.style.display = 'block';
-  ok.textContent = '✓ ' + okCount + ' empleados importados.' + (failCount ? ' ' + failCount + ' fallaron (email/DNI duplicado).' : '');
+  var msg = '✓ ' + okCount + ' ' + t('imp.ok_importados');
+  if (failCount) msg += ' · ' + failCount + ' ' + t('imp.ok_fallidos');
+  if (emailOk) msg += ' · ' + emailOk + ' ' + t('imp.ok_emails');
+  if (emailFail) msg += ' · ' + emailFail + ' ' + t('imp.ok_sin_email');
+  ok.textContent = msg;
   document.getElementById('importarPreview').style.display = 'none';
   document.getElementById('importarArchivo').value = '';
   importarData = [];

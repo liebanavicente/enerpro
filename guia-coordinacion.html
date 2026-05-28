@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ENERPRO — Guía para coordinación</title>
+  <link rel="icon" href="enerprologo.jpg">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f1117;
+      --card: #ffffff;
+      --text: #111827;
+      --text2: #6b7280;
+      --gold: #f5b800;
+      --border: rgba(0,0,0,0.1);
+      --code-bg: #f3f4f6;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 3rem;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+    .toolbar a, .toolbar button {
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.45rem 0.9rem;
+      border-radius: 6px;
+      text-decoration: none;
+      cursor: pointer;
+      font-family: inherit;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06);
+      color: rgba(240,241,255,0.85);
+      transition: background 0.15s;
+    }
+    .toolbar a:hover, .toolbar button:hover { background: rgba(255,255,255,0.12); }
+    .toolbar .primary { background: var(--gold); color: #000; border-color: var(--gold); }
+    .page {
+      background: var(--card);
+      border-radius: 14px;
+      border-top: 3px solid var(--gold);
+      box-shadow: 0 20px 48px rgba(0,0,0,0.2);
+      padding: 2.25rem 2rem;
+    }
+    .logo-row {
+      display: flex; align-items: center; gap: 0.875rem;
+      margin-bottom: 1.75rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo-row img { width: 44px; height: 44px; border-radius: 8px; }
+    .brand {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.5rem; font-weight: 800; letter-spacing: 0.08em;
+    }
+    .brand span { color: var(--gold); }
+    .doc-tag {
+      font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text2); margin-bottom: 0.35rem;
+    }
+    h1 {
+      font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+    .lead {
+      font-size: 0.92rem; color: var(--text2); margin-bottom: 2rem;
+      max-width: 62ch;
+    }
+    h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.15rem; font-weight: 700; letter-spacing: 0.04em;
+      text-transform: uppercase; color: var(--text);
+      margin: 2rem 0 0.75rem;
+      padding-top: 0.25rem;
+      border-top: 1px solid var(--border);
+    }
+    h2:first-of-type { border-top: none; margin-top: 0; }
+    h3 { font-size: 0.88rem; font-weight: 700; margin: 1.25rem 0 0.5rem; }
+    p, li { font-size: 0.875rem; color: #374151; }
+    ul, ol { padding-left: 1.25rem; margin: 0.5rem 0 1rem; }
+    li { margin-bottom: 0.35rem; }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+      margin: 1rem 0 1.5rem;
+    }
+    .flow-step {
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.875rem;
+      font-size: 0.78rem;
+    }
+    .flow-step strong {
+      display: block;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.4rem;
+      color: rgba(245,184,0,0.5);
+      margin-bottom: 0.25rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin: 0.75rem 0 1.25rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.55rem 0.75rem;
+      text-align: left;
+    }
+    th { background: #f9fafb; font-weight: 600; font-size: 0.75rem; }
+    td code, .path { font-family: ui-monospace, monospace; font-size: 0.78rem; background: var(--code-bg); padding: 0.1rem 0.35rem; border-radius: 3px; }
+    .task-table th:first-child { width: 28%; }
+    .task-table th:nth-child(2) { width: 32%; }
+    .callout {
+      background: rgba(245,184,0,0.08);
+      border: 1px solid rgba(245,184,0,0.25);
+      border-radius: 8px;
+      padding: 0.875rem 1rem;
+      font-size: 0.82rem;
+      margin: 1rem 0;
+    }
+    .callout strong { color: #92400e; }
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.875rem;
+      margin: 1rem 0;
+    }
+    .mini-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.875rem 1rem;
+      font-size: 0.82rem;
+    }
+    .mini-card .label {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text2); margin-bottom: 0.35rem;
+    }
+    .footer-note {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--text2);
+    }
+    @media print {
+      body { background: #fff; }
+      .toolbar { display: none !important; }
+      .wrap { padding: 0; max-width: none; }
+      .page { box-shadow: none; border-radius: 0; border-top-width: 2px; padding: 1.5cm; }
+      h2 { page-break-after: avoid; }
+      table, .flow, .card-grid { page-break-inside: avoid; }
+    }
+    @media (max-width: 640px) {
+      .page { padding: 1.5rem 1.125rem; }
+      .flow { grid-template-columns: 1fr 1fr; }
+      .card-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="toolbar">
+    <a href="/">← Portal</a>
+    <a href="presentacion.html">Presentación</a>
+    <a href="docs/email-bienvenida-empleado.md">Plantilla email</a>
+    <button type="button" class="primary" onclick="window.print()">Imprimir / PDF</button>
+  </div>
+
+  <article class="page">
+    <div class="logo-row">
+      <img src="enerprologo.jpg" alt="ENERPRO">
+      <div>
+        <div class="brand">ENER<span>PRO</span></div>
+        <div class="doc-tag">Documento interno · Coordinación</div>
+      </div>
+    </div>
+
+    <h1>Guía operativa del portal</h1>
+    <p class="lead">Manual rápido para coordinadores: cómo dar de alta empleados, importar plantilla Excel, subir documentos y gestionar solicitudes. El acceso al portal <strong>no es autoregistro</strong>: lo crea siempre coordinación.</p>
+
+    <h2>Resumen en 4 pasos</h2>
+    <div class="flow">
+      <div class="flow-step"><strong>01</strong>Preparar Excel con nombre, email, DNI y cargo</div>
+      <div class="flow-step"><strong>02</strong>Admin → Más → Importar (o alta unitaria en Empleados)</div>
+      <div class="flow-step"><strong>03</strong>Subir nóminas / cuadrantes (individual o ZIP por DNI)</div>
+      <div class="flow-step"><strong>04</strong>El empleado recibe email automático para crear contraseña</div>
+    </div>
+
+    <h2>Alta de empleados</h2>
+
+    <h3>Opción A — Un empleado</h3>
+    <ol>
+      <li>Entra como coordinador → <span class="path">Panel de control</span></li>
+      <li>Pestaña <strong>Empleados</strong> → botón <strong>+ Añadir empleado</strong></li>
+      <li>Rellena nombre, <strong>email corporativo</strong>, DNI y cargo</li>
+      <li>Pulsa <strong>Crear empleado</strong> — no hace falta escribir contraseña</li>
+      <li>El portal envía un email al empleado con enlace para establecer su contraseña</li>
+    </ol>
+
+    <h3>Opción B — Varios empleados (Excel)</h3>
+    <ol>
+      <li>Admin → <strong>Más</strong> → <strong>Importar</strong></li>
+      <li>Descarga la plantilla Excel (<em>Descargar plantilla</em>)</li>
+      <li>Rellena una fila por empleado (primera fila = cabecera, no borrar)</li>
+      <li>Sube el .xlsx, revisa la vista previa y pulsa <strong>Importar todos</strong></li>
+    </ol>
+
+    <h3>Columnas de la plantilla Excel</h3>
+    <table>
+      <thead>
+        <tr><th>Columna</th><th>Obligatorio</th><th>Qué poner</th><th>Ejemplo</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>nombre</code></td><td>Sí</td><td>Nombre completo</td><td>Ana García López</td></tr>
+        <tr><td><code>email</code></td><td>Sí</td><td>Correo corporativo (usuario de acceso + envío del enlace)</td><td>ana.garcia@enerpro.com</td></tr>
+        <tr><td><code>dni</code></td><td>Sí</td><td>DNI / NIE</td><td>12345678A</td></tr>
+        <tr><td><code>cargo</code></td><td>No*</td><td>Vigilante, Auxiliar, Coordinador o Administrativo</td><td>Vigilante de seguridad</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:0.78rem;color:var(--text2)">* Si cargo está vacío, se asigna «Vigilante de seguridad». También valen cabeceras <code>correo</code> o <code>mail</code> en lugar de <code>email</code>.</p>
+
+    <div class="callout">
+      <strong>Importante:</strong> el email debe ser real y accesible por el empleado. Es su usuario de login y la dirección donde recibe el enlace de contraseña. Filas con email inválido o duplicado se omiten o fallan en la importación.
+    </div>
+
+    <h2>Tareas frecuentes</h2>
+    <table class="task-table">
+      <thead>
+        <tr><th>Tarea</th><th>Dónde</th><th>Notas</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Aprobar vacaciones</td><td>Más → Vacaciones</td><td>Badge en «Más» si hay pendientes</td></tr>
+        <tr><td>Responder solicitudes</td><td>Solicitudes</td><td>Permisos, cambios de turno, consultas</td></tr>
+        <tr><td>Subir una nómina</td><td>Más → Subir documento</td><td>Selecciona empleado y tipo de documento</td></tr>
+        <tr><td>Subir muchas nóminas</td><td>Más → Subida masiva ZIP</td><td>Nombra cada PDF con el DNI del empleado</td></tr>
+        <tr><td>Subir cuadrante PDF</td><td>Subir documento → Cuadrante</td><td>Reemplaza el del mismo mes e importa turnos</td></tr>
+        <tr><td>Exportar listado</td><td>Empleados → Exportar Excel</td><td>Copia de seguridad o revisión</td></tr>
+        <tr><td>Dar acceso admin</td><td>Empleados → Editar → Acceso administración</td><td>Solo personas de confianza</td></tr>
+        <tr><td>Desactivar empleado</td><td>Empleados → Editar</td><td>Marca inactivo — no puede entrar</td></tr>
+        <tr><td>Reenviar acceso</td><td>—</td><td>El empleado usa «¿Has olvidado tu contraseña?» en login</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Qué ve el empleado</h2>
+    <div class="card-grid">
+      <div class="mini-card">
+        <div class="label">Primer acceso</div>
+        Recibe email ENERPRO → establece contraseña → entra con email + contraseña en el portal.
+      </div>
+      <div class="mini-card">
+        <div class="label">Sin acceso</div>
+        No hay formulario público. Debe contactar con su coordinador para que le den de alta.
+      </div>
+      <div class="mini-card">
+        <div class="label">Móvil</div>
+        Compartir → Añadir a pantalla de inicio (PWA). Idioma ES / CA en login y menú.
+      </div>
+      <div class="mini-card">
+        <div class="label">Módulos</div>
+        Documentos, turnos, vacaciones, solicitudes y perfil personal.
+      </div>
+    </div>
+
+    <h2>Comunicación al empleado</h2>
+    <p>Tras el alta, el portal envía el email técnico de acceso. Opcionalmente puedes enviar un mensaje de bienvenida desde tu correo de coordinación usando la plantilla en <code>docs/email-bienvenida-empleado.md</code> (copiar asunto y cuerpo).</p>
+
+    <h2>Problemas habituales</h2>
+    <ul>
+      <li><strong>No llega el email</strong> — Revisar spam; comprobar que el email en Excel es correcto; usar recuperar contraseña en login.</li>
+      <li><strong>Importación falla en algunas filas</strong> — Email o DNI duplicado, o email mal escrito.</li>
+      <li><strong>No entra tras crear contraseña</strong> — Verificar que el empleado está «Activo» en Empleados.</li>
+      <li><strong>ZIP masivo no asigna</strong> — El nombre del PDF debe contener el DNI exacto del empleado.</li>
+    </ul>
+
+    <p class="footer-note">
+      Portal ENERPRO · Guía v1 · URL producción: <strong id="portalUrl">https://enerpro.vercel.app</strong> ·
+      Presentación: <a href="presentacion.html">presentacion.html</a>
+    </p>
+  </article>
+</div>
+<script>
+  (function() {
+    var u = location.origin;
+    if (u && u.indexOf('http') === 0 && location.pathname.indexOf('file') !== 0) {
+      document.getElementById('portalUrl').textContent = u.replace(/\/$/, '');
+    }
+  })();
+</script>
+</body>
+</html>
