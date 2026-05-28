@@ -489,6 +489,8 @@
     margin-bottom:1.5rem !important;
     padding:0 !important;
     overflow:visible !important;
+    position:relative !important;
+    z-index:40 !important;
   }
 
   #page-admin .admin-tabs-main {

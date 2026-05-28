@@ -367,7 +367,7 @@ async function enviarRecuperarPass() {
   }
   btn.disabled = true;
   btn.textContent = t('rp.enviando');
-  var redirectTo = window.location.origin + window.location.pathname;
+  var redirectTo = _portalRedirectUrl();
   var { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
   btn.disabled = false;
   btn.textContent = t('rp.btn');
@@ -1943,7 +1943,7 @@ async function confirmarAprobarRegistro() {
 
     // Marcar solicitud como aprobada y enviar email de acceso
     await sb.from('solicitudes_registro').update({ estado: 'aprobada' }).eq('id', id);
-    await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+    await enviarEmailAccesoEmpleado(email, nombre);
 
     okEl.textContent = '✓ Cuenta creada. Email de acceso enviado a ' + email;
     okEl.style.display = 'block';
@@ -4020,6 +4020,23 @@ function notificarEmail(tipo, empleadoId, extra) {
   sb.functions.invoke('notificar-email', {
     body: { tipo: tipo, empleado_id: empleadoId, extra: extra || {} }
   }).catch(function() {});
+}
+
+function _portalRedirectUrl() {
+  return window.location.origin + (window.location.pathname || '/');
+}
+
+async function enviarEmailAccesoEmpleado(email, nombre) {
+  try {
+    var res = await sb.functions.invoke('enviar-acceso-empleado', {
+      body: { email: email, nombre: nombre || '' }
+    });
+    if (!res.error && res.data && res.data.ok) return true;
+  } catch (e) { /* fallback abajo */ }
+  var redirectTo = _portalRedirectUrl();
+  var { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
+  if (error) throw new Error('Error al enviar email de acceso: ' + error.message);
+  return false;
 }
 
 // ─── NOTIFICACIONES REALTIME PARA EL ADMIN ───────────────

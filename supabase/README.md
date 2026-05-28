@@ -30,3 +30,11 @@ Tras aplicar RLS, el alta pública usa la función `crear_solicitud_registro` (e
 - **Firma cuadrante**: empleado puede marcar `firmado` en su documento.
 
 Si algo falla con «permission denied», revisa que el usuario exista en `empleados` con el mismo email que Auth y `activo = true`.
+
+## Correos de acceso (marca ENERPRO)
+
+Los emails de **aprobar registro** y **olvidé contraseña** los envía Supabase Auth. Si el cuerpo dice «Supabase», personaliza las plantillas:
+
+→ **[email-templates.md](./email-templates.md)** (paso a paso + HTML listo para copiar)
+
+Opcional: Edge Function `enviar-acceso-empleado` + Resend para emails 100 % ENERPRO.
