@@ -1,11 +1,10 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {
   adminClient,
+  buildAccesoBienvenidaHtml,
   cors,
-  esc,
   esCoordinador,
   json,
-  portalButton,
   sendResendEmail,
   siteUrl,
   userClient,
@@ -51,15 +50,7 @@ Deno.serve(async (req: Request) => {
     const link = linkData.properties?.action_link;
     if (!link) throw new Error("No se pudo generar el enlace de acceso");
 
-    const who = esc(nombre) || "empleado/a";
-    const html = wrapHtml(
-      `<p style="margin:0 0 16px">Hola <strong>${who}</strong>,</p>
-      <p style="margin:0 0 16px">Tu acceso al portal ENERPRO ya está activo. Pulsa el botón para <strong>establecer tu contraseña</strong> y entrar.</p>
-      <p style="margin:28px 0;text-align:center">
-        <a href="${esc(link)}" style="background:#f5b800;color:#000;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:700;display:inline-block">Entrar al portal ENERPRO</a>
-      </p>
-      <p style="margin:0;font-size:13px;color:#6b7280">Si no esperabas este correo, puedes ignorarlo. El enlace caduca en 24 horas.</p>`,
-    );
+    const html = wrapHtml(buildAccesoBienvenidaHtml(nombre, link));
 
     await sendResendEmail(email, "Tu acceso al Portal del Empleado ENERPRO", html);
 

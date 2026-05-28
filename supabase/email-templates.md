@@ -40,7 +40,7 @@ Esta plantilla se usa al **aprobar un registro** y al **«Olvidé mi contraseña
 **Asunto:**
 
 ```
-Establece tu contraseña — Portal ENERPRO
+Tu acceso al Portal del Empleado ENERPRO
 ```
 
 **Cuerpo (HTML):**
@@ -51,17 +51,26 @@ Establece tu contraseña — Portal ENERPRO
 </h2>
 <p style="font-family:Inter,Arial,sans-serif;color:#374151;font-size:15px;line-height:1.6">
   Hola,<br><br>
-  Tu acceso al portal ENERPRO ya está activo. Pulsa el botón para <strong>establecer tu contraseña</strong> y entrar por primera vez (o restablecerla si la olvidaste).
+  Ya tienes acceso al <strong>Portal del Empleado ENERPRO</strong>. Pulsa el botón para <strong>establecer tu contraseña</strong> y entrar. Tu usuario de acceso es tu <strong>email corporativo</strong>.
 </p>
 <p style="margin:28px 0">
   <a href="{{ .ConfirmationURL }}"
      style="background:#f5b800;color:#000;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:700;font-family:Inter,Arial,sans-serif;display:inline-block">
-    Entrar al portal ENERPRO
+    Establecer contraseña y entrar
   </a>
 </p>
+<p style="font-family:Inter,Arial,sans-serif;color:#374151;font-size:14px;line-height:1.6;margin:0 0 8px">
+  <strong>Con el portal podrás:</strong>
+</p>
+<ul style="font-family:Inter,Arial,sans-serif;color:#374151;font-size:14px;line-height:1.7;margin:0 0 16px;padding-left:20px">
+  <li>Consultar nóminas, cuadrantes y documentos</li>
+  <li>Ver tus turnos y solicitar vacaciones</li>
+  <li>Enviar solicitudes a coordinación</li>
+</ul>
 <p style="font-family:Inter,Arial,sans-serif;color:#6b7280;font-size:13px;line-height:1.5">
-  Si no solicitaste este acceso, ignora este correo.<br>
-  El enlace caduca en 24 horas.
+  Si no esperabas este acceso, ignora este correo.<br>
+  El enlace caduca en 24 horas.<br>
+  En el móvil: Compartir → Añadir a pantalla de inicio.
 </p>
 <p style="font-family:Inter,Arial,sans-serif;color:#9ca3af;font-size:12px;margin-top:24px">
   ENERPRO — Portal del Empleado<br>
@@ -103,7 +112,6 @@ Para avisos al **aprobar/rechazar solicitudes y vacaciones**, despliega también
 
 | Acción | Email que se envía |
 |--------|---------------------|
-| Solicitud en `/registro.html` | Ninguno (solo queda pendiente para el admin) |
-| Admin aprueba registro | Reset password (Opción A o B) |
-| «Olvidé mi contraseña» | Reset password (misma plantilla) |
-| Admin añade empleado manualmente | Confirm signup (si está activada) o ninguno |
+| Admin añade empleado o import Excel | **Automático** — bienvenida + enlace contraseña (Reset password / Resend) |
+| «Olvidé mi contraseña» | Reset password (misma plantilla, sin bloque de bienvenida extendido) |
+| Admin aprueba registro legacy | Igual que alta normal |

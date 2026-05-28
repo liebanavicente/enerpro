@@ -1,6 +1,6 @@
 # Edge Function: `enviar-acceso-empleado`
 
-Envía un correo de bienvenida con marca **ENERPRO** cuando un coordinador aprueba un registro (sustituye el email genérico de Supabase Auth).
+Envía el **email de bienvenida + enlace de contraseña** (marca ENERPRO) cuando coordinación da de alta a un empleado: alta unitaria, import Excel o aprobación legacy. Sustituye el email genérico de Supabase Auth si Resend está configurado.
 
 ## Requisitos
 
@@ -32,4 +32,4 @@ supabase functions deploy enviar-acceso-empleado --no-verify-jwt
 
 ## Comportamiento en la app
 
-`confirmarAprobarRegistro()` invoca esta función. Si falla o no está desplegada, hace **fallback** a `resetPasswordForEmail` (plantilla de Supabase — personalízala en [`email-templates.md`](../../email-templates.md)).
+`enviarEmailAccesoEmpleado()` (alta unitaria, import Excel, aprobar registro) invoca esta función. Si falla o no está desplegada, hace **fallback** a `resetPasswordForEmail` (plantilla **Reset password** en Supabase — personalízala en [`email-templates.md`](../../email-templates.md)).

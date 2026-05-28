@@ -83,6 +83,29 @@ export async function esCoordinador(
   return false;
 }
 
+export function buildAccesoBienvenidaHtml(nombre: string, actionLink: string) {
+  const who = esc(nombre) || "empleado/a";
+  const link = esc(actionLink);
+  const url = esc(siteUrl());
+  return `<p style="margin:0 0 16px">Hola <strong>${who}</strong>,</p>
+<p style="margin:0 0 16px">Ya tienes acceso al <strong>Portal del Empleado ENERPRO</strong>.</p>
+<p style="margin:0 0 16px">Pulsa el botón para <strong>establecer tu contraseña</strong> y entrar. Tu usuario de acceso es tu <strong>email corporativo</strong>.</p>
+<p style="margin:28px 0;text-align:center">
+  <a href="${link}" style="background:#f5b800;color:#000;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:700;display:inline-block">Establecer contraseña y entrar</a>
+</p>
+<p style="margin:0 0 10px;font-size:14px"><strong>Con el portal podrás:</strong></p>
+<ul style="margin:0 0 18px;padding-left:20px;font-size:14px;line-height:1.75;color:#374151">
+  <li>Consultar nóminas, cuadrantes y documentos</li>
+  <li>Ver tus turnos y solicitar vacaciones</li>
+  <li>Enviar solicitudes a coordinación</li>
+</ul>
+<p style="margin:0 0 16px;font-size:13px;color:#6b7280;line-height:1.55">
+  Portal: <a href="${url}" style="color:#6b7280">${url}</a><br>
+  En el móvil: <em>Compartir → Añadir a pantalla de inicio</em>.
+</p>
+<p style="margin:0;font-size:13px;color:#6b7280">Si no esperabas este correo, puedes ignorarlo. El enlace caduca en 24 horas.</p>`;
+}
+
 export async function sendResendEmail(to: string, subject: string, html: string) {
   const resendKey = Deno.env.get("RESEND_API_KEY");
   if (!resendKey) throw new Error("RESEND_API_KEY no configurada");

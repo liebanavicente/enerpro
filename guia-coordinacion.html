@@ -282,7 +282,8 @@
     </div>
 
     <h2>Comunicación al empleado</h2>
-    <p>Tras el alta, el portal envía el email técnico de acceso. Opcionalmente puedes enviar un mensaje de bienvenida desde tu correo de coordinación usando la plantilla en <code>docs/email-bienvenida-empleado.md</code> (copiar asunto y cuerpo).</p>
+    <p>Tras cada alta (unitaria o import Excel), el portal envía <strong>automáticamente</strong> un email de bienvenida con el enlace para crear la contraseña — uno por empleado, sin intervención manual. En importaciones masivas verás el resumen «X emails de acceso enviados» al terminar.</p>
+    <p style="font-size:0.82rem;color:var(--text2);margin-top:0.5rem">Plantilla y configuración: <code>docs/email-bienvenida-empleado.md</code> · <code>supabase/email-templates.md</code></p>
 
     <h2>Problemas habituales</h2>
     <ul>
