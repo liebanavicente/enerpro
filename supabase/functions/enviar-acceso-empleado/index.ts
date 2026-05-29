@@ -19,27 +19,50 @@ Deno.serve(async (req: Request) => {
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return json({ error: "No autorizado", use_fallback: true }, 401);
+      return json({ error: "No autorizado" }, 401);
     }
 
     const supabaseUser = userClient(authHeader);
     const { data: userData, error: userErr } = await supabaseUser.auth.getUser();
     if (userErr || !userData.user?.email) {
-      return json({ error: "No autorizado", use_fallback: true }, 401);
+      return json({ error: "No autorizado" }, 401);
     }
 
     if (!(await esCoordinador(supabaseUser, userData.user.email))) {
-      return json({ error: "Solo coordinadores", use_fallback: true }, 403);
+      return json({ error: "Solo coordinadores o admins" }, 403);
     }
 
     const body = await req.json();
     const email = String(body.email || "").trim().toLowerCase();
     const nombre = String(body.nombre || "").trim();
+    const createUser = body.create_user === true;
+
     if (!email || !email.includes("@")) {
-      return json({ error: "Email inválido", use_fallback: true }, 400);
+      return json({ error: "Email inválido" }, 400);
     }
 
     const admin = adminClient();
+    let alreadyExisted = false;
+
+    // Crear usuario Auth si se solicita (sin email de confirmación automático)
+    if (createUser) {
+      const { error: createErr } = await admin.auth.admin.createUser({
+        email,
+        email_confirm: true,      // confirma sin enviar email de Supabase
+        user_metadata: { nombre },
+      });
+
+      if (createErr) {
+        const msg = createErr.message.toLowerCase();
+        if (msg.includes("already registered") || msg.includes("already been registered") || msg.includes("already exists")) {
+          alreadyExisted = true;
+        } else {
+          throw createErr;
+        }
+      }
+    }
+
+    // Generar link de recuperación (establece contraseña)
     const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
       type: "recovery",
       email,
@@ -51,14 +74,11 @@ Deno.serve(async (req: Request) => {
     if (!link) throw new Error("No se pudo generar el enlace de acceso");
 
     const html = wrapHtml(buildAccesoBienvenidaHtml(nombre, link));
-
     await sendResendEmail(email, "Tu acceso al Portal del Empleado ENERPRO", html);
 
-    return json({ ok: true, use_fallback: false });
+    return json({ ok: true, already_existed: alreadyExisted });
   } catch (e) {
     console.error(e);
-    const msg = String(e);
-    const useFallback = msg.includes("RESEND_API_KEY");
-    return json({ error: msg, use_fallback: useFallback }, useFallback ? 503 : 500);
+    return json({ error: String(e) }, 500);
   }
 });

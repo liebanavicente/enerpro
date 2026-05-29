@@ -2073,32 +2073,6 @@ function hideAddEmpleado() {
   _cerrarModalOverlay(document.getElementById('addEmpModal'));
 }
 
-function _generarPasswordTemporal() {
-  return Math.random().toString(36).slice(2, 12) + Math.random().toString(36).slice(2, 6).toUpperCase() + '!1';
-}
-
-async function _restaurarSesionAdmin(adminSession) {
-  if (!adminSession) return;
-  var cur = await sb.auth.getSession();
-  if (!cur.data.session || cur.data.session.access_token !== adminSession.access_token) {
-    await sb.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token });
-  }
-}
-
-async function _crearCuentaAuth(email, adminSession) {
-  var tempPass = _generarPasswordTemporal();
-  var { data: authData, error: authError } = await sb.auth.signUp({ email: email, password: tempPass });
-  await _restaurarSesionAdmin(adminSession);
-  if (authError) {
-    var m = authError.message.toLowerCase();
-    if (m.includes('already registered') || m.includes('already been registered')) {
-      return { ok: true, alreadyExists: true };
-    }
-    return { ok: false, error: authError.message };
-  }
-  return { ok: true, alreadyExists: false };
-}
-
 async function _provisionarAccesoEmpleado(data) {
   var email = String(data.email || '').trim().toLowerCase();
   var nombre = String(data.nombre || '').trim();
@@ -2108,11 +2082,6 @@ async function _provisionarAccesoEmpleado(data) {
   if (!nombre || !email || !dni) {
     return { ok: false, error: 'Nombre, email y DNI son obligatorios.' };
   }
-
-  var sess = await sb.auth.getSession();
-  var adminSession = sess.data && sess.data.session;
-  var authRes = await _crearCuentaAuth(email, adminSession);
-  if (!authRes.ok) return { ok: false, error: 'Error al crear acceso: ' + authRes.error };
 
   var payload = {
     nombre: nombre, email: email, dni: dni, cargo: cargo, rol: rol,
@@ -2127,9 +2096,9 @@ async function _provisionarAccesoEmpleado(data) {
 
   try {
     await enviarEmailAccesoEmpleado(email, nombre);
-    return { ok: true, emailSent: true, alreadyHadAuth: authRes.alreadyExists };
+    return { ok: true, emailSent: true };
   } catch (e) {
-    return { ok: true, emailSent: false, emailError: e.message, alreadyHadAuth: authRes.alreadyExists };
+    return { ok: true, emailSent: false, emailError: e.message };
   }
 }
 
@@ -4450,16 +4419,12 @@ function _portalRedirectUrl() {
 }
 
 async function enviarEmailAccesoEmpleado(email, nombre) {
-  try {
-    var res = await sb.functions.invoke('enviar-acceso-empleado', {
-      body: { email: email, nombre: nombre || '' }
-    });
-    if (!res.error && res.data && res.data.ok) return true;
-  } catch (e) { /* fallback abajo */ }
-  var redirectTo = _portalRedirectUrl();
-  var { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
-  if (error) throw new Error('Error al enviar email de acceso: ' + error.message);
-  return false;
+  var res = await sb.functions.invoke('enviar-acceso-empleado', {
+    body: { email: email, nombre: nombre || '', create_user: true }
+  });
+  if (res.error) throw new Error(res.error.message || String(res.error));
+  if (!res.data || !res.data.ok) throw new Error(res.data && res.data.error ? res.data.error : 'Error desconocido al provisionar acceso');
+  return true;
 }
 
 // ─── NOTIFICACIONES REALTIME PARA EL ADMIN ───────────────
