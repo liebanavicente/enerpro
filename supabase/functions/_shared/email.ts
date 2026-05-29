@@ -98,7 +98,7 @@ export async function esCoordinador(
     .eq("email", email)
     .maybeSingle();
   if (!data || !data.activo) return false;
-  if (data.rol === "coordinador") return true;
+  if (data.rol === "admin" || data.rol === "coordinador") return true;
   if (!data.rol && data.cargo === "Coordinador") return true;
   return false;
 }
