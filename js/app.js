@@ -2123,15 +2123,17 @@ async function crearEmpleado() {
     return;
   }
 
-  var msg = t('emp.ok');
-  if (res.emailSent) msg += ' ' + t('emp.ok_email');
-  else if (res.emailError) msg += ' ' + t('emp.ok_no_email') + res.emailError;
-  ok.style.display = 'block'; ok.textContent = msg;
   document.getElementById('empNombre').value = '';
   document.getElementById('empEmail').value = '';
   document.getElementById('empDni').value = '';
   cargarEmpleados();
-  setTimeout(hideAddEmpleado, 1800);
+  if (res.emailSent) {
+    ok.style.display = 'block'; ok.textContent = t('emp.ok') + ' ' + t('emp.ok_email');
+    setTimeout(hideAddEmpleado, 1800);
+  } else {
+    err.style.display = 'block';
+    err.textContent = 'Empleado creado. Error al enviar email: ' + (res.emailError || 'desconocido');
+  }
 }
 
 function _setAdminTabBadge(id, count) {
