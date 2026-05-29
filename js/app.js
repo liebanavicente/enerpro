@@ -2305,18 +2305,16 @@ sb.auth.onAuthStateChange(function(event, session) {
 
 // ─── VACACIONES ──────────────────────────────────────────
 
-var VAC_TIPO_LABEL = {
-  vacaciones:'Vacaciones', permiso:'Permiso', visita_medica:'Visita médica',
-  asuntos_propios:'Asuntos propios', baja_medica:'Baja médica'
+var VAC_TIPOS = {
+  vacaciones:      { label: 'Vacaciones',      badge: 'badge-blue',   justificante: false },
+  permiso:         { label: 'Permiso',         badge: 'badge-yellow', justificante: true  },
+  visita_medica:   { label: 'Visita médica',   badge: 'badge-yellow', justificante: true  },
+  asuntos_propios: { label: 'Asuntos propios', badge: 'badge-yellow', justificante: true  },
+  baja_medica:     { label: 'Baja médica',     badge: 'badge-red',    justificante: true  },
 };
-var VAC_TIPO_CLASS = {
-  vacaciones:'badge-blue', permiso:'badge-yellow', visita_medica:'badge-yellow',
-  asuntos_propios:'badge-yellow', baja_medica:'badge-red'
-};
-var VAC_TIPOS_JUSTIFICANTE = ['baja_medica', 'visita_medica', 'permiso', 'asuntos_propios'];
 
 function _tipoAdmiteJustificante(tipo) {
-  return VAC_TIPOS_JUSTIFICANTE.indexOf(tipo) !== -1;
+  return !!(VAC_TIPOS[tipo] || {}).justificante;
 }
 
 function diasEntre(desde, hasta) {
@@ -2645,7 +2643,7 @@ async function cargarVacaciones() {
     var d = delay; delay += 50;
     return '<div class="vac-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<div class="vac-main">' +
-        '<span class="badge ' + (VAC_TIPO_CLASS[v.tipo]||'badge-blue') + ' vac-tipo">' + getTipoVac(v.tipo) + '</span>' +
+        '<span class="badge ' + ((VAC_TIPOS[v.tipo] || {}).badge || 'badge-blue') + ' vac-tipo">' + getTipoVac(v.tipo) + '</span>' +
         '<span class="vac-fechas">' + desde + ' → ' + hasta +
           (v.notas     ? '<br><span style="font-size:0.72rem;color:var(--muted)">' + v.notas      + '</span>' : '') +
           (v.comentario ? '<br><span style="font-size:0.72rem;color:var(--gold)">💬 ' + v.comentario + '</span>' : '') +
@@ -3782,7 +3780,7 @@ function suscribirVacacionesEmpleado() {
     }, function(payload) {
       var estado = payload.new.estado;
       if (estado !== 'aprobada' && estado !== 'rechazada') return;
-      var tipo   = VAC_TIPO_LABEL[payload.new.tipo] || 'Vacaciones';
+      var tipo   = (VAC_TIPOS[payload.new.tipo] || {}).label || 'Vacaciones';
       var emoji  = estado === 'aprobada' ? '✅' : '❌';
       var titulo = tipo + ' ' + estado;
       var desde  = payload.new.fecha_inicio, hasta = payload.new.fecha_fin;
@@ -4504,7 +4502,7 @@ function suscribirVacacionesAdmin() {
         var { data: emp } = await sb.from('empleados').select('nombre').eq('id', v.empleado_id).single();
         if (emp) nombre = emp.nombre;
       }
-      var tipo   = VAC_TIPO_LABEL[v.tipo] || v.tipo || 'Vacaciones';
+      var tipo   = (VAC_TIPOS[v.tipo] || {}).label || v.tipo || 'Vacaciones';
       var fechas = (v.fecha_inicio || '') + ' → ' + (v.fecha_fin || '');
       mostrarToast('🏖️ Nueva solicitud de vacaciones', nombre + ' · ' + tipo + ' · ' + fechas);
       if (Notification.permission === 'granted') {
@@ -4733,7 +4731,7 @@ async function exportarVacacionesExcel() {
   var filas = [['Empleado', 'Tipo', 'Desde', 'Hasta', 'Días', 'Estado', 'Comentario coordinador', 'Notas']];
   data.forEach(function(v) {
     var nombre = v.empleados ? v.empleados.nombre : '—';
-    var tipo   = VAC_TIPO_LABEL[v.tipo] || v.tipo;
+    var tipo   = (VAC_TIPOS[v.tipo] || {}).label || v.tipo;
     var dias   = diasEntre(v.fecha_inicio, v.fecha_fin);
     filas.push([nombre, tipo, v.fecha_inicio, v.fecha_fin, dias, v.estado, v.comentario || '', v.notas || '']);
   });
