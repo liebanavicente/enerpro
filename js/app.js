@@ -104,9 +104,9 @@ function getTipoVac(tipo) {
 }
 function getSolTipoShort(tipo) {
   var m = {
-    'Solicitud de vacaciones':t('sol.ts_vac'),  'Solicitud de permiso':t('sol.ts_perm'),
-    'Cambio de turno':t('sol.ts_turno'),         'Baja médica':t('sol.ts_baja'),
-    'Consulta general':t('sol.ts_consulta')
+    vacaciones: t('sol.ts_vac'), permiso: t('sol.ts_perm'),
+    cambio_turno: t('sol.ts_turno'), baja_medica: t('sol.ts_baja'),
+    consulta_general: t('sol.ts_consulta')
   };
   return m[tipo] || tipo;
 }
@@ -1427,11 +1427,11 @@ document.addEventListener('click', function(e){
 
 // SOLICITUDES - EMPLEADO
 var SOL_TIPOS = {
-  'Solicitud de vacaciones': { fecha: 'rango',  justificante: false, esVacacion: true  },
-  'Solicitud de permiso':    { fecha: 'rango',  justificante: true,  esVacacion: false },
-  'Cambio de turno':         { fecha: 'unica',  justificante: false, esVacacion: false },
-  'Baja médica':             { fecha: 'rango',  justificante: true,  esVacacion: false },
-  'Consulta general':        { fecha: null,     justificante: false, esVacacion: false },
+  vacaciones:       { fecha: 'rango',  justificante: false, esVacacion: true  },
+  permiso:          { fecha: 'rango',  justificante: true,  esVacacion: false },
+  cambio_turno:     { fecha: 'unica',  justificante: false, esVacacion: false },
+  baja_medica:      { fecha: 'rango',  justificante: true,  esVacacion: false },
+  consulta_general: { fecha: null,     justificante: false, esVacacion: false },
 };
 
 function _solTipoUsaRango(tipo) {
@@ -1503,9 +1503,6 @@ function toggleSolJustificanteField() {
   }
 }
 
-function _textoAdmiteJustificante(tipo) {
-  return !!(SOL_TIPOS[tipo] || {}).justificante;
-}
 
 var solicitudForm = document.getElementById('solicitudForm');
 if (solicitudForm) {
@@ -1531,7 +1528,7 @@ if (solicitudForm) {
     };
     var justInp = document.getElementById('solJustificante');
     var archivoJust = justInp && justInp.files && justInp.files[0] ? justInp.files[0] : null;
-    if (archivoJust && _textoAdmiteJustificante(tipo)) {
+    if (archivoJust && _admiteJustificante(tipo)) {
       try {
         payload.justificante_url = await _subirJustificanteArchivo(archivoJust);
       } catch (ex) {
@@ -1640,7 +1637,7 @@ function filtrarSolicitudesAdmin() {
     var nombre = s.empleados ? s.empleados.nombre : 'Empleado';
     var d = delay; delay += 45;
     var justAdminBtn = '';
-    if (_textoAdmiteJustificante(s.tipo)) {
+    if (_admiteJustificante(s.tipo)) {
       if (s.justificante_url) {
         var safeJ = s.justificante_url.replace(/'/g, "\\'");
         justAdminBtn = '<button type="button" class="btn-sm" onclick="verJustificanteBaja(\'' + safeJ + '\')" style="font-size:0.72rem">' + t('va.just_ver') + '</button>';
@@ -1650,7 +1647,7 @@ function filtrarSolicitudesAdmin() {
     }
     return '<div class="doc-item" style="animation:fadeIn 0.28s ease both;animation-delay:' + d + 'ms">' +
       '<div class="doc-info"><div class="doc-icon">📋</div>' +
-      '<div><div class="doc-name">' + highlightMatch(nombre, q) + ' — ' + s.tipo + '</div>' +
+      '<div><div class="doc-name">' + highlightMatch(nombre, q) + ' — ' + getSolTipoShort(s.tipo) + '</div>' +
       '<div class="doc-meta">' + (s.fechas||'') + (s.motivo ? ' · ' + s.motivo : '') + '</div>' +
       '<div class="doc-meta">' + new Date(s.created_at).toLocaleDateString('es-ES') + '</div>' +
       cmt + '</div></div>' +
@@ -2313,8 +2310,8 @@ var VAC_TIPOS = {
   baja_medica:     { label: 'Baja médica',     badge: 'badge-red',    justificante: true  },
 };
 
-function _tipoAdmiteJustificante(tipo) {
-  return !!(VAC_TIPOS[tipo] || {}).justificante;
+function _admiteJustificante(tipo) {
+  return !!((SOL_TIPOS[tipo] || VAC_TIPOS[tipo] || {}).justificante);
 }
 
 function diasEntre(desde, hasta) {
@@ -2384,7 +2381,7 @@ function toggleVacJustificanteField() {
   var wrap = document.getElementById('vacJustificanteWrap');
   var tipo = document.getElementById('vacTipo');
   if (!wrap || !tipo) return;
-  var show = _tipoAdmiteJustificante(tipo.value);
+  var show = _admiteJustificante(tipo.value);
   wrap.style.display = show ? 'block' : 'none';
   if (!show) {
     var inp = document.getElementById('vacJustificante');
@@ -2449,7 +2446,7 @@ function _justificanteFileInputHtml(recordId, handlerName) {
 
 function _justificanteVacBtns(v, opts) {
   opts = opts || {};
-  if (!_tipoAdmiteJustificante(v.tipo)) return '';
+  if (!_admiteJustificante(v.tipo)) return '';
   var puedeSubir = !opts.admin && (v.estado === 'pendiente' || v.estado === 'aprobada');
   var html = '';
   if (v.justificante_url) {
@@ -2467,7 +2464,7 @@ function _justificanteVacBtns(v, opts) {
 }
 
 function _justificanteSolBtns(s) {
-  if (!_textoAdmiteJustificante(s.tipo)) return '';
+  if (!_admiteJustificante(s.tipo)) return '';
   if (s.estado !== 'pendiente' && s.estado !== 'aprobada') return '';
   var html = '';
   if (s.justificante_url) {
@@ -2502,11 +2499,11 @@ async function _subirJustificanteInline(tabla, rowId, input, tipoCheckFn, actual
 }
 
 function subirJustificanteVacInline(vacId, input) {
-  return _subirJustificanteInline('vacaciones', vacId, input, _tipoAdmiteJustificante, _actualizarJustificanteVac, cargarVacaciones);
+  return _subirJustificanteInline('vacaciones', vacId, input, _admiteJustificante, _actualizarJustificanteVac, cargarVacaciones);
 }
 
 function subirJustificanteSolInline(solId, input) {
-  return _subirJustificanteInline('solicitudes', solId, input, _textoAdmiteJustificante, _actualizarJustificanteSol, cargarMisSolicitudes);
+  return _subirJustificanteInline('solicitudes', solId, input, _admiteJustificante, _actualizarJustificanteSol, cargarMisSolicitudes);
 }
 
 async function verJustificanteBaja(url) {
@@ -2564,7 +2561,7 @@ async function solicitarVacaciones() {
   if (notas) payload.notas = notas;
 
   var archivoJust = null;
-  if (_tipoAdmiteJustificante(tipo)) {
+  if (_admiteJustificante(tipo)) {
     var justInp = document.getElementById('vacJustificante');
     archivoJust = justInp && justInp.files && justInp.files[0] ? justInp.files[0] : null;
     if (archivoJust) {
@@ -2699,7 +2696,7 @@ function filtrarVacacionesAdmin() {
     var eb = getEstadoBadge(v.estado);
     var d = delay; delay += 45;
     var justAdminBtn = '';
-    if (_tipoAdmiteJustificante(v.tipo)) {
+    if (_admiteJustificante(v.tipo)) {
       if (v.justificante_url) {
         var safeJ = v.justificante_url.replace(/'/g, "\\'");
         justAdminBtn = '<button type="button" class="btn-sm" onclick="verJustificanteBaja(\'' + safeJ + '\')" style="font-size:0.72rem">' + t('va.just_ver') + '</button>';
@@ -3257,7 +3254,7 @@ async function cargarDashboard() {
           '<div class="doc-info">' +
             '<div class="doc-icon" style="width:34px;height:34px;font-size:0.9rem">📋</div>' +
             '<div><div class="doc-name" style="font-size:0.85rem">' + nombre + '</div>' +
-            '<div class="doc-meta">' + s.tipo + ' · ' + fecha + '</div></div>' +
+            '<div class="doc-meta">' + getSolTipoShort(s.tipo) + ' · ' + fecha + '</div></div>' +
           '</div>' +
           '<span class="btn-sm" style="pointer-events:none">' + t('dash.gestionar') + '</span>' +
         '</div>';
@@ -4479,7 +4476,7 @@ function suscribirSolicitudesAdmin() {
         var { data: emp } = await sb.from('empleados').select('nombre').eq('id', s.empleado_id).single();
         if (emp) nombre = emp.nombre;
       }
-      var tipo = s.tipo || 'Solicitud';
+      var tipo = getSolTipoShort(s.tipo || '');
       mostrarToast('📋 Nueva solicitud', nombre + ' · ' + tipo);
       if (Notification.permission === 'granted') {
         new Notification('ENERPRO — Nueva solicitud', { body: nombre + ': ' + tipo, icon: 'enerprologo.jpg' });
