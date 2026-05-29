@@ -19,17 +19,17 @@ Deno.serve(async (req: Request) => {
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return json({ error: "No autorizado" }, 401);
+      return json({ ok: false, error: "No autorizado" });
     }
 
     const supabaseUser = userClient(authHeader);
     const { data: userData, error: userErr } = await supabaseUser.auth.getUser();
     if (userErr || !userData.user?.email) {
-      return json({ error: "No autorizado" }, 401);
+      return json({ ok: false, error: "No autorizado: " + (userErr?.message || "sin usuario") });
     }
 
     if (!(await esCoordinador(supabaseUser, userData.user.email))) {
-      return json({ error: "Solo coordinadores o admins" }, 403);
+      return json({ ok: false, error: "Sin permisos: rol=" + userData.user.email });
     }
 
     const body = await req.json();
@@ -76,9 +76,10 @@ Deno.serve(async (req: Request) => {
     const html = wrapHtml(buildAccesoBienvenidaHtml(nombre, link));
     await sendResendEmail(email, "Tu acceso al Portal del Empleado ENERPRO", html);
 
-    return json({ ok: true, already_existed: alreadyExisted });
+    return json({ ok: true, already_existed: alreadyExisted, user_created: true });
   } catch (e) {
     console.error(e);
-    return json({ error: String(e) }, 500);
+    // user_created:true means auth account exists — caller can use resetPasswordForEmail as fallback
+    return json({ ok: false, user_created: true, error: String(e) });
   }
 });

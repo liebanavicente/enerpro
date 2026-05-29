@@ -4425,8 +4425,14 @@ async function enviarEmailAccesoEmpleado(email, nombre) {
     body: { email: email, nombre: nombre || '', create_user: true }
   });
   if (res.error) throw new Error(res.error.message || String(res.error));
-  if (!res.data || !res.data.ok) throw new Error(res.data && res.data.error ? res.data.error : 'Error desconocido al provisionar acceso');
-  return true;
+  if (res.data && res.data.ok) return true;
+  // Resend falló pero el usuario Auth ya fue creado → fallback a resetPasswordForEmail
+  if (res.data && res.data.user_created) {
+    var { error: resetErr } = await sb.auth.resetPasswordForEmail(email, { redirectTo: _portalRedirectUrl() });
+    if (resetErr) throw new Error('Error al enviar email de acceso: ' + resetErr.message);
+    return false; // enviado vía fallback Supabase
+  }
+  throw new Error(res.data && res.data.error ? res.data.error : 'Error desconocido al provisionar acceso');
 }
 
 // ─── NOTIFICACIONES REALTIME PARA EL ADMIN ───────────────
