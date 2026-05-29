@@ -1426,18 +1426,20 @@ document.addEventListener('click', function(e){
 });
 
 // SOLICITUDES - EMPLEADO
-function _solTipoTexto(tipo) {
-  return String(tipo || '').toLowerCase();
-}
+var SOL_TIPOS = {
+  'Solicitud de vacaciones': { fecha: 'rango',  justificante: false, esVacacion: true  },
+  'Solicitud de permiso':    { fecha: 'rango',  justificante: true,  esVacacion: false },
+  'Cambio de turno':         { fecha: 'unica',  justificante: false, esVacacion: false },
+  'Baja médica':             { fecha: 'rango',  justificante: true,  esVacacion: false },
+  'Consulta general':        { fecha: null,     justificante: false, esVacacion: false },
+};
 
 function _solTipoUsaRango(tipo) {
-  var s = _solTipoTexto(tipo);
-  return s.indexOf('vacacion') >= 0 || s.indexOf('permiso') >= 0 || s.indexOf('baja') >= 0
-    || s.indexOf('asunto') >= 0 || s.indexOf('visita') >= 0;
+  return (SOL_TIPOS[tipo] || {}).fecha === 'rango';
 }
 
 function _solTipoUsaFechaUnica(tipo) {
-  return _solTipoTexto(tipo).indexOf('turno') >= 0;
+  return (SOL_TIPOS[tipo] || {}).fecha === 'unica';
 }
 
 function _formatearFechaSol(iso) {
@@ -1492,23 +1494,17 @@ function toggleSolJustificanteField() {
   var wrap = document.getElementById('solJustificanteWrap');
   var hint = document.getElementById('solVacacionesHint');
   if (!sel) return;
-  var admite = _textoAdmiteJustificante(sel.value);
-  if (wrap) wrap.style.display = admite ? 'block' : 'none';
-  if (hint) {
-    var s = _solTipoTexto(sel.value);
-    hint.style.display = s.indexOf('vacacion') >= 0 ? 'block' : 'none';
-  }
-  if (!admite) {
+  var def = SOL_TIPOS[sel.value] || {};
+  if (wrap) wrap.style.display = def.justificante ? 'block' : 'none';
+  if (hint) hint.style.display = def.esVacacion ? 'block' : 'none';
+  if (!def.justificante) {
     var inp = document.getElementById('solJustificante');
     if (inp) inp.value = '';
   }
 }
 
-function _textoAdmiteJustificante(texto) {
-  var s = String(texto || '').toLowerCase();
-  if (s.indexOf('consulta') >= 0 || s.indexOf('turno') >= 0 || s.indexOf('vacacion') >= 0) return false;
-  return s.indexOf('permiso') >= 0 || s.indexOf('baja') >= 0
-    || s.indexOf('visita') >= 0 || s.indexOf('asunto') >= 0;
+function _textoAdmiteJustificante(tipo) {
+  return !!(SOL_TIPOS[tipo] || {}).justificante;
 }
 
 var solicitudForm = document.getElementById('solicitudForm');
