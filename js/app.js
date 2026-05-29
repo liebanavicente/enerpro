@@ -1484,18 +1484,7 @@ function toggleSolFormFields() {
   var tipo = sel.value;
   if (rango) rango.style.display = _solTipoUsaRango(tipo) ? 'block' : 'none';
   if (unica) unica.style.display = _solTipoUsaFechaUnica(tipo) ? 'block' : 'none';
-  if (!_solTipoUsaRango(tipo)) {
-    var d1 = document.getElementById('solDesde');
-    var d2 = document.getElementById('solHasta');
-    if (d1) d1.value = '';
-    if (d2) d2.value = '';
-    var diasCont = document.getElementById('solDiasCont');
-    if (diasCont) diasCont.style.display = 'none';
-  }
-  if (!_solTipoUsaFechaUnica(tipo)) {
-    var fu = document.getElementById('solFechaUnica');
-    if (fu) fu.value = '';
-  }
+  _limpiarFechasSolicitudForm();
 }
 
 function toggleSolJustificanteField() {
@@ -2497,46 +2486,33 @@ function _justificanteSolBtns(s) {
   return html;
 }
 
-async function subirJustificanteVacInline(vacId, input) {
+async function _subirJustificanteInline(tabla, rowId, input, tipoCheckFn, actualizarFn, reloadFn) {
   var file = input && input.files ? input.files[0] : null;
   if (input) input.value = '';
-  if (!file || !vacId || !currentEmpleado) return;
-  var { data: vacRow, error: vacErr } = await sb.from('vacaciones').select('id, tipo, estado, justificante_url')
-    .eq('id', vacId).eq('empleado_id', currentEmpleado.id).maybeSingle();
-  if (vacErr) { mostrarToast('❌ Error', vacErr.message); return; }
-  if (!vacRow || !_tipoAdmiteJustificante(vacRow.tipo) || (vacRow.estado !== 'pendiente' && vacRow.estado !== 'aprobada')) {
+  if (!file || !rowId || !currentEmpleado) return;
+  var { data: row, error: rowErr } = await sb.from(tabla).select('id, tipo, estado, justificante_url')
+    .eq('id', rowId).eq('empleado_id', currentEmpleado.id).maybeSingle();
+  if (rowErr) { mostrarToast('❌ Error', rowErr.message); return; }
+  if (!row || !tipoCheckFn(row.tipo) || (row.estado !== 'pendiente' && row.estado !== 'aprobada')) {
     mostrarToast('❌ Error', t('vac.just_err_subir'));
     return;
   }
   try {
     var url = await _subirJustificanteArchivo(file);
-    await _actualizarJustificanteVac(vacId, url, vacRow.justificante_url);
+    await actualizarFn(rowId, url, row.justificante_url);
     mostrarToast('✓ ' + t('vac.just_ok'), '');
-    cargarVacaciones();
+    reloadFn();
   } catch (e) {
     mostrarToast('❌ Error', e.message || t('vac.just_err_subir'));
   }
 }
 
-async function subirJustificanteSolInline(solId, input) {
-  var file = input && input.files ? input.files[0] : null;
-  if (input) input.value = '';
-  if (!file || !solId || !currentEmpleado) return;
-  var { data: solRow, error: solErr } = await sb.from('solicitudes').select('id, tipo, estado, justificante_url')
-    .eq('id', solId).eq('empleado_id', currentEmpleado.id).maybeSingle();
-  if (solErr) { mostrarToast('❌ Error', solErr.message); return; }
-  if (!solRow || !_textoAdmiteJustificante(solRow.tipo) || (solRow.estado !== 'pendiente' && solRow.estado !== 'aprobada')) {
-    mostrarToast('❌ Error', t('vac.just_err_subir'));
-    return;
-  }
-  try {
-    var url = await _subirJustificanteArchivo(file);
-    await _actualizarJustificanteSol(solId, url, solRow.justificante_url);
-    mostrarToast('✓ ' + t('vac.just_ok'), '');
-    cargarMisSolicitudes();
-  } catch (e) {
-    mostrarToast('❌ Error', e.message || t('vac.just_err_subir'));
-  }
+function subirJustificanteVacInline(vacId, input) {
+  return _subirJustificanteInline('vacaciones', vacId, input, _tipoAdmiteJustificante, _actualizarJustificanteVac, cargarVacaciones);
+}
+
+function subirJustificanteSolInline(solId, input) {
+  return _subirJustificanteInline('solicitudes', solId, input, _textoAdmiteJustificante, _actualizarJustificanteSol, cargarMisSolicitudes);
 }
 
 async function verJustificanteBaja(url) {
