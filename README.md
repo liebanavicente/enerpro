@@ -1,5 +1,9 @@
 # ENERPRO - Portal del Empleado
 
+**Demo:** [enerpro.vercel.app](https://enerpro.vercel.app)
+
+![Captura de enerpro](docs/captura.jpg)
+
 Portal web para gestionar la relacion diaria entre empleados y coordinacion: documentos, cuadrantes, turnos, vacaciones, solicitudes y tareas administrativas.
 
 La aplicacion esta publicada como sitio estatico y utiliza Supabase para autenticacion, base de datos, almacenamiento y funciones auxiliares.
